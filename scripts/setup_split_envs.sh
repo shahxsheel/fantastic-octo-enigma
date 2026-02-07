@@ -4,43 +4,73 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-# ── Download models ──────────────────────────────────────────────
-echo "[setup] downloading face_landmarker.task ..."
-wget -O face_landmarker.task -q \
-  https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
-echo "[setup] face_landmarker.task downloaded"
+TOTAL_STEPS=7
+step=0
 
-if [ ! -f yolov8s.pt ]; then
-  echo "[setup] downloading yolov8s.pt ..."
-  wget -O yolov8s.pt -q \
+banner() {
+  step=$((step + 1))
+  echo ""
+  echo "════════════════════════════════════════════════════════════════"
+  echo "  [$step/$TOTAL_STEPS] $1"
+  echo "════════════════════════════════════════════════════════════════"
+}
+
+# ── 1. Download face_landmarker.task ─────────────────────────────
+banner "Downloading face_landmarker.task (MediaPipe, ~3.6 MB)"
+if [ -f face_landmarker.task ]; then
+  echo "  → Already exists, skipping"
+else
+  wget -O face_landmarker.task --progress=bar:force \
+    https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
+  echo "  → Done"
+fi
+
+# ── 2. Download yolov8s.pt ───────────────────────────────────────
+banner "Downloading yolov8s.pt (YOLO weights, ~22 MB)"
+if [ -f yolov8s.pt ]; then
+  echo "  → Already exists, skipping"
+else
+  wget -O yolov8s.pt --progress=bar:force \
     https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s.pt
-  echo "[setup] yolov8s.pt downloaded"
-else
-  echo "[setup] yolov8s.pt already exists, skipping"
+  echo "  → Done"
 fi
 
-# ── Camera venv (Python 3.13, system-site-packages for PiCamera2) ─
-echo "[setup] creating .venv-cam (python3.13, system-site-packages) ..."
+# ── 3. Create camera venv ────────────────────────────────────────
+banner "Creating .venv-cam (Python 3.13, system-site-packages)"
 python3.13 -m venv --system-site-packages .venv-cam
-.venv-cam/bin/python -m pip install --upgrade pip setuptools wheel -q
-.venv-cam/bin/python -m pip install -r requirements-camera.txt -q
-echo "[setup] .venv-cam ready"
+echo "  → Venv created"
 
-# ── Inference venv (Python 3.12.8 via uv) ─────────────────────────
-echo "[setup] creating .venv-infer (uv python 3.12.8) ..."
+# ── 4. Install camera dependencies ──────────────────────────────
+banner "Installing camera dependencies (numpy, pyzmq)"
+echo "  → OpenCV is inherited from system-site-packages, no need to install"
+.venv-cam/bin/python -m pip install --upgrade pip setuptools wheel
+.venv-cam/bin/python -m pip install -r requirements-camera.txt
+echo "  → .venv-cam ready"
+
+# ── 5. Create inference venv ─────────────────────────────────────
+banner "Creating .venv-infer (Python 3.12.8 via uv)"
 uv venv --python 3.12.8 .venv-infer
-.venv-infer/bin/python -m ensurepip --upgrade
-.venv-infer/bin/python -m pip install --upgrade pip setuptools wheel -q
-.venv-infer/bin/python -m pip install -r requirements-infer.txt -q
-echo "[setup] .venv-infer ready"
+echo "  → Venv created"
 
-# ── Export YOLOv8s to NCNN (needs ultralytics from .venv-infer) ──
-if [ ! -d yolov8s_ncnn_model ]; then
-  echo "[setup] exporting yolov8s.pt to NCNN format ..."
-  .venv-infer/bin/python -c "from ultralytics import YOLO; YOLO('yolov8s.pt').export(format='ncnn')"
-  echo "[setup] yolov8s_ncnn_model ready"
+# ── 6. Install inference dependencies ────────────────────────────
+banner "Installing inference dependencies (mediapipe, ultralytics, ncnn, opencv, numpy, pyzmq)"
+echo "  → This is the heaviest step — may take several minutes on a Pi"
+.venv-infer/bin/python -m ensurepip --upgrade
+.venv-infer/bin/python -m pip install --upgrade pip setuptools wheel
+.venv-infer/bin/python -m pip install -r requirements-infer.txt
+echo "  → .venv-infer ready"
+
+# ── 7. Export YOLOv8s to NCNN ────────────────────────────────────
+banner "Exporting yolov8s.pt → NCNN format"
+if [ -d yolov8s_ncnn_model ]; then
+  echo "  → yolov8s_ncnn_model/ already exists, skipping"
 else
-  echo "[setup] yolov8s_ncnn_model already exists, skipping export"
+  echo "  → Running ultralytics export (this may take a minute) ..."
+  .venv-infer/bin/python -c "from ultralytics import YOLO; YOLO('yolov8s.pt').export(format='ncnn')"
+  echo "  → yolov8s_ncnn_model/ ready"
 fi
 
-echo "[setup] done. Run with: ./scripts/run_split.sh"
+echo ""
+echo "════════════════════════════════════════════════════════════════"
+echo "  ALL DONE! Run with: ./scripts/run_split.sh"
+echo "════════════════════════════════════════════════════════════════"
