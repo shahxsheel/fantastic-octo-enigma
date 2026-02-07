@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────────
 #  Setup script for RASPBERRY PI 4B
-#  Uses: system Python 3.11 (inference), system Python (camera)
+#  Uses: Python 3.11 via uv (inference), system Python (camera)
 #  Installs torch from piwheels (Cortex-A72 compatible)
 # ──────────────────────────────────────────────────────────────
 set -euo pipefail
@@ -20,24 +20,15 @@ banner() {
   echo "════════════════════════════════════════════════════════════════"
 }
 
-# ── 1. Ensure Python 3.11 is available ──────────────────────────
-banner "Checking for Python 3.11 (needed for Pi 4B torch compatibility)"
-if command -v python3.11 &>/dev/null; then
-  PY_INFER="python3.11"
-  echo "  → Found: $(python3.11 --version)"
+# ── 1. Ensure uv is available (to install Python 3.11) ──────────
+banner "Checking for uv (needed to install Python 3.11)"
+if command -v uv &>/dev/null; then
+  echo "  → Found: $(uv --version)"
 else
-  echo "  → python3.11 not found, installing via apt ..."
-  sudo apt-get update -qq
-  sudo apt-get install -y -qq python3.11 python3.11-venv python3.11-dev
-  if command -v python3.11 &>/dev/null; then
-    PY_INFER="python3.11"
-    echo "  → Installed: $(python3.11 --version)"
-  else
-    echo "  ✗ ERROR: Could not install python3.11."
-    echo "    On Raspberry Pi OS Bookworm, try: sudo apt install python3.11"
-    echo "    Alternatively, use deadsnakes PPA."
-    exit 1
-  fi
+  echo "  → uv not found, installing ..."
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
+  echo "  → Installed: $(uv --version)"
 fi
 
 # ── 2. Download face_landmarker.task ─────────────────────────────
@@ -62,7 +53,6 @@ fi
 
 # ── 4. Create camera venv ────────────────────────────────────────
 banner "Creating .venv-cam (system Python, system-site-packages)"
-# Use whatever system python3 is available (for PiCamera2 access)
 python3 -m venv --system-site-packages .venv-cam
 echo "  → Venv created with $(python3 --version)"
 
@@ -73,30 +63,33 @@ echo "  → OpenCV is inherited from system-site-packages"
 .venv-cam/bin/python -m pip install -r requirements-camera.txt
 echo "  → .venv-cam ready"
 
-# ── 6. Create inference venv ─────────────────────────────────────
-banner "Creating .venv-infer (Python 3.11)"
-$PY_INFER -m venv .venv-infer
-echo "  → Venv created with $($PY_INFER --version)"
+# ── 6. Create inference venv (Python 3.11 via uv) ───────────────
+banner "Creating .venv-infer (Python 3.11 via uv — needed for piwheels torch)"
+echo "  → Pi 4B Cortex-A72 needs torch from piwheels, which requires Python 3.11"
+uv venv --python 3.11 .venv-infer
+echo "  → Venv created"
 
 # ── 7. Install inference dependencies ────────────────────────────
 banner "Installing inference dependencies (torch from piwheels, mediapipe, ultralytics, ncnn)"
 echo "  → This is the heaviest step — may take several minutes on Pi 4B"
+.venv-infer/bin/python -m ensurepip --upgrade
 .venv-infer/bin/python -m pip install --upgrade pip setuptools wheel
 
 echo ""
 echo "  → Step 7a: Installing PyTorch from piwheels (Cortex-A72 compatible) ..."
+echo "    (piwheels builds wheels ON Raspberry Pi hardware, so they're always compatible)"
 .venv-infer/bin/python -m pip install torch --extra-index-url https://www.piwheels.org/simple
 
 # Verify torch works before continuing
 echo "  → Verifying torch import ..."
 if .venv-infer/bin/python -c "import torch; print(f'    torch {torch.__version__} OK')" 2>/dev/null; then
-  echo "  → torch verified"
+  echo "  → torch verified — no Illegal Instruction"
 else
   echo ""
-  echo "  ✗ ERROR: torch gives 'Illegal instruction' on this Pi."
-  echo "    This means no compatible torch wheel exists for your Python + CPU combo."
-  echo "    Try: sudo apt install python3.11 python3.11-venv"
-  echo "    Then delete .venv-infer and re-run this script."
+  echo "  ✗ ERROR: torch still gives 'Illegal instruction' on this Pi."
+  echo "    The piwheels torch wheel did not get picked up."
+  echo "    Try manually: .venv-infer/bin/python -m pip install torch -i https://www.piwheels.org/simple"
+  echo "    Then re-run this script."
   exit 1
 fi
 
