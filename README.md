@@ -22,8 +22,9 @@ Two processes communicate over ZMQ on localhost:
 | | Pi 5 | Pi 4B |
 |---|------|-------|
 | Camera Python | 3.13 (system) | system `python3` |
-| Inference Python | 3.12.8 (via `uv`) | 3.11 (piwheels-compatible) |
-| torch source | PyPI | piwheels (Cortex-A72 safe) |
+| Inference Python | 3.12.8 (via `uv`) | 3.11 (via `uv`) |
+| YOLO backend | ultralytics + torch | raw ncnn (no torch) |
+| NCNN model | Exported locally from `.pt` | Downloaded pre-exported from GitHub |
 
 ## Prerequisites
 
@@ -51,11 +52,9 @@ Or run the model-specific script directly:
 ./scripts/setup_pi4.sh     # Raspberry Pi 4B
 ```
 
-This will:
-1. Download `face_landmarker.task` (MediaPipe) and `yolov8s.pt` (YOLO weights)
-2. Create `.venv-cam` (system Python + PiCamera2 + OpenCV)
-3. Create `.venv-infer` (MediaPipe + YOLO + NCNN + torch)
-4. Export `yolov8s.pt` to NCNN format (`yolov8s_ncnn_model/`)
+**Pi 5** — downloads models, creates venvs, exports NCNN model (needs torch)
+
+**Pi 4B** — downloads pre-exported NCNN model (no torch needed), lighter install
 
 ## Run
 
@@ -144,7 +143,7 @@ All configuration is via environment variables. Defaults work out of the box.
 | `Failed to acquire Pi camera (device busy)` | Close other libcamera apps and retry |
 | `Results port already in use` | `run_split.sh` auto-kills old processes; otherwise change `RESULTS_ADDR` |
 | `could not connect to display` | Use `HEADLESS=1` or run from Pi desktop |
-| `Illegal instruction` on Pi 4B | Use `./scripts/setup_pi4.sh` (installs Pi 4B-compatible torch from piwheels) |
+| `Illegal instruction` on Pi 4B | Use `./scripts/setup_pi4.sh` (no torch — uses raw ncnn instead) |
 | `imshow` not implemented | System OpenCV missing GTK support. Use `HEADLESS=1` or install `libgtk-3-dev` and reinstall OpenCV |
 
 ## Scripts
@@ -172,17 +171,16 @@ What it does (7 steps):
 
 ### `scripts/setup_pi4.sh`
 
-Pi 4B specific setup. Uses Python 3.11 + piwheels torch (Cortex-A72 compatible).
+Pi 4B specific setup. Uses Python 3.11 via `uv`, **no torch or ultralytics** (saves ~150 MB).
 
-What it does (8 steps):
-1. Checks/installs Python 3.11 (needed for Cortex-A72 compatible torch wheels)
-2. Downloads `face_landmarker.task` (3.6 MB)
-3. Downloads `yolov8s.pt` (22 MB)
-4. Creates `.venv-cam` (system Python, system-site-packages)
-5. Installs camera deps (numpy, pyzmq)
-6. Creates `.venv-infer` (Python 3.11)
-7. Installs inference deps — torch from piwheels first, then rest of packages
-8. Exports `yolov8s.pt` → NCNN format
+What it does (7 steps):
+1. Installs `uv` if not present (for Python 3.11)
+2. Downloads `face_landmarker.task` (3.6 MB) + pre-exported `yolov8s_ncnn_model` (37 MB from GitHub release)
+3. Creates `.venv-cam` (system Python, system-site-packages)
+4. Installs camera deps (numpy, pyzmq)
+5. Creates `.venv-infer` (Python 3.11 via `uv`)
+6. Installs inference deps (mediapipe, ncnn, opencv — no torch)
+7. Verifies all imports work
 
 ### `scripts/run_split.sh`
 
@@ -232,5 +230,6 @@ src/
 yolov8s_ncnn_model/          NCNN model (downloaded + exported by setup script)
 yolov8s.pt                   YOLOv8s weights (downloaded by setup script)
 requirements-camera.txt      Camera venv dependencies
-requirements-infer.txt       Inference venv dependencies
+requirements-infer.txt       Inference venv deps (Pi 5 — with torch/ultralytics)
+requirements-infer-pi4.txt   Inference venv deps (Pi 4B — no torch)
 ```

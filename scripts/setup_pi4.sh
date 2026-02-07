@@ -2,14 +2,17 @@
 # ──────────────────────────────────────────────────────────────
 #  Setup script for RASPBERRY PI 4B
 #  Uses: Python 3.11 via uv (inference), system Python (camera)
-#  Installs torch from piwheels (Cortex-A72 compatible)
+#  NO torch / ultralytics — uses raw ncnn for YOLO inference
+#  Downloads pre-exported NCNN model from GitHub release
 # ──────────────────────────────────────────────────────────────
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-TOTAL_STEPS=8
+NCNN_URL="https://github.com/shahxsheel/fantastic-octo-enigma/releases/download/v1.0.0/yolov8s_ncnn_model.tar.gz"
+
+TOTAL_STEPS=7
 step=0
 
 banner() {
@@ -20,7 +23,7 @@ banner() {
   echo "════════════════════════════════════════════════════════════════"
 }
 
-# ── 1. Ensure uv is available (to install Python 3.11) ──────────
+# ── 1. Ensure uv is available ────────────────────────────────────
 banner "Checking for uv (needed to install Python 3.11)"
 if command -v uv &>/dev/null; then
   echo "  → Found: $(uv --version)"
@@ -31,86 +34,85 @@ else
   echo "  → Installed: $(uv --version)"
 fi
 
-# ── 2. Download face_landmarker.task ─────────────────────────────
-banner "Downloading face_landmarker.task (MediaPipe, ~3.6 MB)"
+# ── 2. Download models ───────────────────────────────────────────
+banner "Downloading models"
+
+echo "  → face_landmarker.task (MediaPipe, ~3.6 MB) ..."
 if [ -f face_landmarker.task ]; then
-  echo "  → Already exists, skipping"
+  echo "    Already exists, skipping"
 else
   wget -O face_landmarker.task --progress=bar:force \
     https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
-  echo "  → Done"
+  echo "    Done"
 fi
 
-# ── 3. Download yolov8s.pt ───────────────────────────────────────
-banner "Downloading yolov8s.pt (YOLO weights, ~22 MB)"
-if [ -f yolov8s.pt ]; then
-  echo "  → Already exists, skipping"
+echo "  → yolov8s_ncnn_model (pre-exported NCNN, ~37 MB) ..."
+if [ -d yolov8s_ncnn_model ]; then
+  echo "    Already exists, skipping"
 else
-  wget -O yolov8s.pt --progress=bar:force \
-    https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s.pt
-  echo "  → Done"
+  wget -O yolov8s_ncnn_model.tar.gz --progress=bar:force "$NCNN_URL"
+  tar xzf yolov8s_ncnn_model.tar.gz
+  rm -f yolov8s_ncnn_model.tar.gz
+  echo "    Done"
 fi
 
-# ── 4. Create camera venv ────────────────────────────────────────
+# ── 3. Create camera venv ────────────────────────────────────────
 banner "Creating .venv-cam (system Python, system-site-packages)"
 python3 -m venv --system-site-packages .venv-cam
 echo "  → Venv created with $(python3 --version)"
 
-# ── 5. Install camera dependencies ──────────────────────────────
+# ── 4. Install camera dependencies ──────────────────────────────
 banner "Installing camera dependencies (numpy, pyzmq)"
 echo "  → OpenCV is inherited from system-site-packages"
 .venv-cam/bin/python -m pip install --upgrade pip setuptools wheel
 .venv-cam/bin/python -m pip install -r requirements-camera.txt
 echo "  → .venv-cam ready"
 
-# ── 6. Create inference venv (Python 3.11 via uv) ───────────────
-banner "Creating .venv-infer (Python 3.11 via uv — needed for piwheels torch)"
-echo "  → Pi 4B Cortex-A72 needs torch from piwheels, which requires Python 3.11"
+# ── 5. Create inference venv (Python 3.11 via uv) ───────────────
+banner "Creating .venv-infer (Python 3.11 via uv)"
 uv venv --python 3.11 .venv-infer
 echo "  → Venv created"
 
-# ── 7. Install inference dependencies ────────────────────────────
-banner "Installing inference dependencies (torch from piwheels, mediapipe, ultralytics, ncnn)"
-echo "  → This is the heaviest step — may take several minutes on Pi 4B"
+# ── 6. Install inference dependencies ────────────────────────────
+banner "Installing inference dependencies (mediapipe, ncnn, opencv — NO torch)"
+echo "  → Pi 4B uses raw ncnn for YOLO — no torch or ultralytics needed"
 .venv-infer/bin/python -m ensurepip --upgrade
 .venv-infer/bin/python -m pip install --upgrade pip setuptools wheel
+.venv-infer/bin/python -m pip install -r requirements-infer-pi4.txt
+echo "  → .venv-infer ready"
 
-echo ""
-echo "  → Step 7a: Installing PyTorch from piwheels (Cortex-A72 compatible) ..."
-echo "    (piwheels builds wheels ON Raspberry Pi hardware, so they're always compatible)"
-.venv-infer/bin/python -m pip install torch \
-  --index-url https://www.piwheels.org/simple \
-  --extra-index-url https://pypi.org/simple
+# ── 7. Verify setup ─────────────────────────────────────────────
+banner "Verifying installation"
 
-# Verify torch works before continuing
-echo "  → Verifying torch import ..."
-if .venv-infer/bin/python -c "import torch; print(f'    torch {torch.__version__} OK')" 2>/dev/null; then
-  echo "  → torch verified — no Illegal Instruction"
+echo "  → Checking ncnn import ..."
+if .venv-infer/bin/python -c "import ncnn; print(f'    ncnn OK')" 2>/dev/null; then
+  echo "  → ncnn verified"
 else
-  echo ""
-  echo "  ✗ ERROR: torch still gives 'Illegal instruction' on this Pi."
-  echo "    The piwheels torch wheel did not get picked up."
-  echo "    Try manually: .venv-infer/bin/python -m pip install torch -i https://www.piwheels.org/simple --extra-index-url https://pypi.org/simple"
-  echo "    Then re-run this script."
+  echo "  ✗ ncnn import failed"
   exit 1
 fi
 
-echo ""
-echo "  → Step 7b: Installing remaining packages (mediapipe, ultralytics, ncnn, opencv) ..."
-.venv-infer/bin/python -m pip install -r requirements-infer.txt
-echo "  → .venv-infer ready"
-
-# ── 8. Export YOLOv8s to NCNN ────────────────────────────────────
-banner "Exporting yolov8s.pt → NCNN format"
-if [ -d yolov8s_ncnn_model ]; then
-  echo "  → yolov8s_ncnn_model/ already exists, skipping"
+echo "  → Checking mediapipe import ..."
+if .venv-infer/bin/python -c "import mediapipe; print(f'    mediapipe {mediapipe.__version__} OK')" 2>/dev/null; then
+  echo "  → mediapipe verified"
 else
-  echo "  → Running ultralytics export (this may take a few minutes on Pi 4B) ..."
-  .venv-infer/bin/python -c "from ultralytics import YOLO; YOLO('yolov8s.pt').export(format='ncnn')"
-  echo "  → yolov8s_ncnn_model/ ready"
+  echo "  ✗ mediapipe import failed"
+  exit 1
+fi
+
+echo "  → Checking NCNN model files ..."
+if [ -f yolov8s_ncnn_model/model.ncnn.param ] && [ -f yolov8s_ncnn_model/model.ncnn.bin ]; then
+  echo "  → NCNN model files present"
+else
+  echo "  ✗ NCNN model files missing"
+  exit 1
 fi
 
 echo ""
 echo "════════════════════════════════════════════════════════════════"
 echo "  ALL DONE (Pi 4B)! Run with: ./scripts/run_split.sh"
+echo ""
+echo "  Key difference from Pi 5:"
+echo "    - No torch/ultralytics installed (saves ~150 MB)"
+echo "    - YOLO runs via raw ncnn (auto-detected at startup)"
 echo "════════════════════════════════════════════════════════════════"
