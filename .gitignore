@@ -1,0 +1,14 @@
+.venv/
+.venv-cam/
+.venv-infer/
+env/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Downloaded by setup script
+face_landmarker.task
+yolov8s.pt
+yolov8s_ncnn_model/
