@@ -78,7 +78,9 @@ echo "  → This is the heaviest step — may take several minutes on Pi 4B"
 echo ""
 echo "  → Step 7a: Installing PyTorch from piwheels (Cortex-A72 compatible) ..."
 echo "    (piwheels builds wheels ON Raspberry Pi hardware, so they're always compatible)"
-.venv-infer/bin/python -m pip install torch --extra-index-url https://www.piwheels.org/simple
+.venv-infer/bin/python -m pip install torch \
+  --index-url https://www.piwheels.org/simple \
+  --extra-index-url https://pypi.org/simple
 
 # Verify torch works before continuing
 echo "  → Verifying torch import ..."
@@ -88,7 +90,7 @@ else
   echo ""
   echo "  ✗ ERROR: torch still gives 'Illegal instruction' on this Pi."
   echo "    The piwheels torch wheel did not get picked up."
-  echo "    Try manually: .venv-infer/bin/python -m pip install torch -i https://www.piwheels.org/simple"
+  echo "    Try manually: .venv-infer/bin/python -m pip install torch -i https://www.piwheels.org/simple --extra-index-url https://pypi.org/simple"
   echo "    Then re-run this script."
   exit 1
 fi
