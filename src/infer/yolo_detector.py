@@ -40,6 +40,7 @@ class YoloDetector:
         self.conf = float(os.environ.get("YOLO_CONF", "0.25"))
         self.nms_thresh = float(os.environ.get("YOLO_NMS", "0.45"))
         self.model_path = os.environ.get("YOLO_MODEL", "yolo26s_ncnn_model")
+        self.max_person = int(os.environ.get("YOLO_MAX_PERSON", "1"))
 
         filt = os.environ.get("YOLO_FILTER", "person,cell phone,bottle,cup")
         self.filter_names = {
@@ -73,8 +74,12 @@ class YoloDetector:
             )
 
         self._net = _ncnn.Net()
+        # Pi 4B: no stable Vulkan; enable FP16 fast paths + packing for ARM NEON.
         self._net.opt.use_vulkan_compute = False
-        self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", "4"))
+        self._net.opt.use_packing_layout = True
+        self._net.opt.use_fp16_storage = True
+        self._net.opt.use_fp16_arithmetic = True
+        self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", "3"))
         self._net.load_param(param_path)
         self._net.load_model(bin_path)
 
@@ -173,6 +178,16 @@ class YoloDetector:
             )
 
         objects.sort(key=lambda o: o["conf"], reverse=True)
+        if self.max_person > 0:
+            pruned: List[dict] = []
+            person_seen = 0
+            for obj in objects:
+                if obj.get("name") == "person":
+                    if person_seen >= self.max_person:
+                        continue
+                    person_seen += 1
+                pruned.append(obj)
+            objects = pruned
         return objects
 
     # ── helpers ──────────────────────────────────────────────────

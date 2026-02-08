@@ -80,12 +80,14 @@ HEADLESS=1 ./scripts/run_split.sh
 
 **Preview window** (when not headless):
 - FPS counter
+- **Result latency** (how many seconds old the current overlay is; high = inference falling behind)
 - YOLO bounding boxes (filtered to: person, cell phone, bottle, cup)
 - Face bounding box
 - Eye state + openness percentage (L/R)
 
 **Terminal logs** (always, works headless):
 ```
+[camera] FPS: 28.3  result latency: 4.12s
 [infer] objects=[person:0.86, cell phone:0.41]
 [infer] eyes=L OPEN 85% | R OPEN 90%
 [infer] eye_state_change  L CLOSED 12%  R CLOSED 8%
@@ -137,6 +139,16 @@ All configuration is via environment variables. Defaults work out of the box.
 | `EYE_LOG` | `1` | Enable eye state logs |
 | `FRAMES_ADDR` | `tcp://127.0.0.1:5555` | ZMQ frames address |
 | `RESULTS_ADDR` | `tcp://127.0.0.1:5556` | ZMQ results address |
+
+### Lowering result latency
+
+If the on-screen or log **result latency** is high or grows over time, inference is taking longer than the camera frame rate. To reduce steady-state latency (one inference cycle):
+
+- **YOLO_EVERY_N** — increase (e.g. `8`) so YOLO runs less often.
+- **FACE_EVERY_N** — increase (e.g. `2`) so face/eye runs every other frame.
+- **INFER_WIDTH** / **INFER_HEIGHT** — reduce (e.g. `640` / `360`) so each frame is cheaper (lower resolution).
+
+Example: `YOLO_EVERY_N=8 FACE_EVERY_N=2 ./scripts/run_split.sh`
 
 ## Troubleshooting
 

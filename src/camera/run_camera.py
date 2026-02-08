@@ -4,6 +4,7 @@ import time
 import cv2
 import numpy as np
 import zmq
+from typing import Optional
 
 from src.camera.camera_source import open_camera
 from src.ipc.zmq_frames import FramePublisher
@@ -17,9 +18,38 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+def _env_bool(name: str, default: bool = False) -> bool:
+    val = os.environ.get(name)
+    if val is None:
+        return default
+    return val.lower() in ("1", "true", "yes", "on")
+
+
+def _overlay_objects(result: dict) -> list[dict]:
+    """Keep overlays readable by capping duplicate class boxes."""
+    objs = list(result.get("objects", []))
+    max_total = _env_int("UI_MAX_OBJECTS", 4)
+    max_person = _env_int("UI_MAX_PERSON", 1)
+
+    if not objs:
+        return []
+
+    out: list[dict] = []
+    person_count = 0
+    for obj in objs:
+        if len(out) >= max_total:
+            break
+        if str(obj.get("name", "")) == "person":
+            if max_person > 0 and person_count >= max_person:
+                continue
+            person_count += 1
+        out.append(obj)
+    return out
+
+
 def draw_results(frame: np.ndarray, result: dict, scale_x: float, scale_y: float) -> None:
     # objects
-    for obj in result.get("objects", [])[:20]:
+    for obj in _overlay_objects(result):
         bbox = obj.get("bbox")
         if not bbox:
             continue
@@ -41,7 +71,7 @@ def draw_results(frame: np.ndarray, result: dict, scale_x: float, scale_y: float
             1,
         )
 
-    # face + eyes
+    # face
     fb = result.get("face_bbox")
     if fb:
         x1, y1, x2, y2 = fb
@@ -50,22 +80,71 @@ def draw_results(frame: np.ndarray, result: dict, scale_x: float, scale_y: float
         y1 = int(y1 * scale_y)
         y2 = int(y2 * scale_y)
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-        eyes = result.get("eyes") or {}
-        if eyes:
-            lpct = eyes.get("left_pct", eyes.get("left_score", 0.0))
-            rpct = eyes.get("right_pct", eyes.get("right_score", 0.0))
-            txt = (
-                f"L:{eyes.get('left_state','?')} {float(lpct):.0f}%  "
-                f"R:{eyes.get('right_state','?')} {float(rpct):.0f}%"
-            )
+
+    # eyes as dots
+    eyes_pts = result.get("eyes_points") or {}
+    for side, color in (("left", (0, 255, 255)), ("right", (0, 165, 255))):
+        pts = eyes_pts.get(side) or []
+        for (ex, ey) in pts:
+            cv2.circle(frame, (int(ex * scale_x), int(ey * scale_y)), 3, color, thickness=-1)
+
+
+def draw_sidebar(frame: np.ndarray, fps: float, latency_sec: Optional[float], result: Optional[dict]) -> None:
+    """Draw a compact sidebar with stats; keeps main image uncluttered."""
+    h, w = frame.shape[:2]
+    bar_w = 220
+    x0 = w - bar_w
+    overlay = frame.copy()
+    cv2.rectangle(overlay, (x0, 0), (w, h), (0, 0, 0), thickness=-1)
+    cv2.addWeighted(overlay, 0.35, frame, 0.65, 0, frame)
+
+    y = 20
+    cv2.putText(frame, f"FPS: {fps:.1f}", (x0 + 10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
+    y += 24
+    if latency_sec is not None:
+        cv2.putText(frame, f"Latency: {latency_sec*1000:.0f} ms", (x0 + 10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 2)
+    y += 26
+
+    if result:
+        # Objects
+        objs = _overlay_objects(result)
+        cv2.putText(frame, "Objects:", (x0 + 10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 200, 255), 2)
+        y += 20
+        for o in objs:
             cv2.putText(
                 frame,
-                txt,
-                (x1, min(frame.shape[0] - 10, y2 + 20)),
+                f"{o.get('name','?')[:12]} {o.get('conf',0):.2f}",
+                (x0 + 12, y),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                0.55,
-                (0, 255, 0),
-                2,
+                0.5,
+                (0, 200, 255),
+                1,
+            )
+            y += 18
+
+        eyes = result.get("eyes") or {}
+        if eyes:
+            y += 6
+            cv2.putText(frame, "Eyes:", (x0 + 10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 180), 2)
+            y += 20
+            cv2.putText(
+                frame,
+                f"L {eyes.get('left_state','?')} {eyes.get('left_pct',0):.0f}%",
+                (x0 + 12, y),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 255, 180),
+                1,
+            )
+            y += 18
+            cv2.putText(
+                frame,
+                f"R {eyes.get('right_state','?')} {eyes.get('right_pct',0):.0f}%",
+                (x0 + 12, y),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (0, 255, 180),
+                1,
             )
 
 
@@ -77,14 +156,19 @@ def main() -> None:
     frames_addr = os.environ.get("FRAMES_ADDR", "tcp://127.0.0.1:5555")
     results_addr = os.environ.get("RESULTS_ADDR", "tcp://127.0.0.1:5556")
     ui_every_n = _env_int("UI_EVERY_N", 2)
+    verbose = _env_bool("VERBOSE", True)
 
-    cam, cam_name = open_camera()
+    cam, cam_name = open_camera(headless=headless)
     print(f"[camera] using camera={cam_name}")
+    window_name = "Camera Preview (Split Pipeline) - Q to quit"
 
     if not headless:
         # Some OpenCV builds behave better with an explicit window thread.
         try:
             cv2.startWindowThread()
+            # Use GUI_NORMAL to hide the Qt toolbar/status UI.
+            gui_normal = getattr(cv2, "WINDOW_GUI_NORMAL", 0)
+            cv2.namedWindow(window_name, cv2.WINDOW_NORMAL | gui_normal)
         except Exception:
             pass
 
@@ -111,32 +195,36 @@ def main() -> None:
             if latest is not None:
                 last_result = latest.to_dict()
 
+            now = time.time()
+            now_ms = int(now * 1000)
+            # Result age = how old is the overlay we're drawing (capture → now)
+            latency_sec = None
+            if last_result and "ts_ms" in last_result:
+                latency_ms = now_ms - last_result["ts_ms"]
+                latency_sec = max(0, latency_ms) / 1000.0
+
             infer_h, infer_w = infer_bgr.shape[:2]
             main_h, main_w = main_bgr.shape[:2]
             scale_x = main_w / max(1, infer_w)
             scale_y = main_h / max(1, infer_h)
 
             fps_count += 1
-            now = time.time()
             if now - fps_t0 >= 1.0:
                 fps = fps_count / (now - fps_t0)
+                if verbose:
+                    if latency_sec is not None:
+                        print(f"[camera] FPS: {fps:.1f}  result latency: {latency_sec:.2f}s", flush=True)
+                    else:
+                        print(f"[camera] FPS: {fps:.1f}  (no result yet)", flush=True)
                 fps_count = 0
                 fps_t0 = now
 
             if not headless:
                 if last_result and (bundle.frame_id % ui_every_n == 0):
                     draw_results(main_bgr, last_result, scale_x, scale_y)
-                cv2.putText(
-                    main_bgr,
-                    f"FPS: {fps:.1f}",
-                    (15, 30),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.8,
-                    (0, 255, 255),
-                    2,
-                )
+                draw_sidebar(main_bgr, fps, latency_sec, last_result)
                 try:
-                    cv2.imshow("Camera Preview (Split Pipeline) - Q to quit", main_bgr)
+                    cv2.imshow(window_name, main_bgr)
                 except cv2.error as e:
                     # Headless OpenCV builds don't implement imshow; fall back to headless mode.
                     print(f"[camera] imshow unavailable ({e}). Switching to HEADLESS=1 behavior.")

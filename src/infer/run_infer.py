@@ -61,11 +61,15 @@ def main() -> None:
     next_log_t = time.time() + log_every
 
     try:
+        process_all = os.environ.get("KEEP_ALL_FRAMES", "0") == "1"
         while True:
-            latest = sub.recv_latest(timeout_ms=50)
-            if latest is None:
-                continue
-            header, frame = latest
+            if process_all:
+                header, frame = sub.recv()
+            else:
+                latest = sub.recv_latest(timeout_ms=50)
+                if latest is None:
+                    continue
+                header, frame = latest
 
             frame_count += 1
             ts_ms = header.ts_ms
@@ -88,6 +92,8 @@ def main() -> None:
                         "right_state": str(getattr(eyes, "right_state", "?")),
                         "left_ear": float(getattr(eyes, "left_ear", 0.0)),
                         "right_ear": float(getattr(eyes, "right_ear", 0.0)),
+                        "left_pts": getattr(eyes, "left_pts", None),
+                        "right_pts": getattr(eyes, "right_pts", None),
                     }
 
             # YOLO on cadence
@@ -100,6 +106,11 @@ def main() -> None:
                 objects=last_objects,
                 face_bbox=last_face_bbox,
                 eyes=last_eyes,
+                eyes_points=(
+                    {"left": last_eyes.get("left_pts"), "right": last_eyes.get("right_pts")}
+                    if last_eyes
+                    else None
+                ),
             )
             pub.send(res)
 

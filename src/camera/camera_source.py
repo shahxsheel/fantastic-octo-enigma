@@ -36,7 +36,13 @@ class CameraSource:
 
 
 class USBCameraSource(CameraSource):
-    def __init__(self, index: int, capture_size: Tuple[int, int], infer_size: Tuple[int, int]):
+    def __init__(
+        self,
+        index: int,
+        capture_size: Tuple[int, int],
+        infer_size: Tuple[int, int],
+        headless: bool = False,
+    ):
         self.index = index
         self.capture_w, self.capture_h = capture_size
         self.infer_w, self.infer_h = infer_size
@@ -65,7 +71,12 @@ class USBCameraSource(CameraSource):
 
 
 class PiCamera2Source(CameraSource):
-    def __init__(self, capture_size: Tuple[int, int], infer_size: Tuple[int, int]):
+    def __init__(
+        self,
+        capture_size: Tuple[int, int],
+        infer_size: Tuple[int, int],
+        headless: bool = False,
+    ):
         # Camera process must run on a Python that can import picamera2/libcamera (usually system Python on Pi OS)
         from picamera2 import Picamera2
 
@@ -76,6 +87,9 @@ class PiCamera2Source(CameraSource):
 
         self.capture_w, self.capture_h = capture_size
         self.infer_w, self.infer_h = infer_size
+        self.headless = headless
+        self.drop_main = headless and (os.environ.get("DROP_MAIN_WHEN_HEADLESS", "1") == "1")
+        self.lores_format = _env_str("CAM_LORES_FORMAT", "YUV420")
 
         # Camera can be "busy" if another libcamera app is running (e.g. rpicam-hello).
         last_err = None
@@ -94,9 +108,14 @@ class PiCamera2Source(CameraSource):
                 "and try again."
             ) from last_err
         # Use preview configuration for better color handling (matches common OpenCV + PiCam examples).
+        # If headless + drop_main, still request a main stream but keep it small to lower ISP load.
+        main_size = (self.capture_w, self.capture_h)
+        if self.drop_main:
+            main_size = (max(320, self.infer_w), max(240, self.infer_h))
+
         config = self.picam2.create_preview_configuration(
-            main={"format": "RGB888", "size": (self.capture_w, self.capture_h)},
-            lores={"format": "RGB888", "size": (self.infer_w, self.infer_h)},
+            main={"format": "RGB888", "size": main_size},
+            lores={"format": self.lores_format, "size": (self.infer_w, self.infer_h)},
         )
 
         # Optional ColorSpace overrides (default: leave preview defaults)
@@ -110,6 +129,11 @@ class PiCamera2Source(CameraSource):
                 config["colour_space"] = ColorSpace.Smpte170m()
 
         self.picam2.configure(config)
+        # Slightly higher buffer_count reduces dropped frames under load.
+        try:
+            self.picam2.set_controls({"BufferCount": 6})
+        except Exception:
+            pass
 
         # Try to keep FPS high. Low-light may get darker.
         if os.environ.get("FORCE_FPS", "1") == "1":
@@ -142,9 +166,13 @@ class PiCamera2Source(CameraSource):
         if not isinstance(lores_rgb, np.ndarray):
             lores_rgb = self.picam2.capture_array("lores")
 
-        # Convert camera RGB -> OpenCV BGR
-        main_bgr = cv2.cvtColor(main_rgb, cv2.COLOR_RGB2BGR)
+        # Convert camera data -> OpenCV BGR
         infer_bgr = cv2.cvtColor(lores_rgb, cv2.COLOR_RGB2BGR)
+
+        if self.drop_main:
+            main_bgr = infer_bgr
+        else:
+            main_bgr = cv2.cvtColor(main_rgb, cv2.COLOR_RGB2BGR)
 
         if os.environ.get("SWAP_RB", "0") == "1":
             main_bgr = main_bgr[:, :, ::-1].copy()
@@ -174,7 +202,7 @@ def _usb_indices() -> list[int]:
     return sorted(set(indices))
 
 
-def open_camera() -> tuple[CameraSource, str]:
+def open_camera(headless: bool = False) -> tuple[CameraSource, str]:
     mode = _env_str("FORCE_CAMERA", "auto").lower()
     # Tolerate common boolean-like values.
     # Users sometimes set FORCE_CAMERA=1 meaning "use Pi camera".
@@ -192,9 +220,9 @@ def open_camera() -> tuple[CameraSource, str]:
 
     if mode == "usb":
         idx = _env_int("CAMERA_INDEX", 0)
-        return USBCameraSource(idx, capture_size, infer_size), f"usb:{idx}"
+        return USBCameraSource(idx, capture_size, infer_size, headless=headless), f"usb:{idx}"
     if mode == "pi":
-        return PiCamera2Source(capture_size, infer_size), "pi"
+        return PiCamera2Source(capture_size, infer_size, headless=headless), "pi"
 
     # auto: try USB devices first (but avoid long hangs probing non-capture nodes)
     hint = os.environ.get("CAMERA_INDEX")
@@ -226,6 +254,6 @@ def open_camera() -> tuple[CameraSource, str]:
         ok, _ = cap.read()
         cap.release()
         if ok:
-            return USBCameraSource(idx, capture_size, infer_size), f"usb:{idx}"
+            return USBCameraSource(idx, capture_size, infer_size, headless=headless), f"usb:{idx}"
 
-    return PiCamera2Source(capture_size, infer_size), "pi"
+    return PiCamera2Source(capture_size, infer_size, headless=headless), "pi"

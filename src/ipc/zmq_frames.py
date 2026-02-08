@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from dataclasses import dataclass
 from typing import Dict, Tuple
@@ -43,6 +44,9 @@ class FramePublisher:
     def __init__(self, bind_addr: str):
         self.ctx = zmq.Context.instance()
         self.sock = self.ctx.socket(zmq.PUB)
+        hwm = int(os.environ.get("FRAMES_SNDHWM", "4"))
+        self.sock.setsockopt(zmq.SNDHWM, hwm)
+        self.sock.setsockopt(zmq.LINGER, 0)
         self.sock.bind(bind_addr)
 
     def send(self, frame_bgr: np.ndarray, frame_id: int, ts_ms: int | None = None) -> None:
@@ -68,8 +72,9 @@ class FrameSubscriber:
         # draining the queue in recv_latest().
         if conflate:
             self.sock.setsockopt(zmq.CONFLATE, 1)
-        # Keep only a tiny queue to avoid lag.
-        self.sock.setsockopt(zmq.RCVHWM, 2)
+        # Queue size tunable to balance drops vs latency.
+        rcv_hwm = int(os.environ.get("FRAMES_RCVHWM", "4"))
+        self.sock.setsockopt(zmq.RCVHWM, rcv_hwm)
         self.sock.setsockopt(zmq.SUBSCRIBE, b"")
         self.sock.connect(connect_addr)
 

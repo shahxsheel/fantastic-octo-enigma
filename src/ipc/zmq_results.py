@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, Optional, Tuple
@@ -17,6 +18,8 @@ class InferResult:
     objects: list
     face_bbox: Optional[list] = None  # [x1,y1,x2,y2] in infer coords
     eyes: Optional[dict] = None  # e.g. {left_pct,right_pct,left_state,right_state,...}
+    # optional eye landmarks: {"left":[(x,y),...], "right":[...]} in infer coords
+    eyes_points: Optional[dict] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -25,6 +28,7 @@ class InferResult:
             "objects": self.objects,
             "face_bbox": self.face_bbox,
             "eyes": self.eyes,
+            "eyes_points": self.eyes_points,
         }
 
     @staticmethod
@@ -35,6 +39,7 @@ class InferResult:
             objects=list(d.get("objects", [])),
             face_bbox=d.get("face_bbox"),
             eyes=d.get("eyes"),
+            eyes_points=d.get("eyes_points"),
         )
 
 
@@ -42,6 +47,9 @@ class ResultPublisher:
     def __init__(self, bind_addr: str):
         self.ctx = zmq.Context.instance()
         self.sock = self.ctx.socket(zmq.PUB)
+        hwm = int(os.environ.get("RESULTS_SNDHWM", "4"))
+        self.sock.setsockopt(zmq.SNDHWM, hwm)
+        self.sock.setsockopt(zmq.LINGER, 0)
         self.sock.bind(bind_addr)
 
     def send(self, result: InferResult) -> None:
