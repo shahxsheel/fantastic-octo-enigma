@@ -29,13 +29,13 @@ else
   echo "  → Done"
 fi
 
-# ── 2. Download yolov8s.pt ───────────────────────────────────────
-banner "Downloading yolov8s.pt (YOLO weights, ~22 MB)"
-if [ -f yolov8s.pt ]; then
+# ── 2. Download yolo26s.pt ───────────────────────────────────────
+banner "Downloading yolo26s.pt (YOLO26 small weights, ~19.5 MB)"
+if [ -f yolo26s.pt ]; then
   echo "  → Already exists, skipping"
 else
-  wget -O yolov8s.pt --progress=bar:force \
-    https://github.com/ultralytics/assets/releases/download/v8.2.0/yolov8s.pt
+  wget -O yolo26s.pt --progress=bar:force \
+    https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26s.pt
   echo "  → Done"
 fi
 
@@ -58,7 +58,7 @@ if ! command -v uv &>/dev/null; then
   curl -LsSf https://astral.sh/uv/install.sh | sh
   export PATH="$HOME/.local/bin:$PATH"
 fi
-uv venv --python 3.12.8 .venv-infer
+uv venv --python 3.12.8 .venv-infer --clear
 echo "  → Venv created"
 
 # ── 6. Install inference dependencies ────────────────────────────
@@ -69,14 +69,14 @@ echo "  → This is the heaviest step — may take several minutes"
 .venv-infer/bin/python -m pip install -r requirements-infer.txt
 echo "  → .venv-infer ready"
 
-# ── 7. Export YOLOv8s to NCNN ────────────────────────────────────
-banner "Exporting yolov8s.pt → NCNN format"
-if [ -d yolov8s_ncnn_model ]; then
-  echo "  → yolov8s_ncnn_model/ already exists, skipping"
+# ── 7. Export YOLO26s to NCNN ────────────────────────────────────
+banner "Exporting yolo26s.pt → NCNN format (input 640×640)"
+if [ -d yolo26s_ncnn_model ]; then
+  echo "  → yolo26s_ncnn_model/ already exists, skipping"
 else
   echo "  → Running ultralytics export (this may take a minute) ..."
-  .venv-infer/bin/python -c "from ultralytics import YOLO; YOLO('yolov8s.pt').export(format='ncnn')"
-  echo "  → yolov8s_ncnn_model/ ready"
+  .venv-infer/bin/python -c "from ultralytics import YOLO; YOLO('yolo26s.pt').export(format='ncnn')"
+  echo "  → yolo26s_ncnn_model/ ready"
 fi
 
 echo ""

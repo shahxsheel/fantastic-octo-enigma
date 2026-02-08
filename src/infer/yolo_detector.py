@@ -1,10 +1,8 @@
 """
-YOLOv8s object detector with dual backend:
-  - ultralytics (Pi 5 — uses torch)
-  - raw ncnn (Pi 4B — no torch dependency)
+YOLO26s object detector — raw ncnn backend only.
 
-The backend is selected automatically at startup: if ultralytics is importable,
-it is used; otherwise the raw ncnn backend is used.
+Uses the ncnn Python library directly for inference on both Pi 5 and Pi 4B.
+No torch or ultralytics needed at runtime (only for export during setup on Pi 5).
 """
 
 import os
@@ -37,9 +35,11 @@ COCO_NAMES: Dict[int, str] = {
 
 class YoloDetector:
     def __init__(self):
+        import ncnn as _ncnn
+
         self.conf = float(os.environ.get("YOLO_CONF", "0.25"))
         self.nms_thresh = float(os.environ.get("YOLO_NMS", "0.45"))
-        self.model_path = os.environ.get("YOLO_MODEL", "yolov8s_ncnn_model")
+        self.model_path = os.environ.get("YOLO_MODEL", "yolo26s_ncnn_model")
 
         filt = os.environ.get("YOLO_FILTER", "person,cell phone,bottle,cup")
         self.filter_names = {
@@ -48,48 +48,9 @@ class YoloDetector:
             if x and x.strip()
         }
 
-        self._backend = None
-        self.names: Dict[int, str] = {}
-
-        # Try ultralytics first (Pi 5), fall back to raw ncnn (Pi 4B)
-        try:
-            from ultralytics import YOLO  # noqa: F811
-
-            resolved = self.model_path
-            if os.path.isdir(resolved) and resolved.endswith("_ncnn_model"):
-                try:
-                    import ncnn  # noqa: F401
-                except Exception:
-                    resolved = os.environ.get("YOLO_FALLBACK", "yolov8s.pt")
-            if not os.path.exists(resolved):
-                resolved = os.environ.get("YOLO_FALLBACK", "yolov8s.pt")
-
-            self._ul_model = YOLO(resolved, task="detect")
-            self.names = dict(self._ul_model.names)
-            self._backend = "ultralytics"
-            print(f"[infer] YOLO backend: ultralytics ({resolved})", flush=True)
-
-        except (ImportError, Exception) as exc:
-            print(f"[infer] ultralytics not available ({exc}), using raw ncnn", flush=True)
-            self._init_ncnn()
-
-    # ── raw ncnn init ────────────────────────────────────────────
-    def _init_ncnn(self) -> None:
-        import ncnn as _ncnn
-
-        model_dir = self.model_path
-        param_path = os.path.join(model_dir, "model.ncnn.param")
-        bin_path = os.path.join(model_dir, "model.ncnn.bin")
-        meta_path = os.path.join(model_dir, "metadata.yaml")
-
-        if not os.path.exists(param_path):
-            raise FileNotFoundError(
-                f"NCNN model not found at {param_path}. "
-                "Run the setup script or set YOLO_MODEL."
-            )
-
         # Load class names from metadata.yaml (written by ultralytics export)
-        self.names = dict(COCO_NAMES)
+        self.names: Dict[int, str] = dict(COCO_NAMES)
+        meta_path = os.path.join(self.model_path, "metadata.yaml")
         if os.path.exists(meta_path):
             try:
                 import yaml  # type: ignore
@@ -101,56 +62,39 @@ class YoloDetector:
             except Exception:
                 pass  # fall back to hardcoded COCO names
 
+        # Load ncnn model
+        param_path = os.path.join(self.model_path, "model.ncnn.param")
+        bin_path = os.path.join(self.model_path, "model.ncnn.bin")
+
+        if not os.path.exists(param_path):
+            raise FileNotFoundError(
+                f"NCNN model not found at {param_path}. "
+                "Run the setup script or set YOLO_MODEL."
+            )
+
         self._net = _ncnn.Net()
         self._net.opt.use_vulkan_compute = False
         self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", "4"))
         self._net.load_param(param_path)
         self._net.load_model(bin_path)
 
-        self._input_size = 640
-        self._backend = "ncnn"
+        self._input_size = int(os.environ.get("YOLO_INPUT_SIZE", "640"))
+
         print(
-            f"[infer] YOLO backend: raw ncnn ({model_dir}, "
+            f"[infer] YOLO backend: raw ncnn ({self.model_path}, "
+            f"input={self._input_size}x{self._input_size}, "
             f"threads={self._net.opt.num_threads})",
             flush=True,
         )
 
     # ── public API ───────────────────────────────────────────────
     def detect(self, frame_bgr: np.ndarray) -> List[dict]:
-        if self._backend == "ultralytics":
-            return self._detect_ultralytics(frame_bgr)
-        else:
-            return self._detect_ncnn(frame_bgr)
-
-    # ── ultralytics backend (Pi 5) ───────────────────────────────
-    def _detect_ultralytics(self, frame_bgr: np.ndarray) -> List[dict]:
-        results = self._ul_model.predict(source=frame_bgr, verbose=False, conf=self.conf)
-        objects: List[dict] = []
-        for r in results:
-            if r.boxes is None:
-                continue
-            for b in r.boxes:
-                cls = int(b.cls[0])
-                conf = float(b.conf[0])
-                xyxy = b.xyxy[0].cpu().numpy().tolist()
-                x1, y1, x2, y2 = [int(v) for v in xyxy]
-                name = self.names.get(cls, str(cls))
-                if self.filter_names and self._norm_name(name) not in self.filter_names:
-                    continue
-                objects.append(
-                    {"cls": cls, "name": name, "conf": conf, "bbox": [x1, y1, x2, y2]}
-                )
-        objects.sort(key=lambda o: o["conf"], reverse=True)
-        return objects
-
-    # ── raw ncnn backend (Pi 4B) ─────────────────────────────────
-    def _detect_ncnn(self, frame_bgr: np.ndarray) -> List[dict]:
         import ncnn as _ncnn
 
         h, w = frame_bgr.shape[:2]
         sz = self._input_size
 
-        # Preprocess: resize to 640x640, BGR→RGB, normalize to 0–1
+        # Preprocess: resize to sz×sz, BGR→RGB, normalize to 0–1
         mat_in = _ncnn.Mat.from_pixels_resize(
             frame_bgr, _ncnn.Mat.PixelType.PIXEL_BGR2RGB, w, h, sz, sz
         )
@@ -164,19 +108,20 @@ class YoloDetector:
         ex.input("in0", mat_in)
         _ret, mat_out = ex.extract("out0")
 
-        # Output shape: (84, 8400) — 4 bbox + 80 class scores per detection
+        # Output shape: (84, N) — 4 bbox + 80 class scores per detection
+        # N depends on input size: 8400 @ 640, 2100 @ 320, 1344 @ 256
         out = np.array(mat_out)
         if out.ndim == 1:
             out = out.reshape(84, -1)
         if out.shape[0] == 84:
-            out = out.T  # → (8400, 84)
+            out = out.T  # → (N, 84)
 
         num_dets = out.shape[0]
         cx = out[:, 0]
         cy = out[:, 1]
         bw = out[:, 2]
         bh = out[:, 3]
-        scores = out[:, 4:]  # (8400, 80)
+        scores = out[:, 4:]  # (N, 80)
 
         # Max class score per detection
         class_ids = np.argmax(scores, axis=1)
@@ -194,7 +139,7 @@ class YoloDetector:
         class_ids = class_ids[mask]
         max_scores = max_scores[mask]
 
-        # Scale from 640x640 back to original frame size
+        # Scale from sz×sz back to original frame size
         scale_x = w / sz
         scale_y = h / sz
 

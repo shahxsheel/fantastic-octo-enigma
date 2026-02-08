@@ -8,7 +8,17 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Downloaded by setup script
+# Downloaded/exported by setup script
 face_landmarker.task
 yolov8s.pt
+yolov8n.pt
+yolo26n.pt
+yolo26s.pt
+yolo11n.pt
 yolov8s_ncnn_model/
+yolov8n_ncnn_model/
+yolo26n_ncnn_model/
+yolo26n_ncnn_model_256/
+yolo26s_ncnn_model/
+yolo11n_ncnn_model/
+*.tar.gz

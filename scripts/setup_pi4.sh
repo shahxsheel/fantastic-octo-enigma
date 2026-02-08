@@ -10,7 +10,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-NCNN_URL="https://github.com/shahxsheel/fantastic-octo-enigma/releases/download/v1.0.0/yolov8s_ncnn_model.tar.gz"
+NCNN_URL="https://github.com/shahxsheel/fantastic-octo-enigma/releases/download/v1.0.0/yolo26s_ncnn_model.tar.gz"
 
 TOTAL_STEPS=7
 step=0
@@ -46,13 +46,13 @@ else
   echo "    Done"
 fi
 
-echo "  → yolov8s_ncnn_model (pre-exported NCNN, ~37 MB) ..."
-if [ -d yolov8s_ncnn_model ]; then
+echo "  → yolo26s_ncnn_model (pre-exported NCNN, ~32 MB) ..."
+if [ -d yolo26s_ncnn_model ]; then
   echo "    Already exists, skipping"
 else
-  wget -O yolov8s_ncnn_model.tar.gz --progress=bar:force "$NCNN_URL"
-  tar xzf yolov8s_ncnn_model.tar.gz
-  rm -f yolov8s_ncnn_model.tar.gz
+  wget -O yolo26s_ncnn_model.tar.gz --progress=bar:force "$NCNN_URL"
+  tar xzf yolo26s_ncnn_model.tar.gz
+  rm -f yolo26s_ncnn_model.tar.gz
   echo "    Done"
 fi
 
@@ -70,7 +70,7 @@ echo "  → .venv-cam ready"
 
 # ── 5. Create inference venv (Python 3.11 via uv) ───────────────
 banner "Creating .venv-infer (Python 3.11 via uv)"
-uv venv --python 3.11 .venv-infer
+uv venv --python 3.11 .venv-infer --clear
 echo "  → Venv created"
 
 # ── 6. Install inference dependencies ────────────────────────────
@@ -101,7 +101,7 @@ else
 fi
 
 echo "  → Checking NCNN model files ..."
-if [ -f yolov8s_ncnn_model/model.ncnn.param ] && [ -f yolov8s_ncnn_model/model.ncnn.bin ]; then
+if [ -f yolo26s_ncnn_model/model.ncnn.param ] && [ -f yolo26s_ncnn_model/model.ncnn.bin ]; then
   echo "  → NCNN model files present"
 else
   echo "  ✗ NCNN model files missing"

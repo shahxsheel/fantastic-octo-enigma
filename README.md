@@ -1,7 +1,7 @@
 # Infineon - Raspberry Pi Driver Monitoring System
 
 Real-time camera preview on Raspberry Pi with:
-- **YOLOv8s object detection** (NCNN-optimized for CPU)
+- **YOLO26s object detection** (raw ncnn, no torch at runtime)
 - **Eye open/close detection** using MediaPipe FaceLandmarker blendshapes
 - **Headless-friendly terminal logs** (objects + eye state)
 
@@ -23,7 +23,7 @@ Two processes communicate over ZMQ on localhost:
 |---|------|-------|
 | Camera Python | 3.13 (system) | system `python3` |
 | Inference Python | 3.12.8 (via `uv`) | 3.11 (via `uv`) |
-| YOLO backend | ultralytics + torch | raw ncnn (no torch) |
+| YOLO backend | raw ncnn | raw ncnn |
 | NCNN model | Exported locally from `.pt` | Downloaded pre-exported from GitHub |
 
 ## Prerequisites
@@ -52,9 +52,9 @@ Or run the model-specific script directly:
 ./scripts/setup_pi4.sh     # Raspberry Pi 4B
 ```
 
-**Pi 5** — downloads models, creates venvs, exports NCNN model (needs torch)
+**Pi 5** — downloads `yolo26s.pt`, creates venvs, exports to NCNN at 640×640 (needs torch for export only)
 
-**Pi 4B** — downloads pre-exported NCNN model (no torch needed), lighter install
+**Pi 4B** — downloads pre-exported `yolo26s_ncnn_model` from GitHub release (no torch needed), lighter install
 
 ## Run
 
@@ -101,10 +101,10 @@ All configuration is via environment variables. Defaults work out of the box.
 |----------|---------|-------------|
 | `FORCE_CAMERA` | `auto` | `auto`, `usb`, or `pi` |
 | `CAMERA_INDEX` | `0` | USB camera index hint |
-| `CAPTURE_WIDTH` | `640` | Preview resolution width |
-| `CAPTURE_HEIGHT` | `480` | Preview resolution height |
-| `INFER_WIDTH` | `416` | Inference frame width |
-| `INFER_HEIGHT` | `312` | Inference frame height |
+| `CAPTURE_WIDTH` | `1280` | Preview resolution width |
+| `CAPTURE_HEIGHT` | `720` | Preview resolution height |
+| `INFER_WIDTH` | `1280` | Inference frame width |
+| `INFER_HEIGHT` | `720` | Inference frame height |
 | `CAMERA_FPS` | `30` | Target FPS |
 | `SWAP_RB` | `0` | Swap B/R channels (fix blue tint) |
 
@@ -112,10 +112,13 @@ All configuration is via environment variables. Defaults work out of the box.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `YOLO_MODEL` | `yolov8s_ncnn_model` | Model path |
+| `YOLO_MODEL` | `yolo26s_ncnn_model` | Model path |
 | `YOLO_CONF` | `0.25` | Confidence threshold |
 | `YOLO_FILTER` | `person,cell phone,bottle,cup` | Classes to detect |
 | `YOLO_EVERY_N` | `4` | Run YOLO every N frames |
+| `YOLO_INPUT_SIZE` | `640` | NCNN input resolution (lower = faster) |
+| `YOLO_NMS` | `0.45` | NMS IoU threshold |
+| `NCNN_THREADS` | `4` | CPU threads for NCNN inference |
 
 ### Eye Detection
 
@@ -162,12 +165,12 @@ Pi 5 specific setup. Uses `uv` + Python 3.12.8 for inference, Python 3.13 for ca
 
 What it does (7 steps):
 1. Downloads `face_landmarker.task` (3.6 MB) from Google
-2. Downloads `yolov8s.pt` (22 MB) from Ultralytics GitHub
+2. Downloads `yolo26s.pt` (19.5 MB) from Ultralytics GitHub
 3. Creates `.venv-cam` (Python 3.13, system-site-packages)
 4. Installs camera deps (numpy, pyzmq — OpenCV inherited from system)
 5. Creates `.venv-infer` (Python 3.12.8 via `uv`)
 6. Installs inference deps (mediapipe, ultralytics, ncnn, opencv, torch)
-7. Exports `yolov8s.pt` → NCNN format
+7. Exports `yolo26s.pt` → NCNN format (640×640 input)
 
 ### `scripts/setup_pi4.sh`
 
@@ -175,7 +178,7 @@ Pi 4B specific setup. Uses Python 3.11 via `uv`, **no torch or ultralytics** (sa
 
 What it does (7 steps):
 1. Installs `uv` if not present (for Python 3.11)
-2. Downloads `face_landmarker.task` (3.6 MB) + pre-exported `yolov8s_ncnn_model` (37 MB from GitHub release)
+2. Downloads `face_landmarker.task` (3.6 MB) + pre-exported `yolo26s_ncnn_model` (32 MB from GitHub release)
 3. Creates `.venv-cam` (system Python, system-site-packages)
 4. Installs camera deps (numpy, pyzmq)
 5. Creates `.venv-infer` (Python 3.11 via `uv`)
@@ -222,13 +225,13 @@ src/
     run_camera.py            Camera process (capture + preview + overlays)
   infer/
     face_eye_mediapipe.py    Eye detection (FaceLandmarker blendshapes)
-    yolo_detector.py         YOLOv8s object detection
+    yolo_detector.py         YOLO26s object detection (raw ncnn)
     run_infer.py             Inference process (eyes + YOLO)
   ipc/
     zmq_frames.py            ZMQ frame pub/sub
     zmq_results.py           ZMQ results pub/sub
-yolov8s_ncnn_model/          NCNN model (downloaded + exported by setup script)
-yolov8s.pt                   YOLOv8s weights (downloaded by setup script)
+yolo26s_ncnn_model/          NCNN model (exported at 640×640 by setup script)
+yolo26s.pt                   YOLO26s weights (downloaded by setup script)
 requirements-camera.txt      Camera venv dependencies
 requirements-infer.txt       Inference venv deps (Pi 5 — with torch/ultralytics)
 requirements-infer-pi4.txt   Inference venv deps (Pi 4B — no torch)

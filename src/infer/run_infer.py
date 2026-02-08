@@ -72,8 +72,11 @@ def main() -> None:
             if frame_count <= 3:
                 print(f"[infer] loop frame_count={frame_count} frame_id={header.frame_id}", flush=True)
 
+            run_yolo = (frame_count % yolo_every_n == 0)
+            run_face = (face_every_n <= 1 or (frame_count % face_every_n == 0))
+
             # Face + eye on cadence
-            if face_every_n <= 1 or (frame_count % face_every_n == 0):
+            if run_face:
                 face_bbox, eyes = face_eye.detect(frame)
                 if face_bbox is not None:
                     last_face_bbox = face_bbox
@@ -88,7 +91,7 @@ def main() -> None:
                     }
 
             # YOLO on cadence
-            if frame_count % yolo_every_n == 0:
+            if run_yolo:
                 last_objects = yolo.detect(frame)
 
             res = InferResult(
