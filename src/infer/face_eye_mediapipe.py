@@ -1,5 +1,6 @@
 import os
 import time
+from collections import deque
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
@@ -17,6 +18,9 @@ class EyeInfo:
     right_ear: float   # raw blink score (0.0 = open, 1.0 = closed)
     left_pts: Optional[list[tuple[int, int]]] = None
     right_pts: Optional[list[tuple[int, int]]] = None
+    yaw_deg: float = 0.0
+    pitch_deg: float = 0.0
+    roll_deg: float = 0.0
 
 
 class FaceEyeEstimatorMediaPipe:
@@ -70,7 +74,7 @@ class FaceEyeEstimatorMediaPipe:
             min_face_presence_confidence=self.min_presence_conf,
             min_tracking_confidence=self.min_track_conf,
             output_face_blendshapes=True,
-            output_facial_transformation_matrixes=False,
+            output_facial_transformation_matrixes=True,
             result_callback=self._on_result,
         )
         self._landmarker = mp_vision.FaceLandmarker.create_from_options(options)
@@ -80,6 +84,14 @@ class FaceEyeEstimatorMediaPipe:
         self._last_face_bbox: Optional[list] = None
         self._last_eyes: Optional[EyeInfo] = None
         self._last_roi_info: Optional[dict] = None
+        self._roi_by_ts: dict[int, dict] = {}
+        self._roi_ts_queue: deque[int] = deque()
+        try:
+            self._pose_every_n = max(1, int(os.environ.get("POSE_EVERY_N", "2")))
+        except Exception:
+            self._pose_every_n = 2
+        self._pose_counter = 0
+        self._last_pose: tuple[float, float, float] = (0.0, 0.0, 0.0)
 
         # --- Optional per-frame timing (EYE_TIMING=1) ---
         self._timing_enabled = os.environ.get("EYE_TIMING", "0") == "1"
@@ -161,7 +173,7 @@ class FaceEyeEstimatorMediaPipe:
         if ts_ms <= self._last_ts_ms:
             ts_ms = self._last_ts_ms + 1
         self._last_ts_ms = ts_ms
-        self._last_roi_info = roi_info
+        self._remember_roi(ts_ms, roi_info)
 
         if self._timing_enabled:
             t0 = time.time()
@@ -190,7 +202,7 @@ class FaceEyeEstimatorMediaPipe:
             self._last_eyes = None
             return
 
-        roi = self._last_roi_info or {
+        roi = self._roi_by_ts.pop(timestamp_ms, None) or self._last_roi_info or {
             "offset_x": 0,
             "offset_y": 0,
             "crop_w": output_image.width,
@@ -244,6 +256,10 @@ class FaceEyeEstimatorMediaPipe:
         right_pct = (1.0 - right_blink) * 100.0
         left_state = "CLOSED" if left_blink > self.closed_threshold else "OPEN"
         right_state = "CLOSED" if right_blink > self.closed_threshold else "OPEN"
+        self._pose_counter += 1
+        if self._pose_counter == 1 or self._pose_counter % self._pose_every_n == 0:
+            self._last_pose = self._extract_head_pose(result)
+        yaw_deg, pitch_deg, roll_deg = self._last_pose
 
         self._last_eyes = EyeInfo(
             left_pct=left_pct,
@@ -254,4 +270,46 @@ class FaceEyeEstimatorMediaPipe:
             right_ear=right_blink,
             left_pts=left_pts,
             right_pts=right_pts,
+            yaw_deg=yaw_deg,
+            pitch_deg=pitch_deg,
+            roll_deg=roll_deg,
         )
+
+    @staticmethod
+    def _extract_head_pose(result) -> tuple[float, float, float]:
+        mats = getattr(result, "facial_transformation_matrixes", None)
+        if not mats:
+            return 0.0, 0.0, 0.0
+        raw = mats[0]
+        arr: Optional[np.ndarray] = None
+        try:
+            if hasattr(raw, "data"):
+                arr = np.array(raw.data, dtype=np.float32)
+            else:
+                arr = np.array(raw, dtype=np.float32)
+            if arr.size >= 16:
+                arr = arr.reshape(4, 4)
+            else:
+                return 0.0, 0.0, 0.0
+            r = arr[:3, :3]
+            yaw = float(np.degrees(np.arctan2(r[1, 0], r[0, 0])))
+            pitch = float(
+                np.degrees(
+                    np.arctan2(
+                        -r[2, 0],
+                        np.sqrt(r[2, 1] * r[2, 1] + r[2, 2] * r[2, 2]),
+                    )
+                )
+            )
+            roll = float(np.degrees(np.arctan2(r[2, 1], r[2, 2])))
+            return yaw, pitch, roll
+        except Exception:
+            return 0.0, 0.0, 0.0
+
+    def _remember_roi(self, ts_ms: int, roi_info: dict) -> None:
+        self._last_roi_info = roi_info
+        self._roi_by_ts[ts_ms] = roi_info
+        self._roi_ts_queue.append(ts_ms)
+        while len(self._roi_ts_queue) > 64:
+            old_ts = self._roi_ts_queue.popleft()
+            self._roi_by_ts.pop(old_ts, None)

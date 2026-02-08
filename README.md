@@ -81,16 +81,17 @@ HEADLESS=1 ./scripts/run_split.sh
 **Preview window** (when not headless):
 - FPS counter
 - **Result latency** (how many seconds old the current overlay is; high = inference falling behind)
-- YOLO bounding boxes (filtered to: person, cell phone, bottle, cup)
-- Face bounding box
-- Eye state + openness percentage (L/R)
+- Driver lock status
+- Risk state (`NORMAL` / `WARN` / `ALERT`) + reason code
+- YOLO bounding boxes (driver + distraction objects)
+- Face bounding box + eye landmarks
 
 **Terminal logs** (always, works headless):
 ```
 [camera] FPS: 28.3  result latency: 4.12s
-[infer] objects=[person:0.86, cell phone:0.41]
+[infer] driver=locked id=3 conf=0.87  objects=[person:0.87, cell phone:0.41]
 [infer] eyes=L OPEN 85% | R OPEN 90%
-[infer] eye_state_change  L CLOSED 12%  R CLOSED 8%
+[infer] risk=WARN score=42.0
 ```
 
 ## Configuration
@@ -120,7 +121,8 @@ All configuration is via environment variables. Defaults work out of the box.
 | `YOLO_EVERY_N` | `4` | Run YOLO every N frames |
 | `YOLO_INPUT_SIZE` | `640` | NCNN input resolution (lower = faster) |
 | `YOLO_NMS` | `0.45` | NMS IoU threshold |
-| `NCNN_THREADS` | `4` | CPU threads for NCNN inference |
+| `NCNN_THREADS` | `3` | CPU threads for NCNN inference |
+| `YOLO_MAX_PERSON` | `1` | Keep at most one person detection per frame |
 
 ### Eye Detection
 
@@ -129,6 +131,33 @@ All configuration is via environment variables. Defaults work out of the box.
 | `EYE_CLOSED_THRESHOLD` | `0.5` | Blink score above this = CLOSED |
 | `FACE_EVERY_N` | `1` | Run face detection every N frames |
 | `EYE_TIMING` | `0` | Set to `1` for per-frame timing logs |
+| `FACE_ROI_REUSE` | `1` | Reuse face ROI internally to reduce compute |
+| `FACE_ROI_MARGIN` | `1.4` | Expansion around prior face ROI |
+| `FACE_ROI_DOWNSCALE` | `0.6` | Optional ROI downscale before face infer |
+| `POSE_EVERY_N` | `2` | Compute head pose every N face updates (reuse last pose between) |
+
+### Driver Lock + Risk
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DRIVER_SIDE` | `LHD` | Driver side prior (`LHD`, `RHD`, `AUTO`) |
+| `TRACKER_TYPE` | `MOSSE` | Driver tracker backend (`MOSSE`, `KCF`) |
+| `LOCK_MIN_FRAMES` | `6` | Frames needed before initial lock |
+| `LOCK_LOST_FRAMES` | `8` | Lost frames before lock drop |
+| `FACE_MISSING_MS` | `1200` | Face missing grace period while locked |
+| `DRIVER_ROI_MARGIN` | `1.35` | ROI expansion around locked driver box |
+| `DRIVER_ROI_MIN_W` | `220` | Minimum ROI width |
+| `DRIVER_ROI_MIN_H` | `220` | Minimum ROI height |
+| `PHONE_EVERY_N` | `4` | Phone/distraction detector cadence (`0` disables ROI phone pass) |
+| `PHONE_HOLD_MS` | `250` | Keep phone detections briefly between sparse phone inference passes |
+| `FULL_REACQUIRE_EVERY_N` | `0` | Periodic full-frame reacquire cadence (`0` disables periodic reacquire) |
+| `RISK_POLICY` | `AGGRESSIVE` | Risk state policy (`AGGRESSIVE`, `BALANCED`, `CONSERVATIVE`) |
+| `PERCLOS_WINDOW_SEC` | `20` | PERCLOS rolling window |
+| `OFFROAD_WARN_MS` | `900` | Off-road head pose WARN threshold |
+| `OFFROAD_ALERT_MS` | `1600` | Off-road head pose ALERT threshold |
+| `PHONE_WARN_MS` | `800` | Phone presence WARN threshold |
+| `PHONE_ALERT_MS` | `1400` | Phone presence ALERT threshold |
+| `ALERT_COOLDOWN_MS` | `3000` | Alert re-fire cooldown |
 
 ### Logging / IPC
 
@@ -139,6 +168,12 @@ All configuration is via environment variables. Defaults work out of the box.
 | `EYE_LOG` | `1` | Enable eye state logs |
 | `FRAMES_ADDR` | `tcp://127.0.0.1:5555` | ZMQ frames address |
 | `RESULTS_ADDR` | `tcp://127.0.0.1:5556` | ZMQ results address |
+| `ALERTS_ADDR` | `tcp://127.0.0.1:5557` | Optional alert publisher address |
+| `ALERTS_PUB` | `0` | Publish compact alert stream |
+| `DROP_OLD_FRAMES` | `1` | Freshness-first mode (skip stale queued frames) |
+| `KEEP_ALL_FRAMES` | `0` | Process every frame (higher latency risk) |
+| `SIDEBAR_EVERY_N` | `2` | Sidebar redraw cadence (higher = less UI overhead) |
+| `SIDEBAR_WIDTH` | `260` | Sidebar width in preview pixels |
 
 ### Lowering result latency
 
@@ -147,8 +182,25 @@ If the on-screen or log **result latency** is high or grows over time, inference
 - **YOLO_EVERY_N** — increase (e.g. `8`) so YOLO runs less often.
 - **FACE_EVERY_N** — increase (e.g. `2`) so face/eye runs every other frame.
 - **INFER_WIDTH** / **INFER_HEIGHT** — reduce (e.g. `640` / `360`) so each frame is cheaper (lower resolution).
+- Keep **DROP_OLD_FRAMES=1** so stale frames are discarded instead of inflating alert latency.
 
 Example: `YOLO_EVERY_N=8 FACE_EVERY_N=2 ./scripts/run_split.sh`
+
+### Suggested real-time profile (Pi4/Pi5)
+
+Use this as a starting point for lock + risk mode while preserving FPS:
+
+```bash
+YOLO_EVERY_N=4 \
+FULL_REACQUIRE_EVERY_N=0 \
+PHONE_EVERY_N=4 \
+FACE_EVERY_N=1 \
+POSE_EVERY_N=2 \
+UI_EVERY_N=2 \
+SIDEBAR_EVERY_N=2 \
+TRACKER_TYPE=MOSSE \
+./scripts/run_split.sh
+```
 
 ## Troubleshooting
 
@@ -236,12 +288,17 @@ src/
     camera_source.py         PiCamera2 / USB camera abstraction
     run_camera.py            Camera process (capture + preview + overlays)
   infer/
+    driver_lock.py           Driver lock + tracking + reacquire scoring
     face_eye_mediapipe.py    Eye detection (FaceLandmarker blendshapes)
+    risk_engine.py           Temporal risk scoring + state machine
     yolo_detector.py         YOLO26s object detection (raw ncnn)
     run_infer.py             Inference process (eyes + YOLO)
   ipc/
+    zmq_alerts.py            Optional compact alert publisher
     zmq_frames.py            ZMQ frame pub/sub
     zmq_results.py           ZMQ results pub/sub
+scripts/
+  replay_eval.py            Offline JSONL result evaluator
 yolo26s_ncnn_model/          NCNN model (exported at 640×640 by setup script)
 yolo26s.pt                   YOLO26s weights (downloaded by setup script)
 requirements-camera.txt      Camera venv dependencies

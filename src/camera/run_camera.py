@@ -1,10 +1,9 @@
 import os
 import time
+from typing import Optional
 
 import cv2
 import numpy as np
-import zmq
-from typing import Optional
 
 from src.camera.camera_source import open_camera
 from src.ipc.zmq_frames import FramePublisher
@@ -45,6 +44,15 @@ def _overlay_objects(result: dict) -> list[dict]:
             person_count += 1
         out.append(obj)
     return out
+
+
+def _risk_color(state: str) -> tuple[int, int, int]:
+    s = (state or "").upper()
+    if s == "ALERT":
+        return (0, 0, 255)
+    if s == "WARN":
+        return (0, 255, 255)
+    return (0, 255, 120)
 
 
 def draw_results(frame: np.ndarray, result: dict, scale_x: float, scale_y: float) -> None:
@@ -89,63 +97,93 @@ def draw_results(frame: np.ndarray, result: dict, scale_x: float, scale_y: float
             cv2.circle(frame, (int(ex * scale_x), int(ey * scale_y)), 3, color, thickness=-1)
 
 
-def draw_sidebar(frame: np.ndarray, fps: float, latency_sec: Optional[float], result: Optional[dict]) -> None:
-    """Draw a compact sidebar with stats; keeps main image uncluttered."""
-    h, w = frame.shape[:2]
-    bar_w = 220
-    x0 = w - bar_w
-    overlay = frame.copy()
-    cv2.rectangle(overlay, (x0, 0), (w, h), (0, 0, 0), thickness=-1)
-    cv2.addWeighted(overlay, 0.35, frame, 0.65, 0, frame)
-
-    y = 20
-    cv2.putText(frame, f"FPS: {fps:.1f}", (x0 + 10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
-    y += 24
+def _build_sidebar_rows(
+    fps: float, latency_sec: Optional[float], result: Optional[dict]
+) -> list[tuple[str, tuple[int, int, int], float, int, int]]:
+    rows: list[tuple[str, tuple[int, int, int], float, int, int]] = []
+    rows.append((f"FPS: {fps:.1f}", (0, 255, 255), 0.6, 2, 24))
     if latency_sec is not None:
-        cv2.putText(frame, f"Latency: {latency_sec*1000:.0f} ms", (x0 + 10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 255), 2)
-    y += 26
+        rows.append((f"Latency: {latency_sec*1000:.0f} ms", (0, 255, 255), 0.55, 2, 24))
+    else:
+        rows.append(("Latency: --", (0, 255, 255), 0.55, 2, 24))
 
-    if result:
-        # Objects
-        objs = _overlay_objects(result)
-        cv2.putText(frame, "Objects:", (x0 + 10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 200, 255), 2)
-        y += 20
-        for o in objs:
-            cv2.putText(
-                frame,
-                f"{o.get('name','?')[:12]} {o.get('conf',0):.2f}",
-                (x0 + 12, y),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5,
-                (0, 200, 255),
-                1,
-            )
-            y += 18
+    if not result:
+        return rows
 
-        eyes = result.get("eyes") or {}
-        if eyes:
-            y += 6
-            cv2.putText(frame, "Eyes:", (x0 + 10, y), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 255, 180), 2)
-            y += 20
-            cv2.putText(
-                frame,
-                f"L {eyes.get('left_state','?')} {eyes.get('left_pct',0):.0f}%",
-                (x0 + 12, y),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5,
-                (0, 255, 180),
-                1,
-            )
-            y += 18
-            cv2.putText(
-                frame,
-                f"R {eyes.get('right_state','?')} {eyes.get('right_pct',0):.0f}%",
-                (x0 + 12, y),
-                cv2.FONT_HERSHEY_SIMPLEX,
-                0.5,
-                (0, 255, 180),
-                1,
-            )
+    objs = _overlay_objects(result)
+    rows.append(("Objects:", (0, 200, 255), 0.55, 2, 20))
+    for o in objs:
+        rows.append(
+            (f"{o.get('name', '?')[:12]} {o.get('conf', 0):.2f}", (0, 200, 255), 0.5, 1, 18)
+        )
+
+    eyes = result.get("eyes") or {}
+    if eyes:
+        rows.append(("Eyes:", (0, 255, 180), 0.55, 2, 20))
+        rows.append(
+            (f"L {eyes.get('left_state', '?')} {eyes.get('left_pct', 0):.0f}%", (0, 255, 180), 0.5, 1, 18)
+        )
+        rows.append(
+            (f"R {eyes.get('right_state', '?')} {eyes.get('right_pct', 0):.0f}%", (0, 255, 180), 0.5, 1, 18)
+        )
+
+    driver = result.get("driver") or {}
+    risk = result.get("risk") or {}
+    alerts = result.get("alerts") or {}
+    attention = result.get("attention") or {}
+    locked = "Y" if driver.get("locked") else "N"
+    conf = float(driver.get("lock_conf", 0.0))
+    rows.append((f"Driver lock: {locked} {conf:.2f}", (255, 220, 120), 0.5, 1, 18))
+
+    state = str(risk.get("state", "NORMAL"))
+    score = float(risk.get("score", 0.0))
+    rows.append((f"Risk: {state} {score:.0f}", _risk_color(state), 0.55, 2, 20))
+
+    reason_codes = risk.get("reason_codes") or []
+    if reason_codes:
+        rows.append((f"Reason: {str(reason_codes[0])[:22]}", (0, 180, 255), 0.45, 1, 16))
+
+    if attention:
+        rows.append((f"Yaw: {attention.get('head_yaw', 0):.1f}", (180, 220, 255), 0.45, 1, 16))
+        rows.append((f"PERCLOS: {attention.get('perclos', 0):.2f}", (180, 220, 255), 0.45, 1, 16))
+
+    if alerts.get("alert"):
+        rows.append(("ALERT: ATTEND ROAD", (0, 0, 255), 0.55, 2, 22))
+    elif alerts.get("warn"):
+        rows.append(("WARN: CHECK FOCUS", (0, 255, 255), 0.55, 2, 22))
+
+    return rows
+
+
+def build_sidebar_panel(
+    frame_shape: tuple[int, int, int],
+    fps: float,
+    latency_sec: Optional[float],
+    result: Optional[dict],
+) -> tuple[int, np.ndarray]:
+    h, w = frame_shape[:2]
+    bar_w = max(200, min(w, _env_int("SIDEBAR_WIDTH", 260)))
+    x0 = w - bar_w
+
+    # Render only the sidebar region to avoid full-frame blending overhead.
+    panel = np.zeros((h, bar_w, 3), dtype=np.uint8)
+    panel[:, :] = (18, 18, 18)
+
+    y = 22
+    for text, color, scale, thickness, step in _build_sidebar_rows(fps, latency_sec, result):
+        if y > h - 8:
+            break
+        cv2.putText(
+            panel,
+            text,
+            (10, y),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            scale,
+            color,
+            thickness,
+        )
+        y += step
+    return x0, panel
 
 
 def main() -> None:
@@ -156,6 +194,7 @@ def main() -> None:
     frames_addr = os.environ.get("FRAMES_ADDR", "tcp://127.0.0.1:5555")
     results_addr = os.environ.get("RESULTS_ADDR", "tcp://127.0.0.1:5556")
     ui_every_n = _env_int("UI_EVERY_N", 2)
+    sidebar_every_n = max(1, _env_int("SIDEBAR_EVERY_N", 2))
     verbose = _env_bool("VERBOSE", True)
 
     cam, cam_name = open_camera(headless=headless)
@@ -177,9 +216,11 @@ def main() -> None:
     sub = ResultSubscriber(results_addr, conflate=True)
 
     last_result = None
+    last_alert_state = "NORMAL"
     fps = 0.0
     fps_count = 0
     fps_t0 = time.time()
+    sidebar_cache: Optional[tuple[int, np.ndarray]] = None
 
     try:
         while True:
@@ -203,6 +244,21 @@ def main() -> None:
                 latency_ms = now_ms - last_result["ts_ms"]
                 latency_sec = max(0, latency_ms) / 1000.0
 
+            if last_result:
+                risk = last_result.get("risk") or {}
+                alerts = last_result.get("alerts") or {}
+                cur_alert_state = str(risk.get("state", "NORMAL"))
+                if cur_alert_state != last_alert_state:
+                    last_alert_state = cur_alert_state
+                    if verbose:
+                        print(
+                            f"[camera] risk transition -> {cur_alert_state} "
+                            f"alerts={alerts}",
+                            flush=True,
+                        )
+                    if alerts.get("alert") and _env_bool("ALERT_BELL", False):
+                        print("\a", end="", flush=True)
+
             infer_h, infer_w = infer_bgr.shape[:2]
             main_h, main_w = main_bgr.shape[:2]
             scale_x = main_w / max(1, infer_w)
@@ -222,7 +278,17 @@ def main() -> None:
             if not headless:
                 if last_result and (bundle.frame_id % ui_every_n == 0):
                     draw_results(main_bgr, last_result, scale_x, scale_y)
-                draw_sidebar(main_bgr, fps, latency_sec, last_result)
+                if (
+                    sidebar_cache is None
+                    or bundle.frame_id % sidebar_every_n == 0
+                    or sidebar_cache[1].shape[0] != main_bgr.shape[0]
+                ):
+                    sidebar_cache = build_sidebar_panel(
+                        main_bgr.shape, fps, latency_sec, last_result
+                    )
+                if sidebar_cache is not None:
+                    x0, panel = sidebar_cache
+                    main_bgr[:, x0:] = panel
                 try:
                     cv2.imshow(window_name, main_bgr)
                 except cv2.error as e:

@@ -20,6 +20,10 @@ class InferResult:
     eyes: Optional[dict] = None  # e.g. {left_pct,right_pct,left_state,right_state,...}
     # optional eye landmarks: {"left":[(x,y),...], "right":[...]} in infer coords
     eyes_points: Optional[dict] = None
+    driver: Optional[dict] = None
+    attention: Optional[dict] = None
+    risk: Optional[dict] = None
+    alerts: Optional[dict] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -29,6 +33,10 @@ class InferResult:
             "face_bbox": self.face_bbox,
             "eyes": self.eyes,
             "eyes_points": self.eyes_points,
+            "driver": self.driver,
+            "attention": self.attention,
+            "risk": self.risk,
+            "alerts": self.alerts,
         }
 
     @staticmethod
@@ -40,6 +48,10 @@ class InferResult:
             face_bbox=d.get("face_bbox"),
             eyes=d.get("eyes"),
             eyes_points=d.get("eyes_points"),
+            driver=d.get("driver"),
+            attention=d.get("attention"),
+            risk=d.get("risk"),
+            alerts=d.get("alerts"),
         )
 
 
