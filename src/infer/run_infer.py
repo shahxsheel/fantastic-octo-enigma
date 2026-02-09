@@ -105,8 +105,12 @@ def _merge_objects(
     track_id: int,
 ) -> list[dict]:
     merged: list[dict] = []
+    have_roi_phone = bool(roi_phone_objects)
     for obj in full_objects:
         if obj.get("name") == "person":
+            continue
+        # If we have ROI phone results, drop global phone boxes to avoid duplicates.
+        if have_roi_phone and "phone" in str(obj.get("name", "")).lower():
             continue
         merged.append(obj)
     if driver_bbox is not None:
@@ -119,11 +123,17 @@ def _merge_objects(
                 "track_id": track_id,
             }
         )
-    # Prefer ROI phone detections for better relevance.
-    merged = [o for o in merged if "phone" not in str(o.get("name", "")).lower()]
-    merged.extend(roi_phone_objects)
+    # Prefer ROI phone detections for better relevance when available.
+    if have_roi_phone:
+        merged.extend(roi_phone_objects)
     merged.sort(key=lambda x: float(x.get("conf", 0.0)), reverse=True)
     return merged
+
+
+def _filter_stale_phone(objs: list[dict], stale: bool) -> list[dict]:
+    if not stale:
+        return objs
+    return [o for o in objs if "phone" not in str(o.get("name", "")).lower()]
 
 
 def main() -> None:
@@ -190,7 +200,7 @@ def main() -> None:
     last_eye_states = (None, None)
     next_log_t = time.time() + log_every
     last_risk_state = "NORMAL"
-    last_phone_ts_ms = 0
+    last_phone_seen_ms = 0
 
     try:
         while True:
@@ -268,6 +278,8 @@ def main() -> None:
                 run_full_yolo = False
             if run_full_yolo:
                 last_full_objects = yolo.detect(frame)
+                if any("phone" in str(o.get("name", "")).lower() for o in last_full_objects):
+                    last_phone_seen_ms = ts_ms
                 person_boxes = [o["bbox"] for o in last_full_objects if o.get("name") == "person"]
                 driver_lock.update_from_detections(frame, ts_ms, person_boxes, last_face_bbox)
 
@@ -290,8 +302,9 @@ def main() -> None:
                 roi_objects = yolo.detect(_crop_frame(frame, driver_roi))
                 roi_objects = [o for o in roi_objects if "phone" in str(o.get("name", "")).lower()]
                 last_roi_phone_objects = _map_objects(roi_objects, x1, y1, w, h)
-                last_phone_ts_ms = ts_ms
-            elif ts_ms - last_phone_ts_ms > phone_hold_ms:
+                if last_roi_phone_objects:
+                    last_phone_seen_ms = ts_ms
+            elif ts_ms - last_phone_seen_ms > phone_hold_ms:
                 last_roi_phone_objects = []
 
             driver_bbox = state.bbox
@@ -302,6 +315,8 @@ def main() -> None:
                 state.lock_conf,
                 state.track_id,
             )
+            stale_phone = phone_hold_ms > 0 and (ts_ms - last_phone_seen_ms > phone_hold_ms)
+            last_objects = _filter_stale_phone(last_objects, stale_phone)
 
             risk_out = risk_engine.update(
                 ts_ms=ts_ms,
