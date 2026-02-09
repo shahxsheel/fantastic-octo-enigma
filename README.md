@@ -117,12 +117,13 @@ All configuration is via environment variables. Defaults work out of the box.
 |----------|---------|-------------|
 | `YOLO_MODEL` | `yolo26s_ncnn_model` | Model path |
 | `YOLO_CONF` | `0.25` | Confidence threshold |
-| `YOLO_FILTER` | `person,cell phone,bottle,cup` | Classes to detect |
+| `YOLO_FILTER` | `` (empty = all) | Comma list to keep (normalized, e.g. `person,cell phone`) |
 | `YOLO_EVERY_N` | `4` | Run YOLO every N frames |
-| `YOLO_INPUT_SIZE` | `640` | NCNN input resolution (lower = faster) |
+| `YOLO_INPUT_SIZE` | `640` (Pi5) / `416` (Pi4) | NCNN input resolution (lower = faster) |
 | `YOLO_NMS` | `0.45` | NMS IoU threshold |
 | `NCNN_THREADS` | `3` | CPU threads for NCNN inference |
 | `YOLO_MAX_PERSON` | `1` | Keep at most one person detection per frame |
+| `YOLO_MAX_DETS` | `200` | Max total detections kept |
 
 ### Eye Detection
 
