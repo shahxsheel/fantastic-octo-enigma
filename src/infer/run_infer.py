@@ -103,6 +103,7 @@ def _merge_objects(
     driver_bbox: Optional[list[int]],
     lock_conf: float,
     track_id: int,
+    drop_full_phone: bool,
 ) -> list[dict]:
     merged: list[dict] = []
     have_roi_phone = bool(roi_phone_objects)
@@ -110,7 +111,7 @@ def _merge_objects(
         if obj.get("name") == "person":
             continue
         # If we have ROI phone results, drop global phone boxes to avoid duplicates.
-        if have_roi_phone and "phone" in str(obj.get("name", "")).lower():
+        if (have_roi_phone or drop_full_phone) and "phone" in str(obj.get("name", "")).lower():
             continue
         merged.append(obj)
     if driver_bbox is not None:
@@ -123,7 +124,7 @@ def _merge_objects(
                 "track_id": track_id,
             }
         )
-    # Prefer ROI phone detections for better relevance when available.
+    # Prefer ROI phone detections for better relevance when available; otherwise keep full-frame phones.
     if have_roi_phone:
         merged.extend(roi_phone_objects)
     merged.sort(key=lambda x: float(x.get("conf", 0.0)), reverse=True)
@@ -201,6 +202,7 @@ def main() -> None:
     next_log_t = time.time() + log_every
     last_risk_state = "NORMAL"
     last_phone_seen_ms = 0
+    full_phone_seen_ms = 0
 
     try:
         while True:
@@ -279,7 +281,7 @@ def main() -> None:
             if run_full_yolo:
                 last_full_objects = yolo.detect(frame)
                 if any("phone" in str(o.get("name", "")).lower() for o in last_full_objects):
-                    last_phone_seen_ms = ts_ms
+                    full_phone_seen_ms = ts_ms
                 person_boxes = [o["bbox"] for o in last_full_objects if o.get("name") == "person"]
                 driver_lock.update_from_detections(frame, ts_ms, person_boxes, last_face_bbox)
 
@@ -314,8 +316,9 @@ def main() -> None:
                 driver_bbox,
                 state.lock_conf,
                 state.track_id,
+                drop_full_phone=bool(last_roi_phone_objects),
             )
-            stale_phone = phone_hold_ms > 0 and (ts_ms - last_phone_seen_ms > phone_hold_ms)
+            stale_phone = phone_hold_ms > 0 and (ts_ms - max(last_phone_seen_ms, full_phone_seen_ms) > phone_hold_ms)
             last_objects = _filter_stale_phone(last_objects, stale_phone)
 
             risk_out = risk_engine.update(
