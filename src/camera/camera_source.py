@@ -46,10 +46,30 @@ class USBCameraSource(CameraSource):
         self.index = index
         self.capture_w, self.capture_h = capture_size
         self.infer_w, self.infer_h = infer_size
-        self.cap = cv2.VideoCapture(index, cv2.CAP_V4L2)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.capture_w)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.capture_h)
-        self.cap.set(cv2.CAP_PROP_FPS, _env_int("CAMERA_FPS", 30))
+        use_gst = os.environ.get("CAMERA_USE_GSTREAMER", "1") == "1"
+        fourcc_env = os.environ.get("CAMERA_FOURCC")
+        fourcc = fourcc_env if fourcc_env else "MJPG"
+
+        if use_gst:
+            pipeline = (
+                f"v4l2src device=/dev/video{index} ! "
+                f"image/jpeg,width={self.capture_w},height={self.capture_h},framerate={_env_int('CAMERA_FPS', 30)}/1 ! "
+                "jpegdec ! videoconvert ! appsink drop=true sync=false max-buffers=1"
+            )
+            self.cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+        else:
+            self.cap = None
+
+        # Fallback to V4L2 if GStreamer failed or disabled
+        if self.cap is None or not self.cap.isOpened():
+            self.cap = cv2.VideoCapture(index, cv2.CAP_V4L2)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.capture_w)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.capture_h)
+            try:
+                self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*fourcc))
+            except Exception:
+                pass
+            self.cap.set(cv2.CAP_PROP_FPS, _env_int("CAMERA_FPS", 30))
         self.frame_id = 0
 
     def read(self) -> FrameBundle:
@@ -210,18 +230,25 @@ def open_camera(headless: bool = False) -> tuple[CameraSource, str]:
         mode = "pi"
     if mode in ("0", "false", "no", "off"):
         mode = "auto"
-    cap_w = _env_int("CAPTURE_WIDTH", 1280)
-    cap_h = _env_int("CAPTURE_HEIGHT", 720)
-    inf_w = _env_int("INFER_WIDTH", 1280)
-    inf_h = _env_int("INFER_HEIGHT", 720)
-
-    capture_size = (cap_w, cap_h)
-    infer_size = (inf_w, inf_h)
+    def _sizes(is_usb: bool) -> tuple[tuple[int, int], tuple[int, int]]:
+        if is_usb:
+            cap_w = _env_int("CAPTURE_WIDTH", 640)
+            cap_h = _env_int("CAPTURE_HEIGHT", 480)
+            inf_w = _env_int("INFER_WIDTH", 640)
+            inf_h = _env_int("INFER_HEIGHT", 480)
+        else:
+            cap_w = _env_int("CAPTURE_WIDTH", 1280)
+            cap_h = _env_int("CAPTURE_HEIGHT", 720)
+            inf_w = _env_int("INFER_WIDTH", 1280)
+            inf_h = _env_int("INFER_HEIGHT", 720)
+        return (cap_w, cap_h), (inf_w, inf_h)
 
     if mode == "usb":
+        capture_size, infer_size = _sizes(is_usb=True)
         idx = _env_int("CAMERA_INDEX", 0)
         return USBCameraSource(idx, capture_size, infer_size, headless=headless), f"usb:{idx}"
     if mode == "pi":
+        capture_size, infer_size = _sizes(is_usb=False)
         return PiCamera2Source(capture_size, infer_size, headless=headless), "pi"
 
     # auto: try USB devices first (but avoid long hangs probing non-capture nodes)
@@ -254,6 +281,8 @@ def open_camera(headless: bool = False) -> tuple[CameraSource, str]:
         ok, _ = cap.read()
         cap.release()
         if ok:
+            capture_size, infer_size = _sizes(is_usb=True)
             return USBCameraSource(idx, capture_size, infer_size, headless=headless), f"usb:{idx}"
 
+    capture_size, infer_size = _sizes(is_usb=False)
     return PiCamera2Source(capture_size, infer_size, headless=headless), "pi"

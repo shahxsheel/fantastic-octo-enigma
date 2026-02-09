@@ -70,7 +70,8 @@ class YoloDetector:
 
         self.conf = float(os.environ.get("YOLO_CONF", "0.25"))
         self.nms_thresh = float(os.environ.get("YOLO_NMS", "0.45"))
-        self.model_path = os.environ.get("YOLO_MODEL", "yolo26s_ncnn_model")
+        # Default to the on-disk Ultralytics YOLOv8n NCNN export.
+        self.model_path = os.environ.get("YOLO_MODEL", "yolov8n_ncnn_model")
         self.max_person = int(os.environ.get("YOLO_MAX_PERSON", "1"))
         self.max_dets = int(os.environ.get("YOLO_MAX_DETS", "200"))
         self._is_pi4 = _detect_pi4()
