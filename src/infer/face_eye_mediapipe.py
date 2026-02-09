@@ -118,7 +118,6 @@ class FaceEyeEstimatorMediaPipe:
     ) -> tuple[Optional[list], Optional[EyeInfo]]:
         """Submit a frame; return the latest available result (may be from previous frame)."""
         h, w = frame_bgr.shape[:2]
-        frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
 
         # Optional ROI reuse to shrink work
         mp_image = None
@@ -138,11 +137,12 @@ class FaceEyeEstimatorMediaPipe:
             roi_w = max(1, rx2 - rx1)
             roi_h = max(1, ry2 - ry1)
             if roi_w >= self._roi_min and roi_h >= self._roi_min:
-                crop = frame_rgb[ry1:ry2, rx1:rx2]
+                crop = frame_bgr[ry1:ry2, rx1:rx2]
                 if self._roi_downscale < 0.999:
                     new_w = max(32, int(roi_w * self._roi_downscale))
                     new_h = max(32, int(roi_h * self._roi_downscale))
                     crop = cv2.resize(crop, (new_w, new_h), interpolation=cv2.INTER_AREA)
+                crop = cv2.cvtColor(crop, cv2.COLOR_BGR2RGB)
                 mp_image = self._mp.Image(
                     image_format=self._mp.ImageFormat.SRGB, data=crop
                 )
@@ -156,6 +156,7 @@ class FaceEyeEstimatorMediaPipe:
                 }
 
         if mp_image is None:
+            frame_rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
             mp_image = self._mp.Image(
                 image_format=self._mp.ImageFormat.SRGB, data=frame_rgb
             )

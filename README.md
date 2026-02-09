@@ -135,6 +135,7 @@ All configuration is via environment variables. Defaults work out of the box.
 | `FACE_ROI_MARGIN` | `1.4` | Expansion around prior face ROI |
 | `FACE_ROI_DOWNSCALE` | `0.6` | Optional ROI downscale before face infer |
 | `POSE_EVERY_N` | `2` | Compute head pose every N face updates (reuse last pose between) |
+| `EYES_STALE_MS` | `500` | Discard stale eye state when face is missing |
 
 ### Driver Lock + Risk
 
@@ -158,6 +159,9 @@ All configuration is via environment variables. Defaults work out of the box.
 | `PHONE_WARN_MS` | `800` | Phone presence WARN threshold |
 | `PHONE_ALERT_MS` | `1400` | Phone presence ALERT threshold |
 | `ALERT_COOLDOWN_MS` | `3000` | Alert re-fire cooldown |
+| `ONE_EYE_WARN_MS` | `1500` | Sustained one-eye closure warn threshold |
+| `ONE_EYE_WARN_SCORE` | `12` | Risk score added for sustained one-eye closure |
+| `RISK_REQUIRE_SEEN_DRIVER` | `1` | Delay lock/visibility penalties until a driver has been seen |
 
 ### Logging / IPC
 
@@ -201,6 +205,8 @@ SIDEBAR_EVERY_N=2 \
 TRACKER_TYPE=MOSSE \
 ./scripts/run_split.sh
 ```
+
+Pi 4 note: when `YOLO_INPUT_SIZE` is unset, the runtime now defaults to `416` and `NCNN_THREADS=2` on Raspberry Pi 4 for better throughput.
 
 ## Troubleshooting
 

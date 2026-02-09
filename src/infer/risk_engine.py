@@ -40,6 +40,11 @@ class RiskEngine:
         self.alert_cooldown_ms = _env_int("ALERT_COOLDOWN_MS", 3000)
         self.yaw_thresh = _env_float("HEAD_YAW_WARN_DEG", 18.0)
         self.pitch_thresh = _env_float("HEAD_PITCH_WARN_DEG", 20.0)
+        self.one_eye_warn_ms = _env_int("ONE_EYE_WARN_MS", 1500)
+        self.one_eye_score = _env_float("ONE_EYE_WARN_SCORE", 12.0)
+        self.lock_unstable_score = _env_float("LOCK_UNSTABLE_SCORE", 10.0)
+        self.not_visible_score = _env_float("NOT_VISIBLE_SCORE", 40.0)
+        self.require_seen_driver = os.environ.get("RISK_REQUIRE_SEEN_DRIVER", "1") == "1"
 
         self.eye_hist: deque[tuple[int, int]] = deque()
         self.blinks: deque[int] = deque()
@@ -47,10 +52,12 @@ class RiskEngine:
         self.offroad_start: Optional[int] = None
         self.phone_start: Optional[int] = None
         self.closed_start: Optional[int] = None
+        self.one_eye_start: Optional[int] = None
         self.not_visible_start: Optional[int] = None
         self.state = "NORMAL"
         self.state_started_ms = 0
         self.last_alert_ms = 0
+        self.seen_driver_once = False
 
     def _duration(self, start_ms: Optional[int], now_ms: int) -> int:
         if start_ms is None:
@@ -80,18 +87,29 @@ class RiskEngine:
         objects: list[dict],
     ) -> RiskOutput:
         reason_codes: list[str] = []
-        yaw = float(eyes.get("yaw_deg", 0.0)) if eyes else 0.0
-        pitch = float(eyes.get("pitch_deg", 0.0)) if eyes else 0.0
+        visible = driver_locked and face_bbox is not None
+        if driver_locked:
+            self.seen_driver_once = True
+        score_allowed = self.seen_driver_once or (not self.require_seen_driver)
+
+        yaw = float(eyes.get("yaw_deg", 0.0)) if (eyes and visible) else 0.0
+        pitch = float(eyes.get("pitch_deg", 0.0)) if (eyes and visible) else 0.0
 
         phone_present = any("phone" in str(o.get("name", "")).lower() for o in objects)
         eyes_closed = False
+        one_eye_closed = False
         if eyes:
             left_ear = float(eyes.get("left_ear", 0.0))
             right_ear = float(eyes.get("right_ear", 0.0))
-            eyes_closed = (
-                eyes.get("left_state") == "CLOSED"
-                and eyes.get("right_state") == "CLOSED"
-            ) or ((left_ear + right_ear) * 0.5 > 0.55)
+            left_closed = (eyes.get("left_state") == "CLOSED") or (left_ear > 0.55)
+            right_closed = (eyes.get("right_state") == "CLOSED") or (right_ear > 0.55)
+            eyes_closed = left_closed and right_closed
+            one_eye_closed = (left_closed != right_closed)
+
+        if not visible:
+            # Do not keep stale closure state when the face is not currently visible.
+            eyes_closed = False
+            one_eye_closed = False
 
         self.eye_hist.append((ts_ms, 1 if eyes_closed else 0))
         if eyes_closed and not self.prev_closed:
@@ -101,6 +119,13 @@ class RiskEngine:
         self.prev_closed = eyes_closed
         if not eyes_closed:
             self.closed_start = None
+
+        if one_eye_closed:
+            if self.one_eye_start is None:
+                self.one_eye_start = ts_ms
+        else:
+            self.one_eye_start = None
+        one_eye_ms = self._duration(self.one_eye_start, ts_ms)
 
         offroad = abs(yaw) > self.yaw_thresh or abs(pitch) > self.pitch_thresh
         if offroad:
@@ -117,7 +142,6 @@ class RiskEngine:
             self.phone_start = None
         phone_ms = self._duration(self.phone_start, ts_ms)
 
-        visible = driver_locked and face_bbox is not None
         if not visible:
             if self.not_visible_start is None:
                 self.not_visible_start = ts_ms
@@ -134,6 +158,9 @@ class RiskEngine:
             reason_codes.append("EYES_CLOSED_SUSTAINED")
         if perclos >= self.perclos_alert:
             score += 20.0
+        if one_eye_ms >= self.one_eye_warn_ms:
+            score += self.one_eye_score
+            reason_codes.append("ONE_EYE_CLOSED_SUSTAINED")
         if offroad_ms >= self.offroad_warn_ms:
             score += 20.0
             reason_codes.append("HEAD_OFFROAD_SUSTAINED")
@@ -144,11 +171,11 @@ class RiskEngine:
             reason_codes.append("PHONE_DISTRACTION")
         if phone_ms >= self.phone_alert_ms:
             score += 15.0
-        if not_visible_ms >= 800:
-            score += 40.0
+        if score_allowed and not_visible_ms >= 800:
+            score += self.not_visible_score
             reason_codes.append("DRIVER_NOT_VISIBLE")
-        if not driver_locked:
-            score += 15.0
+        if score_allowed and (not driver_locked):
+            score += self.lock_unstable_score
             reason_codes.append("LOCK_UNSTABLE")
 
         next_state = "NORMAL"

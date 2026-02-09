@@ -41,6 +41,7 @@ class YoloDetector:
         self.nms_thresh = float(os.environ.get("YOLO_NMS", "0.45"))
         self.model_path = os.environ.get("YOLO_MODEL", "yolo26s_ncnn_model")
         self.max_person = int(os.environ.get("YOLO_MAX_PERSON", "1"))
+        self._is_pi4 = self._detect_pi4()
 
         filt = os.environ.get("YOLO_FILTER", "person,cell phone,bottle,cup")
         self.filter_names = {
@@ -79,11 +80,13 @@ class YoloDetector:
         self._net.opt.use_packing_layout = True
         self._net.opt.use_fp16_storage = True
         self._net.opt.use_fp16_arithmetic = True
-        self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", "3"))
+        default_threads = "2" if self._is_pi4 else "3"
+        self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", default_threads))
         self._net.load_param(param_path)
         self._net.load_model(bin_path)
 
-        self._input_size = int(os.environ.get("YOLO_INPUT_SIZE", "640"))
+        default_input_size = "416" if self._is_pi4 else "640"
+        self._input_size = int(os.environ.get("YOLO_INPUT_SIZE", default_input_size))
 
         print(
             f"[infer] YOLO backend: raw ncnn ({self.model_path}, "
@@ -197,3 +200,16 @@ class YoloDetector:
         if n in ("phone", "cellphone", "mobile", "mobile phone"):
             return "cell phone"
         return n
+
+    @staticmethod
+    def _detect_pi4() -> bool:
+        try:
+            model_path = "/proc/device-tree/model"
+            if os.path.exists(model_path):
+                with open(model_path, "rb") as f:
+                    model = f.read().decode("utf-8", errors="ignore").lower()
+                if "raspberry pi 4" in model:
+                    return True
+        except Exception:
+            pass
+        return False

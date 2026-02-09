@@ -137,6 +137,7 @@ def main() -> None:
     phone_every_n = max(0, _env_int("PHONE_EVERY_N", 4))
     full_reacquire_every_n = max(0, _env_int("FULL_REACQUIRE_EVERY_N", 0))
     phone_hold_ms = max(0, _env_int("PHONE_HOLD_MS", 250))
+    eyes_stale_ms = max(0, _env_int("EYES_STALE_MS", 500))
     log_every = float(os.environ.get("LOG_EVERY_SEC", "1.0"))
     yolo_log = os.environ.get("YOLO_LOG", "1") == "1"
     eye_log = os.environ.get("EYE_LOG", "1") == "1"
@@ -185,6 +186,7 @@ def main() -> None:
     last_roi_phone_objects: list[dict] = []
     last_face_bbox = None
     last_eyes = None
+    last_eyes_ts_ms = 0
     last_eye_states = (None, None)
     next_log_t = time.time() + log_every
     last_risk_state = "NORMAL"
@@ -219,6 +221,7 @@ def main() -> None:
                     last_face_bbox = face_bbox_mapped
                     face_seen_this_frame = face_bbox_mapped
                     if eyes_raw is not None:
+                        last_eyes_ts_ms = ts_ms
                         last_eyes = {
                             "left_pct": float(getattr(eyes_raw, "left_pct", 0.0)),
                             "right_pct": float(getattr(eyes_raw, "right_pct", 0.0)),
@@ -237,6 +240,7 @@ def main() -> None:
                     last_face_bbox = face_bbox_raw
                     face_seen_this_frame = face_bbox_raw
                     if eyes_raw is not None:
+                        last_eyes_ts_ms = ts_ms
                         last_eyes = {
                             "left_pct": float(getattr(eyes_raw, "left_pct", 0.0)),
                             "right_pct": float(getattr(eyes_raw, "right_pct", 0.0)),
@@ -251,6 +255,9 @@ def main() -> None:
                             "roll_deg": float(getattr(eyes_raw, "roll_deg", 0.0)),
                         }
             driver_lock.report_face(face_seen_this_frame, ts_ms)
+            if face_seen_this_frame is None and last_eyes is not None:
+                if ts_ms - last_eyes_ts_ms > eyes_stale_ms:
+                    last_eyes = None
             health = driver_lock.lock_health(ts_ms)
             state = driver_lock.state()
 
