@@ -232,10 +232,10 @@ def open_camera(headless: bool = False) -> tuple[CameraSource, str]:
         mode = "auto"
     def _sizes(is_usb: bool) -> tuple[tuple[int, int], tuple[int, int]]:
         if is_usb:
-            cap_w = _env_int("CAPTURE_WIDTH", 640)
-            cap_h = _env_int("CAPTURE_HEIGHT", 480)
-            inf_w = _env_int("INFER_WIDTH", 640)
-            inf_h = _env_int("INFER_HEIGHT", 480)
+            cap_w = _env_int("CAPTURE_WIDTH", 1280)
+            cap_h = _env_int("CAPTURE_HEIGHT", 720)
+            inf_w = _env_int("INFER_WIDTH", 1280)
+            inf_h = _env_int("INFER_HEIGHT", 720)
         else:
             cap_w = _env_int("CAPTURE_WIDTH", 1280)
             cap_h = _env_int("CAPTURE_HEIGHT", 720)

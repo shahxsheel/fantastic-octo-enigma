@@ -11,8 +11,8 @@ if [[ ! -f .venv-infer/bin/python ]] || [[ ! -f .venv-cam/bin/python ]]; then
 fi
 
 # ── Environment ──────────────────────────────────────────────────
-FRAMES_ADDR="${FRAMES_ADDR:-tcp://127.0.0.1:5555}"
-RESULTS_ADDR="${RESULTS_ADDR:-tcp://127.0.0.1:5556}"
+FRAMES_ADDR="${FRAMES_ADDR:-ipc:///tmp/frames.ipc}"
+RESULTS_ADDR="${RESULTS_ADDR:-ipc:///tmp/results.ipc}"
 
 if [[ -z "${HEADLESS+x}" ]]; then
   if [[ -n "${DISPLAY:-}" ]]; then
@@ -26,6 +26,12 @@ fi
 cleanup() {
   pkill -f "\\.venv-infer/bin/python -m src\\.infer\\.run_infer" 2>/dev/null || true
   pkill -f "\\.venv-cam/bin/python -m src\\.camera\\.run_camera" 2>/dev/null || true
+  if [[ "$FRAMES_ADDR" == ipc://* ]]; then
+    rm -f "${FRAMES_ADDR#ipc://}"
+  fi
+  if [[ "$RESULTS_ADDR" == ipc://* ]]; then
+    rm -f "${RESULTS_ADDR#ipc://}"
+  fi
 }
 
 trap cleanup EXIT INT TERM
