@@ -1,0 +1,8 @@
+# Inference dependencies for Raspberry Pi 4B
+# No torch or ultralytics — uses raw ncnn for YOLO inference
+mediapipe==0.10.18
+opencv-contrib-python==4.11.0.86
+numpy<2
+pyzmq
+ncnn
+pyyaml
