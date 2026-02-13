@@ -38,52 +38,31 @@ def _env_int(name: str, default: int) -> int:
 # Fast font for Pi 4 (2x faster than SIMPLEX).
 _FONT = cv2.FONT_HERSHEY_PLAIN
 
+# Dashboard: sidebar width (px).
+SIDEBAR_WIDTH = 300
+SIDEBAR_BG = (30, 30, 30)
+SIDEBAR_BG_DISTRACTED = (0, 0, 255)  # Red when distracted
+SIDEBAR_TEXT_X = 20
 
-def _draw_fps(frame: np.ndarray, fps: float) -> None:
-    cv2.putText(
-        frame,
-        f"FPS: {fps:.1f}",
-        (10, 24),
-        _FONT,
-        1.0,
-        (0, 255, 255),
-        2,
-        cv2.LINE_AA,
-    )
+# Driver distraction: head pose thresholds (degrees).
+DISTRACT_YAW_THRESH = 20
+DISTRACT_PITCH_THRESH = 15
 
 
-def _draw_face_and_eyes(
+def _draw_graphics_on_frame(
     frame: np.ndarray,
     face_bbox: Optional[list],
     eyes: Optional[Any],
-) -> None:
+    objects: list[dict],
+) -> str:
+    """
+    Draw only graphics on the video (face box, eye polylines, YOLO boxes).
+    Returns driver state: 'FOCUSED', 'DISTRACTED', or 'DROWSY'.
+    """
     if face_bbox is not None:
         x1, y1, x2, y2 = face_bbox
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
-    if not eyes:
-        return
-
-    left_state = getattr(eyes, "left_state", "?")
-    right_state = getattr(eyes, "right_state", "?")
-    left_pct = float(getattr(eyes, "left_pct", 0.0))
-    right_pct = float(getattr(eyes, "right_pct", 0.0))
-
-    text = f"L {left_state} {left_pct:.0f}%  |  R {right_state} {right_pct:.0f}%"
-    y = 40 if face_bbox is None else max(40, face_bbox[1] - 10)
-    cv2.putText(
-        frame,
-        text,
-        (10, y),
-        _FONT,
-        1.0,
-        (0, 255, 0),
-        2,
-        cv2.LINE_AA,
-    )
-
-
-def _draw_yolo_objects(frame: np.ndarray, objects: list[dict]) -> None:
     for obj in objects:
         bbox = obj.get("bbox")
         if not bbox:
@@ -103,6 +82,148 @@ def _draw_yolo_objects(frame: np.ndarray, objects: list[dict]) -> None:
             cv2.LINE_AA,
         )
 
+    if not eyes:
+        return "FOCUSED"
+
+    # Cyan polylines around eyes (on video only).
+    cyan_bgr = (255, 255, 0)
+    for pts in (getattr(eyes, "left_pts", None), getattr(eyes, "right_pts", None)):
+        if not pts or len(pts) < 2:
+            continue
+        arr = np.array(pts, dtype=np.int32).reshape((-1, 1, 2))
+        cv2.polylines(frame, [arr], isClosed=True, color=cyan_bgr, thickness=1)
+
+    left_state = getattr(eyes, "left_state", "?")
+    right_state = getattr(eyes, "right_state", "?")
+    yaw = float(getattr(eyes, "yaw_deg", 0.0))
+    pitch = float(getattr(eyes, "pitch_deg", 0.0))
+
+    # DROWSY: both eyes closed.
+    if left_state == "CLOSED" and right_state == "CLOSED":
+        return "DROWSY"
+    if abs(yaw) > DISTRACT_YAW_THRESH or abs(pitch) > DISTRACT_PITCH_THRESH:
+        return "DISTRACTED"
+    return "FOCUSED"
+
+
+def _draw_sidebar_stats(
+    sidebar: np.ndarray,
+    fps: float,
+    status: str,
+    eyes: Optional[Any],
+) -> None:
+    """Draw all text and metrics on the sidebar. Sidebar is (H x SIDEBAR_WIDTH)."""
+    h_sb = sidebar.shape[0]
+    x = SIDEBAR_TEXT_X
+    line_height = 28
+    y = 30
+
+    white = (255, 255, 255)
+    cv2.putText(
+        sidebar,
+        "SYSTEM STATUS",
+        (x, y),
+        _FONT,
+        1.2,
+        white,
+        2,
+        cv2.LINE_AA,
+    )
+    y += line_height
+
+    cv2.putText(
+        sidebar,
+        f"FPS: {fps:.1f}",
+        (x, y),
+        _FONT,
+        1.0,
+        (0, 255, 255),
+        2,
+        cv2.LINE_AA,
+    )
+    y += line_height + 10
+
+    # Driver state: FOCUSED (green), DISTRACTED (red), DROWSY (orange).
+    if status == "FOCUSED":
+        color = (0, 255, 0)
+    elif status == "DISTRACTED":
+        color = (0, 0, 255)
+    else:
+        color = (0, 165, 255)  # Orange
+    cv2.putText(
+        sidebar,
+        status,
+        (x, y),
+        _FONT,
+        2.0,
+        color,
+        2,
+        cv2.LINE_AA,
+    )
+    y += line_height * 2
+
+    # Head pose telemetry.
+    if eyes is not None:
+        yaw = float(getattr(eyes, "yaw_deg", 0.0))
+        pitch = float(getattr(eyes, "pitch_deg", 0.0))
+        cv2.putText(
+            sidebar,
+            "Head Pose",
+            (x, y),
+            _FONT,
+            1.0,
+            white,
+            2,
+            cv2.LINE_AA,
+        )
+        y += line_height
+        cv2.putText(
+            sidebar,
+            f"Yaw: {yaw:.1f}\u00b0",
+            (x, y),
+            _FONT,
+            1.0,
+            white,
+            2,
+            cv2.LINE_AA,
+        )
+        y += line_height
+        cv2.putText(
+            sidebar,
+            f"Pitch: {pitch:.1f}\u00b0",
+            (x, y),
+            _FONT,
+            1.0,
+            white,
+            2,
+            cv2.LINE_AA,
+        )
+        y += line_height + 10
+
+        left_pct = float(getattr(eyes, "left_pct", 0.0))
+        right_pct = float(getattr(eyes, "right_pct", 0.0))
+        cv2.putText(
+            sidebar,
+            "Eye Openness",
+            (x, y),
+            _FONT,
+            1.0,
+            white,
+            2,
+            cv2.LINE_AA,
+        )
+        y += line_height
+        cv2.putText(
+            sidebar,
+            f"L: {left_pct:.0f}%  R: {right_pct:.0f}%",
+            (x, y),
+            _FONT,
+            1.0,
+            white,
+            2,
+            cv2.LINE_AA,
+        )
+
 
 def main() -> None:
     os.environ.setdefault("FORCE_CAMERA", "usb")
@@ -115,6 +236,11 @@ def main() -> None:
     infer_h, infer_w = bundle.infer_bgr.shape[:2]
     infer_size = (infer_w, infer_h)
     print(f"[single-usb] infer_size={infer_w}x{infer_h}", flush=True)
+
+    # Tighter MediaPipe confidence for less jitter and fewer false gaze triggers.
+    os.environ.setdefault("MP_MIN_DET_CONF", "0.6")
+    os.environ.setdefault("MP_MIN_TRACK_CONF", "0.6")
+    os.environ.setdefault("MP_MIN_PRESENCE_CONF", "0.6")
 
     face_eye = FaceEyeEstimatorMediaPipeSync(input_size=infer_size)
     yolo = YoloDetector()
@@ -186,9 +312,21 @@ def main() -> None:
                 time.sleep(0.001)
                 continue
 
-            vis = frame.copy()
-            _draw_yolo_objects(vis, objects)
-            _draw_face_and_eyes(vis, face_bbox, eyes)
+            h, w = frame.shape[:2]
+            vis = np.zeros((h, w + SIDEBAR_WIDTH, 3), dtype=np.uint8)
+            video_region = vis[:, :w]
+            video_region[:] = frame
+
+            status = _draw_graphics_on_frame(
+                video_region, face_bbox, eyes, objects
+            )
+
+            sidebar = vis[:, w:]
+            if status == "DISTRACTED":
+                sidebar[:] = SIDEBAR_BG_DISTRACTED
+            else:
+                sidebar[:] = SIDEBAR_BG
+            _draw_sidebar_stats(sidebar, fps, status, eyes)
 
             fps_count += 1
             now = time.time()
@@ -197,8 +335,6 @@ def main() -> None:
                 print(f"[single-usb] FPS={fps:.1f}", flush=True)
                 fps_count = 0
                 t0 = now
-
-            _draw_fps(vis, fps)
 
             if not headless:
                 try:

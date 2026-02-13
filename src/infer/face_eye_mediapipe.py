@@ -342,9 +342,9 @@ class FaceEyeEstimatorMediaPipeSync:
             )
 
         self.max_faces = int(os.environ.get("MP_MAX_FACES", "1"))
-        self.min_det_conf = float(os.environ.get("MP_MIN_DET_CONF", "0.5"))
-        self.min_presence_conf = float(os.environ.get("MP_MIN_PRESENCE_CONF", "0.5"))
-        self.min_track_conf = float(os.environ.get("MP_MIN_TRACK_CONF", "0.5"))
+        self.min_det_conf = float(os.environ.get("MP_MIN_DET_CONF", "0.6"))
+        self.min_presence_conf = float(os.environ.get("MP_MIN_PRESENCE_CONF", "0.6"))
+        self.min_track_conf = float(os.environ.get("MP_MIN_TRACK_CONF", "0.6"))
         self.closed_threshold = float(os.environ.get("EYE_CLOSED_THRESHOLD", "0.5"))
         self.swap_eyes = os.environ.get("SWAP_EYES", "0") == "1"
 
