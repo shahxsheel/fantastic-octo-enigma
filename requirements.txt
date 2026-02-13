@@ -1,0 +1,8 @@
+# Unified dependencies for Pi 4 / Pi 5 (USB camera + NCNN CPU inference)
+opencv-python
+mediapipe==0.10.18
+ncnn
+numpy<2
+pyzmq
+pyyaml
+requests
