@@ -300,34 +300,16 @@ def main() -> None:
     fps_count = 0
     t0 = time.time()
 
+    # Pre-allocate dashboard buffer once (zero-allocation visualization).
+    vis_buffer: Optional[np.ndarray] = None
+    if not headless:
+        vis_h, vis_w = infer_h, infer_w + SIDEBAR_WIDTH
+        vis_buffer = np.zeros((vis_h, vis_w, 3), dtype=np.uint8)
+        vis_buffer[:, infer_w:] = SIDEBAR_BG  # Pre-fill sidebar background
+        print(f"[single-usb] pre-allocated dashboard buffer: {vis_h}x{vis_w}", flush=True)
+
     try:
         while True:
-            with _lock:
-                frame = _latest_frame.copy() if _latest_frame is not None else None
-                face_bbox = _latest_detections.get("face_bbox")
-                eyes = _latest_detections.get("eyes")
-                objects = _latest_detections.get("objects", [])
-
-            if frame is None:
-                time.sleep(0.001)
-                continue
-
-            h, w = frame.shape[:2]
-            vis = np.zeros((h, w + SIDEBAR_WIDTH, 3), dtype=np.uint8)
-            video_region = vis[:, :w]
-            video_region[:] = frame
-
-            status = _draw_graphics_on_frame(
-                video_region, face_bbox, eyes, objects
-            )
-
-            sidebar = vis[:, w:]
-            if status == "DISTRACTED":
-                sidebar[:] = SIDEBAR_BG_DISTRACTED
-            else:
-                sidebar[:] = SIDEBAR_BG
-            _draw_sidebar_stats(sidebar, fps, status, eyes)
-
             fps_count += 1
             now = time.time()
             if now - t0 >= 1.0:
@@ -337,8 +319,34 @@ def main() -> None:
                 t0 = now
 
             if not headless:
+                with _lock:
+                    frame = _latest_frame.copy() if _latest_frame is not None else None
+                    face_bbox = _latest_detections.get("face_bbox")
+                    eyes = _latest_detections.get("eyes")
+                    objects = _latest_detections.get("objects", [])
+
+                if frame is None:
+                    time.sleep(0.001)
+                    continue
+
+                # Zero-allocation: copy frame into pre-allocated buffer.
+                h, w = frame.shape[:2]
+                vis_buffer[:, :w] = frame
+
+                status = _draw_graphics_on_frame(
+                    vis_buffer[:, :w], face_bbox, eyes, objects
+                )
+
+                # Clear sidebar text area with filled rectangle (faster than reassigning).
+                sidebar = vis_buffer[:, w:]
+                if status == "DISTRACTED":
+                    sidebar[:] = SIDEBAR_BG_DISTRACTED
+                else:
+                    sidebar[:] = SIDEBAR_BG
+                _draw_sidebar_stats(sidebar, fps, status, eyes)
+
                 try:
-                    cv2.imshow(window_name, vis)
+                    cv2.imshow(window_name, vis_buffer)
                 except cv2.error:
                     headless = True
                 else:
@@ -346,6 +354,7 @@ def main() -> None:
                     if key == ord("q"):
                         break
             else:
+                # Headless: skip all drawing and frame copy, just update FPS counter.
                 time.sleep(0.001)
     finally:
         _camera_stop.set()
