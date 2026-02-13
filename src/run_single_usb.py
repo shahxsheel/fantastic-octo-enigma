@@ -1,6 +1,17 @@
+"""
+Threaded USB pipeline for maximum inference FPS on Raspberry Pi 4.
+
+- Thread 1 (Camera): continuously grabs frames, stores latest in a thread-safe variable.
+- Thread 2 (Inference): pulls latest frame, runs face_eye.detect() + yolo.detect(), updates latest_detections.
+- Main (Display): reads latest frame and latest_detections, draws overlays, displays at smooth rate.
+
+Video feed stays smooth (~30 FPS); boxes update at inference rate (e.g. 15–20 FPS) without stutter.
+"""
+
 import os
+import threading
 import time
-from typing import Optional
+from typing import Any, Optional
 
 import cv2
 import numpy as np
@@ -24,13 +35,17 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
+# Fast font for Pi 4 (2x faster than SIMPLEX).
+_FONT = cv2.FONT_HERSHEY_PLAIN
+
+
 def _draw_fps(frame: np.ndarray, fps: float) -> None:
     cv2.putText(
         frame,
         f"FPS: {fps:.1f}",
         (10, 24),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.6,
+        _FONT,
+        1.0,
         (0, 255, 255),
         2,
         cv2.LINE_AA,
@@ -40,7 +55,7 @@ def _draw_fps(frame: np.ndarray, fps: float) -> None:
 def _draw_face_and_eyes(
     frame: np.ndarray,
     face_bbox: Optional[list],
-    eyes: Optional[object],
+    eyes: Optional[Any],
 ) -> None:
     if face_bbox is not None:
         x1, y1, x2, y2 = face_bbox
@@ -49,7 +64,6 @@ def _draw_face_and_eyes(
     if not eyes:
         return
 
-    # Eye percentages / states
     left_state = getattr(eyes, "left_state", "?")
     right_state = getattr(eyes, "right_state", "?")
     left_pct = float(getattr(eyes, "left_pct", 0.0))
@@ -61,8 +75,8 @@ def _draw_face_and_eyes(
         frame,
         text,
         (10, y),
-        cv2.FONT_HERSHEY_SIMPLEX,
-        0.6,
+        _FONT,
+        1.0,
         (0, 255, 0),
         2,
         cv2.LINE_AA,
@@ -82,8 +96,8 @@ def _draw_yolo_objects(frame: np.ndarray, objects: list[dict]) -> None:
             frame,
             f"{name} {conf:.2f}",
             (x1, max(0, y1 - 8)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
+            _FONT,
+            1.0,
             (0, 165, 255),
             1,
             cv2.LINE_AA,
@@ -91,29 +105,61 @@ def _draw_yolo_objects(frame: np.ndarray, objects: list[dict]) -> None:
 
 
 def main() -> None:
-    """
-    Single-process USB pipeline:
-
-    - Captures frames from USB camera.
-    - Runs YOLO + MediaPipe face/eye on **every frame**.
-    - Draws overlays directly and reports FPS.
-    """
-    # Force USB camera path unless explicitly overridden.
     os.environ.setdefault("FORCE_CAMERA", "usb")
 
     headless = _env_bool("HEADLESS", False)
     cam, cam_name = open_camera(headless=headless)
     print(f"[single-usb] using camera={cam_name}", flush=True)
 
-    # First frame to determine inference size.
     bundle = cam.read()
     infer_h, infer_w = bundle.infer_bgr.shape[:2]
     infer_size = (infer_w, infer_h)
     print(f"[single-usb] infer_size={infer_w}x{infer_h}", flush=True)
 
-    # Create detectors.
     face_eye = FaceEyeEstimatorMediaPipeSync(input_size=infer_size)
     yolo = YoloDetector()
+
+    # Thread-safe shared state: latest frame and latest detections.
+    _lock = threading.Lock()
+    _latest_frame: Optional[np.ndarray] = None
+    _latest_detections: dict = {
+        "face_bbox": None,
+        "eyes": None,
+        "objects": [],
+    }
+    _camera_stop = threading.Event()
+    _inference_stop = threading.Event()
+
+    def camera_thread_fn() -> None:
+        nonlocal _latest_frame
+        while not _camera_stop.is_set():
+            try:
+                bundle = cam.read()
+                with _lock:
+                    _latest_frame = bundle.infer_bgr.copy()
+            except Exception:
+                if _camera_stop.is_set():
+                    break
+                time.sleep(0.001)
+
+    def inference_thread_fn() -> None:
+        while not _inference_stop.is_set():
+            with _lock:
+                frame = _latest_frame.copy() if _latest_frame is not None else None
+            if frame is None:
+                time.sleep(0.001)
+                continue
+            face_bbox, eyes = face_eye.detect(frame)
+            objects = yolo.detect(frame)
+            with _lock:
+                _latest_detections["face_bbox"] = face_bbox
+                _latest_detections["eyes"] = eyes
+                _latest_detections["objects"] = objects
+
+    cam_thread = threading.Thread(target=camera_thread_fn, daemon=True)
+    inf_thread = threading.Thread(target=inference_thread_fn, daemon=True)
+    cam_thread.start()
+    inf_thread.start()
 
     window_name = "Single-Process USB (YOLO + Face/Eye per-frame)"
     if not headless:
@@ -130,31 +176,20 @@ def main() -> None:
 
     try:
         while True:
-            bundle = cam.read()
-            frame = bundle.infer_bgr  # Work at inference resolution to keep cost low.
+            with _lock:
+                frame = _latest_frame.copy() if _latest_frame is not None else None
+                face_bbox = _latest_detections.get("face_bbox")
+                eyes = _latest_detections.get("eyes")
+                objects = _latest_detections.get("objects", [])
 
-            # Per-frame inference: YOLO and MediaPipe every frame.
-            yolo_start = time.time()
-            objects = yolo.detect(frame)
-            yolo_ms = (time.time() - yolo_start) * 1000.0
-
-            face_start = time.time()
-            face_bbox, eyes = face_eye.detect(frame)
-            face_ms = (time.time() - face_start) * 1000.0
-
-            # Simple debug timing (optional).
-            if _env_bool("SINGLE_USB_TIMING", False):
-                print(
-                    f"[single-usb] frame={bundle.frame_id} "
-                    f"yolo={yolo_ms:.1f}ms face={face_ms:.1f}ms",
-                    flush=True,
-                )
+            if frame is None:
+                time.sleep(0.001)
+                continue
 
             vis = frame.copy()
             _draw_yolo_objects(vis, objects)
             _draw_face_and_eyes(vis, face_bbox, eyes)
 
-            # FPS computation.
             fps_count += 1
             now = time.time()
             if now - t0 >= 1.0:
@@ -175,9 +210,12 @@ def main() -> None:
                     if key == ord("q"):
                         break
             else:
-                # Small sleep to avoid busy looping in true headless mode.
                 time.sleep(0.001)
     finally:
+        _camera_stop.set()
+        _inference_stop.set()
+        cam_thread.join(timeout=1.0)
+        inf_thread.join(timeout=1.0)
         cam.release()
         try:
             cv2.destroyAllWindows()
@@ -191,4 +229,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -70,7 +70,7 @@ class YoloDetector:
 
         self.conf = float(os.environ.get("YOLO_CONF", "0.25"))
         self.nms_thresh = float(os.environ.get("YOLO_NMS", "0.45"))
-        # Default to the on-disk Ultralytics YOLOv8n NCNN export.
+        # Force Nano by default: the Small model is too slow for real-time Pi 4 inference.
         self.model_path = os.environ.get("YOLO_MODEL", "yolov8n_ncnn_model")
         self.max_person = int(os.environ.get("YOLO_MAX_PERSON", "1"))
         self.max_dets = int(os.environ.get("YOLO_MAX_DETS", "200"))
@@ -109,8 +109,10 @@ class YoloDetector:
         self._net.opt.use_packing_layout = True
         self._net.opt.use_fp16_storage = True
         self._net.opt.use_fp16_arithmetic = True
-        default_threads = "2" if self._is_pi4 else "3"
-        self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", default_threads))
+        # Maximize threads: use all Pi 4 CPU cores by default (env NCNN_THREADS can override).
+        self._net.opt.num_threads = 4
+        if os.environ.get("NCNN_THREADS") is not None:
+            self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", "4"))
         self._net.load_param(param_path)
         self._net.load_model(bin_path)
 
