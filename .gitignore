@@ -22,3 +22,5 @@ yolo26n_ncnn_model_256/
 yolo26s_ncnn_model/
 yolo11n_ncnn_model/
 *.tar.gz
+# Include bundled Nano model tarball for offline setup
+!yolov8n_ncnn_model.tar.gz

@@ -21,9 +21,9 @@ cd fantastic-octo-enigma
 ./setup.sh
 ```
 
-This installs system libraries (OpenCV/GStreamer), creates a `.venv`, installs Python dependencies, and downloads:
-- **face_landmarker.task** (MediaPipe, ~3.6 MB)
-- **yolov8n_ncnn_model** (YOLO Nano NCNN; override URL with `YOLO_NCNN_MODEL_URL` if needed)
+This installs system libraries (OpenCV/GStreamer), creates a `.venv`, installs Python dependencies, and installs:
+- **face_landmarker.task** (MediaPipe, ~3.6 MB; downloaded if missing)
+- **yolov8n_ncnn_model** (YOLO Nano NCNN): if **yolov8n_ncnn_model.tar.gz** is present in the repo root, setup extracts it; otherwise it downloads from `YOLO_NCNN_MODEL_URL`. To bundle the tarball for offline setup, run `./scripts/build_yolov8n_ncnn_archive.sh` once (requires `ultralytics`), then commit `yolov8n_ncnn_model.tar.gz`.
 
 ## Run
 
@@ -78,7 +78,7 @@ Example: `CAPTURE_WIDTH=1280 CAPTURE_HEIGHT=720 ./run.sh`
 | No USB camera found | Ensure a webcam is connected; check `ls /dev/video*`. Set `CAMERA_INDEX` if needed |
 | Colors look blue/wrong | Set `SWAP_RB=1` before `./run.sh` |
 | No display / SSH | Use `HEADLESS=1 ./run.sh` |
-| `yolov8n_ncnn_model` missing after setup | Set `YOLO_NCNN_MODEL_URL` to a valid tar.gz URL, or add the release asset to the repo and re-run `./setup.sh` |
+| `yolov8n_ncnn_model` missing after setup | Put **yolov8n_ncnn_model.tar.gz** in the repo root (run `./scripts/build_yolov8n_ncnn_archive.sh` to create it), or set `YOLO_NCNN_MODEL_URL` to a valid tar.gz URL |
 | GStreamer errors | `./setup.sh` installs GStreamer deps; on non-Debian systems install equivalent libs for OpenCV |
 
 ## Repo Layout
@@ -87,8 +87,9 @@ Example: `CAPTURE_WIDTH=1280 CAPTURE_HEIGHT=720 ./run.sh`
 setup.sh                 One-time setup (apt, .venv, models)
 run.sh                   Run app (activates .venv, runs single-USB pipeline)
 requirements.txt         Python dependencies
+yolov8n_ncnn_model.tar.gz  Optional: include in repo for offline setup (see Setup)
 face_landmarker.task     MediaPipe model (downloaded by setup.sh)
-yolov8n_ncnn_model/      YOLO Nano NCNN model (downloaded by setup.sh)
+yolov8n_ncnn_model/      YOLO Nano NCNN model (from tarball or download)
 src/
   run_single_usb.py      App entry (threaded camera + inference + display)
   camera/
@@ -96,4 +97,6 @@ src/
   infer/
     face_eye_mediapipe.py  Eye detection
     yolo_detector.py       YOLO NCNN detector
+scripts/
+  build_yolov8n_ncnn_archive.sh  Build yolov8n_ncnn_model.tar.gz for inclusion in repo
 ```

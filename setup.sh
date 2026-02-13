@@ -67,18 +67,24 @@ else
 fi
 
 # ── 4. YOLO Nano NCNN model ────────────────────────────────────────
-banner "Downloading yolov8n_ncnn_model (Nano only — not Small)"
+banner "Installing yolov8n_ncnn_model (Nano only — not Small)"
 if [[ -f yolov8n_ncnn_model/model.ncnn.param ]] && [[ -f yolov8n_ncnn_model/model.ncnn.bin ]]; then
   echo "  → Already exists, skipping"
 else
-  TMP_ARCHIVE="yolov8n_ncnn_model.tar.gz"
-  if command -v wget &>/dev/null; then
-    wget -O "$TMP_ARCHIVE" --progress=bar:force "$YOLO_NCNN_URL"
+  TARBALL="yolov8n_ncnn_model.tar.gz"
+  if [[ -f "$TARBALL" ]]; then
+    echo "  → Using included tarball"
+    tar xzf "$TARBALL"
   else
-    curl -sSL -o "$TMP_ARCHIVE" "$YOLO_NCNN_URL"
+    echo "  → Downloading from $YOLO_NCNN_URL"
+    if command -v wget &>/dev/null; then
+      wget -O "$TARBALL" --progress=bar:force "$YOLO_NCNN_URL"
+    else
+      curl -sSL -o "$TARBALL" "$YOLO_NCNN_URL"
+    fi
+    tar xzf "$TARBALL"
+    rm -f "$TARBALL"
   fi
-  tar xzf "$TMP_ARCHIVE"
-  rm -f "$TMP_ARCHIVE"
   echo "  → Done"
 fi
 
