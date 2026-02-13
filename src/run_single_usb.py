@@ -2,9 +2,10 @@
 Threaded USB pipeline for maximum inference FPS on Raspberry Pi 4.
 
 - Thread 1 (Camera): continuously grabs frames, stores latest in a thread-safe variable.
-- Main Thread: pulls latest frame, runs inference (face_eye + yolo), draws (GUI only), updates CLI.
+- Thread 2 (Inference): continuously runs face_eye + yolo on latest frame, updates shared results.
+- Main Thread (Display/CLI): reads latest results, draws (GUI only), updates CLI (rate-limited).
 
-Headless: Pure inference speed (no drawing). GUI: Minimal graphics (polylines, boxes, border).
+True decoupling: Display FPS (100+) independent of Inference FPS (~6-20fps).
 """
 
 import os
@@ -38,6 +39,9 @@ def _env_int(name: str, default: int) -> int:
 # Driver distraction: head pose thresholds (degrees).
 DISTRACT_YAW_THRESH = 20
 DISTRACT_PITCH_THRESH = 15
+
+# CLI update rate (seconds).
+CLI_UPDATE_INTERVAL = 0.5
 
 
 def _compute_status(eyes: Optional[Any]) -> str:
@@ -111,15 +115,19 @@ def _draw_minimal_graphics(
 
 
 def _print_cli_stats(
-    fps: float,
+    display_fps: float,
+    infer_fps: float,
     latency_ms: float,
     status: str,
     eyes: Optional[Any],
     objects: list[dict],
 ) -> None:
-    """Print CLI dashboard on a single line (overwrites with \\r)."""
-    parts = [f"FPS: {fps:.1f}", f"LAT: {latency_ms:.0f}ms"]
-    parts.append(f"STATUS: {status}")
+    """Print CLI dashboard on a single line (overwrites with \\r, padded with spaces)."""
+    parts = [
+        f"DISPLAY: {display_fps:.0f}fps",
+        f"INFER: {infer_fps:.1f}fps ({latency_ms:.0f}ms)",
+        f"STATUS: {status}",
+    ]
 
     if eyes:
         yaw = float(getattr(eyes, "yaw_deg", 0.0))
@@ -134,7 +142,9 @@ def _print_cli_stats(
         parts.append(f"OBJS: {', '.join(obj_names)}")
 
     line = " | ".join(parts)
-    sys.stdout.write(f"\r{line}")
+    # Pad with spaces to overwrite any previous longer line.
+    padded = line.ljust(120)
+    sys.stdout.write(f"\r{padded}")
     sys.stdout.flush()
 
 
@@ -158,10 +168,21 @@ def main() -> None:
     face_eye = FaceEyeEstimatorMediaPipeSync(input_size=infer_size)
     yolo = YoloDetector()
 
-    # Thread-safe shared state: latest frame.
+    # Thread-safe shared state.
     _lock = threading.Lock()
     _latest_frame: Optional[np.ndarray] = None
+    _shared_results: dict = {
+        "face_bbox": None,
+        "eyes": None,
+        "objects": [],
+        "status": "FOCUSED",
+        "latency_ms": 0.0,
+        "infer_fps": 0.0,
+        "infer_count": 0,
+        "infer_t0": time.time(),
+    }
     _camera_stop = threading.Event()
+    _inference_stop = threading.Event()
 
     def camera_thread_fn() -> None:
         nonlocal _latest_frame
@@ -175,27 +196,11 @@ def main() -> None:
                     break
                 time.sleep(0.001)
 
-    cam_thread = threading.Thread(target=camera_thread_fn, daemon=True)
-    cam_thread.start()
-
-    window_name = "Driver Monitoring System"
-    if not headless:
-        try:
-            cv2.startWindowThread()
-            gui_normal = getattr(cv2, "WINDOW_GUI_NORMAL", 0)
-            cv2.namedWindow(window_name, cv2.WINDOW_NORMAL | gui_normal)
-        except Exception:
-            pass
-
-    fps = 0.0
-    fps_count = 0
-    t0 = time.time()
-
-    try:
-        while True:
+    def inference_thread_fn() -> None:
+        """Background inference thread: continuously runs face_eye + yolo on latest frame."""
+        while not _inference_stop.is_set():
             with _lock:
                 frame = _latest_frame.copy() if _latest_frame is not None else None
-
             if frame is None:
                 time.sleep(0.001)
                 continue
@@ -209,15 +214,76 @@ def main() -> None:
 
             status = _compute_status(eyes)
 
-            fps_count += 1
+            # Update shared results (protected by lock).
+            with _lock:
+                _shared_results["face_bbox"] = face_bbox
+                _shared_results["eyes"] = eyes
+                _shared_results["objects"] = objects
+                _shared_results["status"] = status
+                _shared_results["latency_ms"] = latency_ms
+
+                # Calculate inference FPS.
+                _shared_results["infer_count"] += 1
+                now = time.time()
+                if now - _shared_results["infer_t0"] >= 1.0:
+                    _shared_results["infer_fps"] = (
+                        _shared_results["infer_count"] / (now - _shared_results["infer_t0"])
+                    )
+                    _shared_results["infer_count"] = 0
+                    _shared_results["infer_t0"] = now
+
+    cam_thread = threading.Thread(target=camera_thread_fn, daemon=True)
+    inf_thread = threading.Thread(target=inference_thread_fn, daemon=True)
+    cam_thread.start()
+    inf_thread.start()
+
+    window_name = "Driver Monitoring System"
+    if not headless:
+        try:
+            cv2.startWindowThread()
+            gui_normal = getattr(cv2, "WINDOW_GUI_NORMAL", 0)
+            cv2.namedWindow(window_name, cv2.WINDOW_NORMAL | gui_normal)
+        except Exception:
+            pass
+
+    # Display FPS tracking (main loop).
+    display_fps = 0.0
+    display_count = 0
+    display_t0 = time.time()
+
+    # CLI update rate limiting.
+    last_cli_update = 0.0
+
+    # Print header once.
+    print("\n" + "=" * 120)
+    print("Driver Monitoring System - Real-time Dashboard")
+    print("=" * 120)
+
+    try:
+        while True:
+            with _lock:
+                frame = _latest_frame.copy() if _latest_frame is not None else None
+                face_bbox = _shared_results.get("face_bbox")
+                eyes = _shared_results.get("eyes")
+                objects = _shared_results.get("objects", [])
+                status = _shared_results.get("status", "FOCUSED")
+                latency_ms = _shared_results.get("latency_ms", 0.0)
+                infer_fps = _shared_results.get("infer_fps", 0.0)
+
+            if frame is None:
+                time.sleep(0.001)
+                continue
+
+            # Display FPS (main loop speed).
+            display_count += 1
             now = time.time()
-            if now - t0 >= 1.0:
-                fps = fps_count / (now - t0)
-                fps_count = 0
-                t0 = now
+            if now - display_t0 >= 1.0:
+                display_fps = display_count / (now - display_t0)
+                display_count = 0
+                display_t0 = now
 
             if not headless:
-                # GUI mode: minimal drawing on frame.
+                # GUI mode: minimal drawing on frame (non-blocking).
                 vis = frame.copy()
                 _draw_minimal_graphics(vis, face_bbox, eyes, objects, status)
                 try:
@@ -229,14 +295,20 @@ def main() -> None:
                     if key == ord("q"):
                         break
 
-            # CLI dashboard (both modes).
-            _print_cli_stats(fps, latency_ms, status, eyes, objects)
+            # Rate-limited CLI update (every 0.5s).
+            if now - last_cli_update >= CLI_UPDATE_INTERVAL:
+                _print_cli_stats(
+                    display_fps, infer_fps, latency_ms, status, eyes, objects
+                )
+                last_cli_update = now
 
             if headless:
                 time.sleep(0.001)
     finally:
         _camera_stop.set()
+        _inference_stop.set()
         cam_thread.join(timeout=1.0)
+        inf_thread.join(timeout=1.0)
         cam.release()
         sys.stdout.write("\n")
         sys.stdout.flush()
