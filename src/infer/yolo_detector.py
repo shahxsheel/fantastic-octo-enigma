@@ -116,8 +116,9 @@ class YoloDetector:
         self._net.load_param(param_path)
         self._net.load_model(bin_path)
 
-        # Use smaller input on Pi4 for maximum FPS (Nano model).
-        default_input_size = "320" if self._is_pi4 else "640"
+        # Ultra-low resolution for maximum FPS (Nano model, close-up camera).
+        # 256x256 is ~1.6x faster than 320x320, sufficient for detecting large objects (person, phone).
+        default_input_size = "256" if self._is_pi4 else "640"
         self._input_size = int(os.environ.get("YOLO_INPUT_SIZE", default_input_size))
 
         print(

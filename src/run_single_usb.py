@@ -17,6 +17,10 @@ from typing import Any, Optional
 import cv2
 import numpy as np
 
+# Force NCNN maximum resources (set before any imports that use NCNN).
+os.environ["OMP_NUM_THREADS"] = "4"
+os.environ["NCNN_THREADS"] = "4"
+
 from src.camera.camera_source import open_camera
 from src.infer.face_eye_mediapipe import FaceEyeEstimatorMediaPipeSync
 from src.infer.yolo_detector import YoloDetector
@@ -200,6 +204,8 @@ def main() -> None:
 
     def inference_thread_fn() -> None:
         """Background inference thread: continuously runs face_eye + yolo on latest frame."""
+        inf_frame_idx = 0
+        last_objects: list[dict] = []
         while not _inference_stop.is_set():
             with _lock:
                 frame = _latest_frame.copy() if _latest_frame is not None else None
@@ -207,12 +213,20 @@ def main() -> None:
                 time.sleep(0.001)
                 continue
 
-            # Measure inference latency (face + YOLO).
+            # Always run face detection (fast).
             inference_start = time.time()
             face_bbox, eyes = face_eye.detect(frame)
-            objects = yolo.detect(frame)
+            
+            # Interleaving: ONLY run YOLO every 5 inference loops (saves 80% of YOLO compute).
+            if inf_frame_idx % 5 == 0:
+                objects = yolo.detect(frame)
+                last_objects = objects
+            else:
+                objects = last_objects  # Re-use last known objects
+            
             inference_end = time.time()
             latency_ms = (inference_end - inference_start) * 1000.0
+            inf_frame_idx += 1
 
             status = _compute_status(eyes)
 
@@ -304,8 +318,8 @@ def main() -> None:
                 )
                 last_cli_update = now
 
-            if headless:
-                time.sleep(0.001)
+            # Throttle main loop to ~30 FPS to prevent CPU starvation of inference thread.
+            time.sleep(1.0 / 30.0)
     finally:
         _camera_stop.set()
         _inference_stop.set()
