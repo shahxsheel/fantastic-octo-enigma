@@ -72,7 +72,16 @@ if [[ -f yolov8n_ncnn_model/model.ncnn.param ]] && [[ -f yolov8n_ncnn_model/mode
   echo "  → Already exists, skipping"
 else
   TARBALL="yolov8n_ncnn_model.tar.gz"
+  USE_LOCAL=false
   if [[ -f "$TARBALL" ]]; then
+    if gzip -t "$TARBALL" 2>/dev/null; then
+      USE_LOCAL=true
+    else
+      echo "  → Included tarball corrupt or incomplete, will download"
+      rm -f "$TARBALL"
+    fi
+  fi
+  if [[ "$USE_LOCAL" == true ]]; then
     echo "  → Using included tarball"
     tar xzf "$TARBALL"
   else
