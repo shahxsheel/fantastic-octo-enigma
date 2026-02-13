@@ -87,9 +87,22 @@ else
   else
     echo "  → Downloading from $YOLO_NCNN_URL"
     if command -v wget &>/dev/null; then
-      wget -O "$TARBALL" --progress=bar:force "$YOLO_NCNN_URL"
+      wget -O "$TARBALL" --progress=bar:force "$YOLO_NCNN_URL" 2>/dev/null || true
     else
-      curl -sSL -o "$TARBALL" "$YOLO_NCNN_URL"
+      curl -sSL -o "$TARBALL" "$YOLO_NCNN_URL" 2>/dev/null || true
+    fi
+    if [[ ! -s "$TARBALL" ]] || ! gzip -t "$TARBALL" 2>/dev/null; then
+      rm -f "$TARBALL"
+      echo ""
+      echo "  ✗ Download failed (404 or invalid). The v1.1.0 release may not exist yet."
+      echo ""
+      echo "  To get the YOLO Nano model:"
+      echo "  1. On a machine with Python and internet, run: ./scripts/build_yolov8n_ncnn_archive.sh"
+      echo "     Then copy yolov8n_ncnn_model.tar.gz to this Pi and run ./setup.sh again."
+      echo "  2. Or create a GitHub release with yolov8n_ncnn_model.tar.gz and set:"
+      echo "     YOLO_NCNN_MODEL_URL=https://github.com/OWNER/REPO/releases/download/TAG/yolov8n_ncnn_model.tar.gz"
+      echo ""
+      exit 1
     fi
     tar xzf "$TARBALL"
     rm -f "$TARBALL"
