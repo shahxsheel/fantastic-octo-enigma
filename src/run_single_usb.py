@@ -124,8 +124,8 @@ def _print_cli_stats(
 ) -> None:
     """Print CLI dashboard on a single line (overwrites with \\r, padded with spaces)."""
     parts = [
-        f"DISPLAY: {display_fps:.0f}fps",
-        f"INFER: {infer_fps:.1f}fps ({latency_ms:.0f}ms)",
+        f"[DISPLAY: {display_fps:.0f}fps]",
+        f"[INFER: {infer_fps:.1f}fps ({latency_ms:.0f}ms)]",
         f"STATUS: {status}",
     ]
 
@@ -166,6 +166,8 @@ def main() -> None:
     os.environ.setdefault("MP_MIN_PRESENCE_CONF", "0.6")
 
     face_eye = FaceEyeEstimatorMediaPipeSync(input_size=infer_size)
+    # Software filter: keep only relevant YOLO classes for DMS.
+    os.environ.setdefault("YOLO_FILTER", "person,cell phone,bottle,cup")
     yolo = YoloDetector()
 
     # Thread-safe shared state.

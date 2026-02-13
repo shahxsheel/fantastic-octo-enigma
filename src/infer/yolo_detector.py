@@ -116,7 +116,8 @@ class YoloDetector:
         self._net.load_param(param_path)
         self._net.load_model(bin_path)
 
-        default_input_size = "416" if self._is_pi4 else "640"
+        # Use smaller input on Pi4 for maximum FPS (Nano model).
+        default_input_size = "320" if self._is_pi4 else "640"
         self._input_size = int(os.environ.get("YOLO_INPUT_SIZE", default_input_size))
 
         print(
