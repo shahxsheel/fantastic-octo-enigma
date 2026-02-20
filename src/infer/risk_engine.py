@@ -127,7 +127,18 @@ class RiskEngine:
             self.one_eye_start = None
         one_eye_ms = self._duration(self.one_eye_start, ts_ms)
 
-        offroad = abs(yaw) > self.yaw_thresh or abs(pitch) > self.pitch_thresh
+        # Directional gaze: specific direction instead of generic offroad.
+        direction = "CENTER"
+        if pitch > self.pitch_thresh:
+            direction = "DOWN"
+        elif pitch < -self.pitch_thresh:
+            direction = "UP"
+        elif yaw > self.yaw_thresh:
+            direction = "RIGHT"
+        elif yaw < -self.yaw_thresh:
+            direction = "LEFT"
+
+        offroad = direction != "CENTER"
         if offroad:
             if self.offroad_start is None:
                 self.offroad_start = ts_ms
@@ -163,7 +174,7 @@ class RiskEngine:
             reason_codes.append("ONE_EYE_CLOSED_SUSTAINED")
         if offroad_ms >= self.offroad_warn_ms:
             score += 20.0
-            reason_codes.append("HEAD_OFFROAD_SUSTAINED")
+            reason_codes.append(f"LOOKING_{direction}_SUSTAINED")
         if offroad_ms >= self.offroad_alert_ms:
             score += 20.0
         if phone_ms >= self.phone_warn_ms:
@@ -200,6 +211,7 @@ class RiskEngine:
             "head_yaw": round(yaw, 2),
             "head_pitch": round(pitch, 2),
             "offroad_ms": int(offroad_ms),
+            "head_direction": direction,
         }
         risk = {
             "score": round(score, 2),

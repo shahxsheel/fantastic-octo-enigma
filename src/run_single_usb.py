@@ -48,17 +48,42 @@ DISTRACT_PITCH_THRESH = 15
 CLI_UPDATE_INTERVAL = 0.5
 
 
+def create_gamma_lut(gamma: float = 1.5) -> np.ndarray:
+    """Build a 256-entry LUT for fast gamma correction (brightens low-light)."""
+    inv_gamma = 1.0 / gamma
+    table = np.array(
+        [((i / 255.0) ** inv_gamma) * 255 for i in range(256)],
+        dtype=np.uint8,
+    )
+    return table
+
+
+def _get_head_direction(eyes: Optional[Any]) -> str:
+    """Return CENTER, UP, DOWN, LEFT, or RIGHT from head pose."""
+    if not eyes:
+        return "CENTER"
+    yaw = float(getattr(eyes, "yaw_deg", 0.0))
+    pitch = float(getattr(eyes, "pitch_deg", 0.0))
+    if pitch > DISTRACT_PITCH_THRESH:
+        return "DOWN"
+    if pitch < -DISTRACT_PITCH_THRESH:
+        return "UP"
+    if yaw > DISTRACT_YAW_THRESH:
+        return "RIGHT"
+    if yaw < -DISTRACT_YAW_THRESH:
+        return "LEFT"
+    return "CENTER"
+
+
 def _compute_status(eyes: Optional[Any]) -> str:
     """Compute driver status from eye data. Returns 'FOCUSED', 'DISTRACTED', or 'DROWSY'."""
     if not eyes:
         return "FOCUSED"
     left_state = getattr(eyes, "left_state", "?")
     right_state = getattr(eyes, "right_state", "?")
-    yaw = float(getattr(eyes, "yaw_deg", 0.0))
-    pitch = float(getattr(eyes, "pitch_deg", 0.0))
     if left_state == "CLOSED" and right_state == "CLOSED":
         return "DROWSY"
-    if abs(yaw) > DISTRACT_YAW_THRESH or abs(pitch) > DISTRACT_PITCH_THRESH:
+    if _get_head_direction(eyes) != "CENTER":
         return "DISTRACTED"
     return "FOCUSED"
 
@@ -125,6 +150,8 @@ def _print_cli_stats(
     status: str,
     eyes: Optional[Any],
     objects: list[dict],
+    night_mode: bool = False,
+    head_direction: Optional[str] = None,
 ) -> None:
     """Print CLI dashboard on a single line (overwrites with \\r, padded with spaces)."""
     parts = [
@@ -132,6 +159,10 @@ def _print_cli_stats(
         f"[INFER: {infer_fps:.1f}fps ({latency_ms:.0f}ms)]",
         f"STATUS: {status}",
     ]
+    if head_direction is not None:
+        parts.append(f"DIR: {head_direction}")
+    if night_mode:
+        parts.append("[NIGHT_MODE: ON]")
 
     if eyes:
         yaw = float(getattr(eyes, "yaw_deg", 0.0))
@@ -156,8 +187,20 @@ def main() -> None:
     os.environ.setdefault("FORCE_CAMERA", "usb")
 
     headless = _env_bool("HEADLESS", False)
+    # Low-light: gamma correction (default ON for safety).
+    night_mode = _env_bool("LOW_LIGHT", True)
+    gamma_table: Optional[np.ndarray] = None
+    if night_mode:
+        gamma_table = create_gamma_lut(gamma=1.5)
+        print("[single-usb] night mode ON (gamma=1.5)", flush=True)
+
     cam, cam_name = open_camera(headless=headless)
     print(f"[single-usb] using camera={cam_name}", flush=True)
+    if hasattr(cam, "configure_low_light"):
+        try:
+            cam.configure_low_light()
+        except Exception:
+            pass
 
     bundle = cam.read()
     infer_h, infer_w = bundle.infer_bgr.shape[:2]
@@ -195,8 +238,11 @@ def main() -> None:
         while not _camera_stop.is_set():
             try:
                 bundle = cam.read()
+                frame = bundle.infer_bgr.copy()
+                if night_mode and gamma_table is not None:
+                    frame = cv2.LUT(frame, gamma_table)
                 with _lock:
-                    _latest_frame = bundle.infer_bgr.copy()
+                    _latest_frame = frame
             except Exception:
                 if _camera_stop.is_set():
                     break
@@ -313,8 +359,11 @@ def main() -> None:
 
             # Rate-limited CLI update (every 0.5s).
             if now - last_cli_update >= CLI_UPDATE_INTERVAL:
+                head_direction = _get_head_direction(eyes) if eyes else "CENTER"
                 _print_cli_stats(
-                    display_fps, infer_fps, latency_ms, status, eyes, objects
+                    display_fps, infer_fps, latency_ms, status, eyes, objects,
+                    night_mode=night_mode,
+                    head_direction=head_direction,
                 )
                 last_cli_update = now
 
