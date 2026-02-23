@@ -50,6 +50,9 @@ def _env_int(name: str, default: int) -> int:
 # CLI update rate (seconds).
 CLI_UPDATE_INTERVAL = 0.5
 
+# Camera thread target FPS (avoids pulling 60 FPS when display is capped at 30).
+CAMERA_TARGET_FPS = 35.0
+
 
 def create_gamma_lut(gamma: float = 1.5) -> np.ndarray:
     """Build a 256-entry LUT for fast gamma correction (brightens low-light)."""
@@ -212,14 +215,18 @@ def main() -> None:
     gps.start()
 
     # Telemetry queue for background Supabase writes.
-    telemetry_queue: "queue.Queue[dict]" = queue.Queue()
+    telemetry_queue: "queue.Queue[dict]" = queue.Queue(maxsize=50)
 
     # Speed limit checker (OSM Overpass); background thread updates _shared_results.
     speed_checker = SpeedLimitChecker()
 
     # Thread-safe shared state.
     _lock = threading.Lock()
-    _latest_frame: Optional[np.ndarray] = None
+    # Double buffer: camera writes to _back, readers use _front; swap under lock (minimal hold).
+    _buf0: Optional[np.ndarray] = None
+    _buf1: Optional[np.ndarray] = None
+    _front: Optional[np.ndarray] = None
+    _back: Optional[np.ndarray] = None
     _shared_results: dict = {
         "face_bbox": None,
         "eyes": None,
@@ -235,20 +242,43 @@ def main() -> None:
     _camera_stop = threading.Event()
     _inference_stop = threading.Event()
 
+    # One-time read to get frame shape; allocate double buffer and prime _front.
+    try:
+        bundle = cam.read()
+        first_frame = bundle.infer_bgr.copy()
+        if night_mode and gamma_table is not None:
+            first_frame = cv2.LUT(first_frame, gamma_table)
+    except Exception as e:
+        print(f"[single-usb] Initial camera read failed: {e}", flush=True)
+        return
+    h, w = first_frame.shape[:2]
+    _buf0 = np.empty((h, w, 3), dtype=np.uint8)
+    _buf1 = np.empty((h, w, 3), dtype=np.uint8)
+    np.copyto(_buf0, first_frame)
+    _front = _buf0
+    _back = _buf1
+
     def camera_thread_fn() -> None:
-        nonlocal _latest_frame
+        nonlocal _front, _back
         while not _camera_stop.is_set():
+            cam_loop_start = time.time()
             try:
                 bundle = cam.read()
-                frame = bundle.infer_bgr.copy()
+                np.copyto(_back, bundle.infer_bgr)
                 if night_mode and gamma_table is not None:
-                    frame = cv2.LUT(frame, gamma_table)
+                    np.copyto(_back, cv2.LUT(_back, gamma_table))
                 with _lock:
-                    _latest_frame = frame
+                    _front, _back = _back, _front
             except Exception:
                 if _camera_stop.is_set():
                     break
                 time.sleep(0.001)
+            else:
+                # Throttle camera to ~35 FPS to save CPU/thermal when display is 30 FPS.
+                elapsed = time.time() - cam_loop_start
+                sleep_time = (1.0 / CAMERA_TARGET_FPS) - elapsed
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
 
     def inference_thread_fn() -> None:
         """Background inference thread: continuously runs face_eye + yolo on latest frame."""
@@ -260,17 +290,21 @@ def main() -> None:
         smooth_yaw = 0.0
         smooth_pitch = 0.0
         alpha = 0.3  # EMA smoothing factor
+        infer_prealloc: Optional[np.ndarray] = None
 
         while not _inference_stop.is_set():
             with _lock:
-                frame = _latest_frame.copy() if _latest_frame is not None else None
-            if frame is None:
+                ref = _front
+            if ref is None:
                 time.sleep(0.001)
                 continue
+            if infer_prealloc is None:
+                infer_prealloc = np.empty_like(ref)
+            np.copyto(infer_prealloc, ref)
 
             # Always run face detection (fast).
             inference_start = time.time()
-            face_bbox, eyes = face_eye.detect(frame)
+            face_bbox, eyes = face_eye.detect(infer_prealloc)
 
             if eyes:
                 raw_yaw = float(getattr(eyes, "yaw_deg", 0.0))
@@ -300,7 +334,7 @@ def main() -> None:
 
             # Interleaving: ONLY run YOLO every 5 inference loops (saves 80% of YOLO compute).
             if inf_frame_idx % 5 == 0:
-                objects = yolo.detect(frame)
+                objects = yolo.detect(infer_prealloc)
                 last_objects = objects
             else:
                 objects = last_objects  # Re-use last known objects
@@ -311,7 +345,12 @@ def main() -> None:
 
             driver_locked = face_bbox is not None
             risk_out = risk_engine.update(
-                int(time.time() * 1000), driver_locked, face_bbox, eyes, objects
+                int(time.time() * 1000),
+                driver_locked,
+                face_bbox,
+                eyes,
+                objects,
+                gps.speed_mph,
             )
             status = risk_out.risk["state"]
             head_direction = risk_out.attention.get("head_direction", "CENTER")
@@ -402,6 +441,9 @@ def main() -> None:
     # Speeding alert rate limiting (once per 10s).
     last_speed_alert_time = 0.0
 
+    # Reusable display buffer (zero allocation per frame in GUI mode).
+    vis_buffer: Optional[np.ndarray] = None
+
     # Print header once.
     print("\n" + "=" * 120)
     print("Driver Monitoring System - Real-time Dashboard")
@@ -412,7 +454,7 @@ def main() -> None:
             loop_start = time.time()
 
             with _lock:
-                frame = _latest_frame.copy() if _latest_frame is not None else None
+                ref = _front
                 face_bbox = _shared_results.get("face_bbox")
                 eyes = _shared_results.get("eyes")
                 objects = _shared_results.get("objects", [])
@@ -422,9 +464,14 @@ def main() -> None:
                 latency_ms = _shared_results.get("latency_ms", 0.0)
                 infer_fps = _shared_results.get("infer_fps", 0.0)
 
-            if frame is None:
+            if ref is None:
                 time.sleep(0.001)
                 continue
+
+            # Copy into reusable display buffer (no per-frame allocation).
+            if vis_buffer is None:
+                vis_buffer = np.empty_like(ref)
+            np.copyto(vis_buffer, ref)
 
             # Display FPS (main loop speed).
             display_count += 1
@@ -435,11 +482,10 @@ def main() -> None:
                 display_t0 = now
 
             if not headless:
-                # GUI mode: minimal drawing on frame (non-blocking).
-                vis = frame.copy()
-                _draw_minimal_graphics(vis, face_bbox, eyes, objects, status)
+                # GUI mode: draw on reusable buffer (no extra copy).
+                _draw_minimal_graphics(vis_buffer, face_bbox, eyes, objects, status)
                 try:
-                    cv2.imshow(window_name, vis)
+                    cv2.imshow(window_name, vis_buffer)
                 except cv2.error:
                     headless = True
                 else:
@@ -472,11 +518,11 @@ def main() -> None:
                         "speed": gps.speed_mph,
                     }
                     try:
-                        telemetry_queue.put(payload)
-                        last_alert_time = now_ts
-                        last_alert_state = alert_type
-                    except Exception:
-                        pass
+                        telemetry_queue.put_nowait(payload)
+                    except queue.Full:
+                        pass  # Drop payload, keep video feed alive
+                    last_alert_time = now_ts
+                    last_alert_state = alert_type
 
             # Speeding alerts (5 MPH tolerance); buzzer + telemetry, 10s cooldown.
             if speed_limit is not None and gps.speed_mph > (speed_limit + 5):
@@ -493,10 +539,10 @@ def main() -> None:
                         "longitude": gps.longitude,
                     }
                     try:
-                        telemetry_queue.put(speed_payload)
-                        last_speed_alert_time = now_ts
-                    except Exception:
-                        pass
+                        telemetry_queue.put_nowait(speed_payload)
+                    except queue.Full:
+                        pass  # Drop payload, keep video feed alive
+                    last_speed_alert_time = now_ts
 
             # Rate-limited CLI update (every 0.5s).
             if now - last_cli_update >= CLI_UPDATE_INTERVAL:

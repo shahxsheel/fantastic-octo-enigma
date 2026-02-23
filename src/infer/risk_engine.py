@@ -85,6 +85,7 @@ class RiskEngine:
         face_bbox: Optional[list[int]],
         eyes: Optional[dict],
         objects: list[dict],
+        speed_mph: float = 0.0,
     ) -> RiskOutput:
         reason_codes: list[str] = []
         visible = driver_locked and face_bbox is not None
@@ -188,6 +189,14 @@ class RiskEngine:
         if score_allowed and (not driver_locked):
             score += self.lock_unstable_score
             reason_codes.append("LOCK_UNSTABLE")
+
+        # Apply Speed-Aware Risk Scaling
+        speed_multiplier = 1.0
+        if speed_mph < 5.0:
+            speed_multiplier = 0.5  # Very lenient when stopped/parking
+        elif speed_mph > 60.0:
+            speed_multiplier = 1.5  # Hyper-aggressive at highway speeds
+        score *= speed_multiplier
 
         next_state = "NORMAL"
         if score >= 60.0:
