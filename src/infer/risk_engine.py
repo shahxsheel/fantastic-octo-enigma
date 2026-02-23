@@ -95,7 +95,7 @@ class RiskEngine:
         yaw = float(eyes.get("yaw_deg", 0.0)) if (eyes and visible) else 0.0
         pitch = float(eyes.get("pitch_deg", 0.0)) if (eyes and visible) else 0.0
 
-        phone_present = any("phone" in str(o.get("name", "")).lower() for o in objects)
+        phone_present = any(o.get("cls") == 67 for o in objects)
         eyes_closed = False
         one_eye_closed = False
         if eyes:

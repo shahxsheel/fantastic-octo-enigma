@@ -23,6 +23,7 @@ os.environ["NCNN_THREADS"] = "4"
 
 from src.camera.camera_source import open_camera
 from src.infer.face_eye_mediapipe import FaceEyeEstimatorMediaPipeSync
+from src.infer.risk_engine import RiskEngine
 from src.infer.yolo_detector import YoloDetector
 
 
@@ -40,10 +41,6 @@ def _env_int(name: str, default: int) -> int:
         return default
 
 
-# Driver distraction: head pose thresholds (degrees).
-DISTRACT_YAW_THRESH = 20
-DISTRACT_PITCH_THRESH = 15
-
 # CLI update rate (seconds).
 CLI_UPDATE_INTERVAL = 0.5
 
@@ -56,36 +53,6 @@ def create_gamma_lut(gamma: float = 1.5) -> np.ndarray:
         dtype=np.uint8,
     )
     return table
-
-
-def _get_head_direction(eyes: Optional[Any]) -> str:
-    """Return CENTER, UP, DOWN, LEFT, or RIGHT from head pose."""
-    if not eyes:
-        return "CENTER"
-    yaw = float(getattr(eyes, "yaw_deg", 0.0))
-    pitch = float(getattr(eyes, "pitch_deg", 0.0))
-    if pitch > DISTRACT_PITCH_THRESH:
-        return "DOWN"
-    if pitch < -DISTRACT_PITCH_THRESH:
-        return "UP"
-    if yaw > DISTRACT_YAW_THRESH:
-        return "RIGHT"
-    if yaw < -DISTRACT_YAW_THRESH:
-        return "LEFT"
-    return "CENTER"
-
-
-def _compute_status(eyes: Optional[Any]) -> str:
-    """Compute driver status from eye data. Returns 'FOCUSED', 'DISTRACTED', or 'DROWSY'."""
-    if not eyes:
-        return "FOCUSED"
-    left_state = getattr(eyes, "left_state", "?")
-    right_state = getattr(eyes, "right_state", "?")
-    if left_state == "CLOSED" and right_state == "CLOSED":
-        return "DROWSY"
-    if _get_head_direction(eyes) != "CENTER":
-        return "DISTRACTED"
-    return "FOCUSED"
 
 
 def _draw_minimal_graphics(
@@ -138,8 +105,8 @@ def _draw_minimal_graphics(
             cv2.LINE_AA,
         )
 
-    # Red border if distracted (thickness=5).
-    if status == "DISTRACTED":
+    # Red border if RiskEngine WARN/ALERT (thickness=5).
+    if status in ("WARN", "ALERT"):
         cv2.rectangle(frame, (0, 0), (w - 1, h - 1), (0, 0, 255), 5)
 
 
@@ -216,6 +183,7 @@ def main() -> None:
     # Software filter: keep only relevant YOLO classes for DMS.
     os.environ.setdefault("YOLO_FILTER", "person,cell phone,bottle,cup")
     yolo = YoloDetector()
+    risk_engine = RiskEngine()
 
     # Thread-safe shared state.
     _lock = threading.Lock()
@@ -225,6 +193,7 @@ def main() -> None:
         "eyes": None,
         "objects": [],
         "status": "FOCUSED",
+        "head_direction": "CENTER",
         "latency_ms": 0.0,
         "infer_fps": 0.0,
         "infer_count": 0,
@@ -252,6 +221,13 @@ def main() -> None:
         """Background inference thread: continuously runs face_eye + yolo on latest frame."""
         inf_frame_idx = 0
         last_objects: list[dict] = []
+        calib_frames = 0
+        yaw_offset = 0.0
+        pitch_offset = 0.0
+        smooth_yaw = 0.0
+        smooth_pitch = 0.0
+        alpha = 0.3  # EMA smoothing factor
+
         while not _inference_stop.is_set():
             with _lock:
                 frame = _latest_frame.copy() if _latest_frame is not None else None
@@ -262,19 +238,50 @@ def main() -> None:
             # Always run face detection (fast).
             inference_start = time.time()
             face_bbox, eyes = face_eye.detect(frame)
-            
+
+            if eyes:
+                raw_yaw = float(getattr(eyes, "yaw_deg", 0.0))
+                raw_pitch = float(getattr(eyes, "pitch_deg", 0.0))
+
+                # 1. Calibration (first 60 frames)
+                if calib_frames < 60:
+                    yaw_offset += raw_yaw
+                    pitch_offset += raw_pitch
+                    calib_frames += 1
+                    if calib_frames == 60:
+                        yaw_offset /= 60.0
+                        pitch_offset /= 60.0
+                        print(f"[System] Calibrated Center: Yaw={yaw_offset:.1f}, Pitch={pitch_offset:.1f}", flush=True)
+
+                # 2. Apply offset (after calibration complete)
+                corr_yaw = raw_yaw - (yaw_offset if calib_frames >= 60 else 0)
+                corr_pitch = raw_pitch - (pitch_offset if calib_frames >= 60 else 0)
+
+                # 3. Apply EMA smoothing
+                smooth_yaw = (alpha * corr_yaw) + ((1 - alpha) * smooth_yaw)
+                smooth_pitch = (alpha * corr_pitch) + ((1 - alpha) * smooth_pitch)
+
+                # Write smoothed values back to eyes for RiskEngine
+                eyes.yaw_deg = smooth_yaw
+                eyes.pitch_deg = smooth_pitch
+
             # Interleaving: ONLY run YOLO every 5 inference loops (saves 80% of YOLO compute).
             if inf_frame_idx % 5 == 0:
                 objects = yolo.detect(frame)
                 last_objects = objects
             else:
                 objects = last_objects  # Re-use last known objects
-            
+
             inference_end = time.time()
             latency_ms = (inference_end - inference_start) * 1000.0
             inf_frame_idx += 1
 
-            status = _compute_status(eyes)
+            driver_locked = face_bbox is not None
+            risk_out = risk_engine.update(
+                int(time.time() * 1000), driver_locked, face_bbox, eyes, objects
+            )
+            status = risk_out.risk["state"]
+            head_direction = risk_out.attention.get("head_direction", "CENTER")
 
             # Update shared results (protected by lock).
             with _lock:
@@ -282,6 +289,7 @@ def main() -> None:
                 _shared_results["eyes"] = eyes
                 _shared_results["objects"] = objects
                 _shared_results["status"] = status
+                _shared_results["head_direction"] = head_direction
                 _shared_results["latency_ms"] = latency_ms
 
                 # Calculate inference FPS.
@@ -323,12 +331,15 @@ def main() -> None:
 
     try:
         while True:
+            loop_start = time.time()
+
             with _lock:
                 frame = _latest_frame.copy() if _latest_frame is not None else None
                 face_bbox = _shared_results.get("face_bbox")
                 eyes = _shared_results.get("eyes")
                 objects = _shared_results.get("objects", [])
                 status = _shared_results.get("status", "FOCUSED")
+                head_direction = _shared_results.get("head_direction", "CENTER")
                 latency_ms = _shared_results.get("latency_ms", 0.0)
                 infer_fps = _shared_results.get("infer_fps", 0.0)
 
@@ -359,7 +370,6 @@ def main() -> None:
 
             # Rate-limited CLI update (every 0.5s).
             if now - last_cli_update >= CLI_UPDATE_INTERVAL:
-                head_direction = _get_head_direction(eyes) if eyes else "CENTER"
                 _print_cli_stats(
                     display_fps, infer_fps, latency_ms, status, eyes, objects,
                     night_mode=night_mode,
@@ -367,8 +377,11 @@ def main() -> None:
                 )
                 last_cli_update = now
 
-            # Throttle main loop to ~30 FPS to prevent CPU starvation of inference thread.
-            time.sleep(1.0 / 30.0)
+            # Smart sleep: lock display loop to 30 FPS.
+            process_time = time.time() - loop_start
+            sleep_time = (1.0 / 30.0) - process_time
+            if sleep_time > 0:
+                time.sleep(sleep_time)
     finally:
         _camera_stop.set()
         _inference_stop.set()
