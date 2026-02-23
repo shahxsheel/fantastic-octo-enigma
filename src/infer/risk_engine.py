@@ -1,7 +1,10 @@
 import os
 from collections import deque
 from dataclasses import dataclass
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from .face_eye_mediapipe import EyeInfo
 
 
 def _env_float(name: str, default: float) -> float:
@@ -58,6 +61,8 @@ class RiskEngine:
         self.state_started_ms = 0
         self.last_alert_ms = 0
         self.seen_driver_once = False
+        self._last_debug_score = 0.0
+        self._last_debug_state = "NORMAL"
 
     def _duration(self, start_ms: Optional[int], now_ms: int) -> int:
         if start_ms is None:
@@ -83,7 +88,7 @@ class RiskEngine:
         ts_ms: int,
         driver_locked: bool,
         face_bbox: Optional[list[int]],
-        eyes: Optional[dict],
+        eyes: Optional["EyeInfo"],
         objects: list[dict],
         speed_mph: float = 0.0,
     ) -> RiskOutput:
@@ -93,17 +98,17 @@ class RiskEngine:
             self.seen_driver_once = True
         score_allowed = self.seen_driver_once or (not self.require_seen_driver)
 
-        yaw = float(eyes.get("yaw_deg", 0.0)) if (eyes and visible) else 0.0
-        pitch = float(eyes.get("pitch_deg", 0.0)) if (eyes and visible) else 0.0
+        yaw = float(eyes.yaw_deg) if (eyes and visible) else 0.0
+        pitch = float(eyes.pitch_deg) if (eyes and visible) else 0.0
 
         phone_present = any(o.get("cls") == 67 for o in objects)
         eyes_closed = False
         one_eye_closed = False
         if eyes:
-            left_ear = float(eyes.get("left_ear", 0.0))
-            right_ear = float(eyes.get("right_ear", 0.0))
-            left_closed = (eyes.get("left_state") == "CLOSED") or (left_ear > 0.55)
-            right_closed = (eyes.get("right_state") == "CLOSED") or (right_ear > 0.55)
+            left_ear = float(eyes.left_ear)
+            right_ear = float(eyes.right_ear)
+            left_closed = (eyes.left_state == "CLOSED") or (left_ear > 0.55)
+            right_closed = (eyes.right_state == "CLOSED") or (right_ear > 0.55)
             eyes_closed = left_closed and right_closed
             one_eye_closed = (left_closed != right_closed)
 
@@ -207,6 +212,11 @@ class RiskEngine:
         if next_state != self.state:
             self.state = next_state
             self.state_started_ms = ts_ms
+
+        if abs(score - self._last_debug_score) >= 5 or self.state != self._last_debug_state:
+            print(f"DEBUG: Score: {score:.1f} | State: {self.state}", flush=True)
+            self._last_debug_score = score
+            self._last_debug_state = self.state
 
         warn = self.state in ("WARN", "ALERT")
         alert = self.state == "ALERT"

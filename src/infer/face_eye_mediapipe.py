@@ -293,8 +293,8 @@ class FaceEyeEstimatorMediaPipe:
             else:
                 return 0.0, 0.0, 0.0
             r = arr[:3, :3]
-            yaw = float(np.degrees(np.arctan2(r[1, 0], r[0, 0])))
-            pitch = float(
+            x = float(np.degrees(np.arctan2(r[1, 0], r[0, 0])))
+            y = float(
                 np.degrees(
                     np.arctan2(
                         -r[2, 0],
@@ -302,8 +302,12 @@ class FaceEyeEstimatorMediaPipe:
                     )
                 )
             )
-            roll = float(np.degrees(np.arctan2(r[2, 1], r[2, 2])))
-            return yaw, pitch, roll
+            z = float(np.degrees(np.arctan2(r[2, 1], r[2, 2])))
+            # Map the physical movements to the correct Euler angles based on log data.
+            pitch_deg = z   # Z-axis is driving Up/Down
+            yaw_deg = y * -1   # Y-axis is Left/Right (inverted to fix direction)
+            roll_deg = x   # X-axis is head tilt
+            return yaw_deg, pitch_deg, roll_deg
         except Exception:
             return 0.0, 0.0, 0.0
 

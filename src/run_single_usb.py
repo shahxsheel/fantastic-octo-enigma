@@ -18,6 +18,8 @@ import cv2
 import numpy as np
 import queue
 
+# Pi 5 ARM SVE: set before imports that use MediaPipe/XNNPACK.
+os.environ.setdefault("XNNPACK_FORCE_QUIRK_FOR_ARM_SVE", "1")
 # Force NCNN maximum resources (set before any imports that use NCNN).
 os.environ["OMP_NUM_THREADS"] = "4"
 os.environ["NCNN_THREADS"] = "4"
@@ -164,6 +166,9 @@ def _print_cli_stats(
 
 def main() -> None:
     os.environ.setdefault("FORCE_CAMERA", "usb")
+    # Smaller infer size (e.g. 256x256) reduces memory bandwidth for Pi 5.
+    os.environ.setdefault("INFER_WIDTH", "256")
+    os.environ.setdefault("INFER_HEIGHT", "256")
 
     headless = _env_bool("HEADLESS", False)
     # Low-light: gamma correction (default ON for safety).
@@ -332,8 +337,8 @@ def main() -> None:
                 eyes.yaw_deg = smooth_yaw
                 eyes.pitch_deg = smooth_pitch
 
-            # Interleaving: ONLY run YOLO every 5 inference loops (saves 80% of YOLO compute).
-            if inf_frame_idx % 5 == 0:
+            # Interleaving: ONLY run YOLO every 10 inference loops (saves ~90% of YOLO compute).
+            if inf_frame_idx % 10 == 0:
                 objects = yolo.detect(infer_prealloc)
                 last_objects = objects
             else:
@@ -355,7 +360,7 @@ def main() -> None:
             status = risk_out.risk["state"]
             head_direction = risk_out.attention.get("head_direction", "CENTER")
 
-            # Update shared results (protected by lock).
+            # Update shared results every frame so display reflects latest status/direction.
             with _lock:
                 _shared_results["face_bbox"] = face_bbox
                 _shared_results["eyes"] = eyes
