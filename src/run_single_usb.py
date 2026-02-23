@@ -16,12 +16,18 @@ from typing import Any, Optional
 
 import cv2
 import numpy as np
+import queue
 
 # Force NCNN maximum resources (set before any imports that use NCNN).
 os.environ["OMP_NUM_THREADS"] = "4"
 os.environ["NCNN_THREADS"] = "4"
 
+from supabase import Client, create_client
+
 from src.camera.camera_source import open_camera
+from src.components.buzzer import BuzzerController
+from src.components.gps import GPSReader
+from src.components.speed_limit import SpeedLimitChecker
 from src.infer.face_eye_mediapipe import FaceEyeEstimatorMediaPipeSync
 from src.infer.risk_engine import RiskEngine
 from src.infer.yolo_detector import YoloDetector
@@ -119,6 +125,7 @@ def _print_cli_stats(
     objects: list[dict],
     night_mode: bool = False,
     head_direction: Optional[str] = None,
+    speed_limit: Optional[int] = None,
 ) -> None:
     """Print CLI dashboard on a single line (overwrites with \\r, padded with spaces)."""
     parts = [
@@ -128,6 +135,8 @@ def _print_cli_stats(
     ]
     if head_direction is not None:
         parts.append(f"DIR: {head_direction}")
+    if speed_limit is not None:
+        parts.append(f"LIMIT: {speed_limit}mph")
     if night_mode:
         parts.append("[NIGHT_MODE: ON]")
 
@@ -184,6 +193,29 @@ def main() -> None:
     os.environ.setdefault("YOLO_FILTER", "person,cell phone,bottle,cup")
     yolo = YoloDetector()
     risk_engine = RiskEngine()
+    buzzer = BuzzerController(pin=18)
+    buzzer.start()
+
+    # Supabase client (optional; only if env vars provided).
+    SUPABASE_URL = os.environ.get("SUPABASE_URL")
+    SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+    supabase_client: Optional[Client] = None
+    if SUPABASE_URL and SUPABASE_KEY:
+        try:
+            supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
+            print("[single-usb] Supabase client initialized", flush=True)
+        except Exception as e:
+            print(f"[single-usb] Supabase init failed: {e}", flush=True)
+
+    # GPS reader (background thread inside GPSReader).
+    gps = GPSReader()
+    gps.start()
+
+    # Telemetry queue for background Supabase writes.
+    telemetry_queue: "queue.Queue[dict]" = queue.Queue()
+
+    # Speed limit checker (OSM Overpass); background thread updates _shared_results.
+    speed_checker = SpeedLimitChecker()
 
     # Thread-safe shared state.
     _lock = threading.Lock()
@@ -194,6 +226,7 @@ def main() -> None:
         "objects": [],
         "status": "FOCUSED",
         "head_direction": "CENTER",
+        "speed_limit": None,
         "latency_ms": 0.0,
         "infer_fps": 0.0,
         "infer_count": 0,
@@ -302,10 +335,47 @@ def main() -> None:
                     _shared_results["infer_count"] = 0
                     _shared_results["infer_t0"] = now
 
+    def telemetry_thread_fn() -> None:
+        """Background Supabase telemetry thread."""
+        while True:
+            payload = telemetry_queue.get()
+            if not supabase_client:
+                continue
+            try:
+                payload_type = payload.get("type", "face_detection")
+                if payload_type == "face_detection":
+                    del payload["type"]
+                    supabase_client.table("face_detections").insert(payload).execute()
+                elif payload_type == "vehicle_realtime":
+                    del payload["type"]
+                    supabase_client.table("vehicle_realtime").insert(payload).execute()
+            except Exception:
+                # Swallow errors to avoid killing the thread on network issues.
+                pass
+
+    def speed_limit_thread_fn() -> None:
+        """Background thread: fetch OSM speed limit every 10s and update shared state."""
+        while True:
+            try:
+                lat = gps.latitude
+                lon = gps.longitude
+                if lat != 0.0 or lon != 0.0:
+                    limit = speed_checker.get_speed_limit(lat, lon)
+                    if limit is not None:
+                        with _lock:
+                            _shared_results["speed_limit"] = limit
+            except Exception:
+                pass
+            time.sleep(10)
+
     cam_thread = threading.Thread(target=camera_thread_fn, daemon=True)
     inf_thread = threading.Thread(target=inference_thread_fn, daemon=True)
+    telemetry_thread = threading.Thread(target=telemetry_thread_fn, daemon=True)
+    speed_thread = threading.Thread(target=speed_limit_thread_fn, daemon=True)
     cam_thread.start()
     inf_thread.start()
+    telemetry_thread.start()
+    speed_thread.start()
 
     window_name = "Driver Monitoring System"
     if not headless:
@@ -324,6 +394,14 @@ def main() -> None:
     # CLI update rate limiting.
     last_cli_update = 0.0
 
+    # Telemetry alert rate limiting.
+    ALERT_COOLDOWN_SEC = 3.0
+    last_alert_time = 0.0
+    last_alert_state: Optional[str] = None
+
+    # Speeding alert rate limiting (once per 10s).
+    last_speed_alert_time = 0.0
+
     # Print header once.
     print("\n" + "=" * 120)
     print("Driver Monitoring System - Real-time Dashboard")
@@ -340,6 +418,7 @@ def main() -> None:
                 objects = _shared_results.get("objects", [])
                 status = _shared_results.get("status", "FOCUSED")
                 head_direction = _shared_results.get("head_direction", "CENTER")
+                speed_limit = _shared_results.get("speed_limit")
                 latency_ms = _shared_results.get("latency_ms", 0.0)
                 infer_fps = _shared_results.get("infer_fps", 0.0)
 
@@ -368,12 +447,64 @@ def main() -> None:
                     if key == ord("q"):
                         break
 
+            # Buzzer alerts based on RiskEngine state and attention.
+            if status == "ALERT":
+                if head_direction != "CENTER" or any(o.get("cls") == 67 for o in objects):
+                    buzzer.play_distraction_alert()
+                else:
+                    buzzer.play_drowsy_alert()
+            elif status == "WARN":
+                if head_direction != "CENTER":
+                    buzzer.play_distraction_alert()
+
+            # Telemetry alerts (Supabase) with cooldown.
+            if status == "ALERT":
+                alert_type = "drowsy" if head_direction == "CENTER" else "distracted"
+                now_ts = time.time()
+                if (now_ts - last_alert_time) >= ALERT_COOLDOWN_SEC or last_alert_state != alert_type:
+                    payload = {
+                        "type": "face_detection",
+                        "vehicle_id": os.environ.get("VEHICLE_ID", "test-vehicle-1"),
+                        "is_drowsy": True if head_direction == "CENTER" else False,
+                        "intoxication_score": 0,
+                        "latitude": gps.latitude,
+                        "longitude": gps.longitude,
+                        "speed": gps.speed_mph,
+                    }
+                    try:
+                        telemetry_queue.put(payload)
+                        last_alert_time = now_ts
+                        last_alert_state = alert_type
+                    except Exception:
+                        pass
+
+            # Speeding alerts (5 MPH tolerance); buzzer + telemetry, 10s cooldown.
+            if speed_limit is not None and gps.speed_mph > (speed_limit + 5):
+                now_ts = time.time()
+                if (now_ts - last_speed_alert_time) >= 10.0:
+                    buzzer.play_speeding_alert()
+                    speed_payload = {
+                        "type": "vehicle_realtime",
+                        "vehicle_id": os.environ.get("VEHICLE_ID", "test-vehicle-1"),
+                        "is_speeding": True,
+                        "speed": gps.speed_mph,
+                        "speed_limit": speed_limit,
+                        "latitude": gps.latitude,
+                        "longitude": gps.longitude,
+                    }
+                    try:
+                        telemetry_queue.put(speed_payload)
+                        last_speed_alert_time = now_ts
+                    except Exception:
+                        pass
+
             # Rate-limited CLI update (every 0.5s).
             if now - last_cli_update >= CLI_UPDATE_INTERVAL:
                 _print_cli_stats(
                     display_fps, infer_fps, latency_ms, status, eyes, objects,
                     night_mode=night_mode,
                     head_direction=head_direction,
+                    speed_limit=speed_limit,
                 )
                 last_cli_update = now
 
@@ -396,6 +527,14 @@ def main() -> None:
             pass
         try:
             face_eye.close()
+        except Exception:
+            pass
+        try:
+            buzzer.stop()
+        except Exception:
+            pass
+        try:
+            gps.stop()
         except Exception:
             pass
 
