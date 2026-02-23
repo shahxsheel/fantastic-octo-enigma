@@ -68,6 +68,13 @@ class USBCameraSource(CameraSource):
             self.cap.set(cv2.CAP_PROP_FPS, _env_int("CAMERA_FPS", 30))
         self.frame_id = 0
 
+    def configure_low_light(self) -> None:
+        """Attempt to boost gain for low-light (hardware support varies by webcam)."""
+        try:
+            self.cap.set(cv2.CAP_PROP_GAIN, 255)
+        except Exception:
+            pass
+
     def read(self) -> FrameBundle:
         ok, frame = self.cap.read()
         if not ok or frame is None:
