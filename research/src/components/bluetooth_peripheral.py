@@ -20,16 +20,18 @@ import threading
 import time
 from typing import Callable, Optional
 
+_BLESS_IMPORT_ERROR = ""
 try:
     from bless import (
-        BlessGATTCharacteristicPermissions,
-        BlessGATTCharacteristicProperties,
         BlessServer,
+        GATTAttributePermissions,
+        GATTCharacteristicProperties,
     )
 
     _BLESS_AVAILABLE = True
-except ImportError:
+except Exception as _bless_err:
     _BLESS_AVAILABLE = False
+    _BLESS_IMPORT_ERROR = str(_bless_err)
 
 # ── UUIDs — must match BluetoothManager.swift ──────────────────────────────
 SERVICE_UUID  = "A1B2C3D4-E5F6-7890-ABCD-1234567890AB"
@@ -78,7 +80,7 @@ class BluetoothPeripheral:
         self._stop_event: Optional[asyncio.Event] = None
 
         self.enabled = _BLESS_AVAILABLE
-        self.reason = "ok" if _BLESS_AVAILABLE else "bless not installed"
+        self.reason = "ok" if _BLESS_AVAILABLE else _BLESS_IMPORT_ERROR
 
         # Trip-level accumulators (reset on each start())
         self._trip_start = time.time()
@@ -133,29 +135,29 @@ class BluetoothPeripheral:
         await server.add_new_service(SERVICE_UUID)
 
         rn = (
-            BlessGATTCharacteristicProperties.read
-            | BlessGATTCharacteristicProperties.notify
+            GATTCharacteristicProperties.read
+            | GATTCharacteristicProperties.notify
         )
-        rd = BlessGATTCharacteristicPermissions.readable
-        wr = BlessGATTCharacteristicPermissions.writeable
+        rd = GATTAttributePermissions.readable
+        wr = GATTAttributePermissions.writeable
 
         await server.add_new_characteristic(
             SERVICE_UUID, REALTIME_UUID, rn, _enc(self._realtime_payload()), rd
         )
         await server.add_new_characteristic(
             SERVICE_UUID, SETTINGS_UUID,
-            BlessGATTCharacteristicProperties.write, None, wr
+            GATTCharacteristicProperties.write, None, wr
         )
         await server.add_new_characteristic(
             SERVICE_UUID, BUZZER_UUID,
-            BlessGATTCharacteristicProperties.write, None, wr
+            GATTCharacteristicProperties.write, None, wr
         )
         await server.add_new_characteristic(
             SERVICE_UUID, TRIP_UUID, rn, _enc(self._trip_payload()), rd
         )
         await server.add_new_characteristic(
             SERVICE_UUID, RELAY_UUID,
-            BlessGATTCharacteristicProperties.notify,
+            GATTCharacteristicProperties.notify,
             _enc(self._relay_payload()), rd
         )
 
