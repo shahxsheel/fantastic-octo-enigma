@@ -109,8 +109,8 @@ class YoloDetector:
         self._net.opt.use_packing_layout = True
         self._net.opt.use_fp16_storage = True
         self._net.opt.use_fp16_arithmetic = True
-        # Leave cores for camera/telemetry/BLE (env NCNN_THREADS can override).
-        self._net.opt.num_threads = 2
+        # Use all cores for YOLO — inference is the bottleneck, not thread contention (env NCNN_THREADS can override).
+        self._net.opt.num_threads = 4
         if os.environ.get("NCNN_THREADS") is not None:
             self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", "4"))
         self._net.load_param(param_path)

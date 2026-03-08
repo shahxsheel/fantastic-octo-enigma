@@ -29,8 +29,8 @@ from src.infer.yolo_detector import YoloDetector
 
 # Pi 5 ARM SVE + NCNN threading knobs.
 os.environ.setdefault("XNNPACK_FORCE_QUIRK_FOR_ARM_SVE", "1")
-os.environ.setdefault("OMP_NUM_THREADS", "2")
-os.environ.setdefault("NCNN_THREADS", "2")
+os.environ.setdefault("OMP_NUM_THREADS", "4")
+os.environ.setdefault("NCNN_THREADS", "4")
 
 # CLI update rate (seconds).
 CLI_UPDATE_INTERVAL = 0.5
