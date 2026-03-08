@@ -9,3 +9,4 @@ RPi.GPIO
 supabase
 pyserial
 pynmea2
+bless>=0.2.0

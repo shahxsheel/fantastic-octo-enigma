@@ -8,6 +8,8 @@ Threaded USB pipeline optimized for Raspberry Pi.
 
 import os
 import queue
+import random
+import string
 import sys
 import threading
 import time
@@ -18,6 +20,7 @@ import numpy as np
 from supabase import Client, create_client
 
 from src.camera.camera_source import open_camera
+from src.components.bluetooth_peripheral import BluetoothPeripheral
 from src.components.buzzer import BuzzerController
 from src.components.gps import GPSReader
 from src.components.gyro import GyroReader
@@ -143,6 +146,11 @@ def _compute_driver_state(objects: list[dict]) -> tuple[str, str, bool, bool, in
     if drinking_detected:
         return "WARN", "distracted_drinking", False, True, 2
     return "FOCUSED", "alert", False, False, 0
+
+
+def _generate_invite_code(length: int = 6) -> str:
+    alphabet = string.ascii_uppercase + string.digits
+    return "".join(random.choice(alphabet) for _ in range(length))
 
 
 class HeadDirectionEstimator:
@@ -467,7 +475,33 @@ def main() -> None:
             ).execute()
             print(f"[single-usb] Vehicle registered: {vehicle_id}", flush=True)
         except Exception as e:
-            print(_colorize(f"[single-usb] Vehicle registration failed: {e}", ANSI_YELLOW), flush=True)
+            error_text = str(e)
+            if "invite_code" in error_text and "null value" in error_text:
+                try:
+                    legacy_row = dict(vehicle_row)
+                    legacy_row["invite_code"] = _generate_invite_code()
+                    supabase_client.table("vehicles").upsert(
+                        legacy_row,
+                        on_conflict="id",
+                        ignore_duplicates=False,
+                    ).execute()
+                    print(
+                        _colorize(
+                            f"[single-usb] Vehicle registered with legacy invite_code fallback: {vehicle_id}",
+                            ANSI_YELLOW,
+                        ),
+                        flush=True,
+                    )
+                except Exception as fallback_error:
+                    print(
+                        _colorize(
+                            f"[single-usb] Vehicle registration failed (fallback): {fallback_error}",
+                            ANSI_YELLOW,
+                        ),
+                        flush=True,
+                    )
+            else:
+                print(_colorize(f"[single-usb] Vehicle registration failed: {e}", ANSI_YELLOW), flush=True)
 
     if head_direction_estimator.enabled:
         print(
@@ -533,7 +567,41 @@ def main() -> None:
         "infer_count": 0,
         "infer_t0": time.time(),
         "gyro": None,
+        # GPS fields — updated each main-loop tick for BLE peripheral
+        "speed_mph": 0,
+        "heading_degrees": 0,
+        "compass_direction": "N",
+        "latitude": 0.0,
+        "longitude": 0.0,
+        "satellites": 0,
+        "is_speeding": False,
     }
+
+    # ── BLE peripheral ──────────────────────────────────────────────────────
+    def _on_ble_settings(data: dict) -> None:
+        """iOS wrote new feature-toggle settings; apply them to the runtime."""
+        # These are advisory — the Pi honours them on a best-effort basis.
+        print(f"[BLE] Settings update from app: {data}", flush=True)
+
+    def _on_ble_buzzer(data: dict) -> None:
+        """iOS wrote a buzzer command; fire the local buzzer immediately."""
+        if data.get("active"):
+            buzzer.play_distraction_alert()
+        else:
+            buzzer.stop_alert() if hasattr(buzzer, "stop_alert") else None
+
+    ble = BluetoothPeripheral(
+        vehicle_id=vehicle_id,
+        shared_results=_shared_results,
+        lock=_lock,
+        on_settings=_on_ble_settings,
+        on_buzzer=_on_ble_buzzer,
+    )
+    ble.start()
+    if ble.enabled:
+        print(_colorize("[single-usb] BLE: ACTIVE", ANSI_GREEN), flush=True)
+    else:
+        print(_colorize(f"[single-usb] BLE: INACTIVE ({ble.reason})", ANSI_YELLOW), flush=True)
 
     _camera_stop = threading.Event()
     _inference_stop = threading.Event()
@@ -797,6 +865,16 @@ def main() -> None:
             speed_limit_mph = int(speed_limit) if speed_limit is not None else 0
             is_speeding = speed_limit is not None and speed_mph > (speed_limit_mph + 5)
 
+            # Keep GPS fields in shared state so the BLE peripheral can read them.
+            with _lock:
+                _shared_results["speed_mph"] = speed_mph
+                _shared_results["heading_degrees"] = heading_degrees
+                _shared_results["compass_direction"] = gps.compass_direction
+                _shared_results["latitude"] = gps.latitude
+                _shared_results["longitude"] = gps.longitude
+                _shared_results["satellites"] = gps.satellites
+                _shared_results["is_speeding"] = is_speeding
+
             # Buzzer: distraction alerts from YOLO state.
             if (phone_detected or drinking_detected) and (now - last_distraction_buzzer_time) >= distraction_buzzer_cooldown:
                 buzzer.play_distraction_alert()
@@ -886,6 +964,11 @@ def main() -> None:
                 cv2.destroyAllWindows()
             except Exception:
                 pass
+
+        try:
+            ble.stop()
+        except Exception:
+            pass
 
         try:
             buzzer.stop()
