@@ -217,9 +217,9 @@ class HeadDirectionEstimator:
             roi_h = gray.shape[0]
             y_norm = (fy + fh / 2.0) / max(roi_h, 1)
             if y_norm < 0.35:
-                direction = "DOWN"
-            elif y_norm > 0.65:
                 direction = "UP"
+            elif y_norm > 0.65:
+                direction = "DOWN"
             else:
                 direction = "CENTER"
             self._remember(direction)
@@ -241,9 +241,9 @@ class HeadDirectionEstimator:
 
         if len(left_profiles) > 0 or len(right_profiles) > 0:
             if len(left_profiles) > len(right_profiles):
-                direction = "LEFT"
-            elif len(right_profiles) > len(left_profiles):
                 direction = "RIGHT"
+            elif len(right_profiles) > len(left_profiles):
+                direction = "LEFT"
             else:
                 direction = self._fallback_direction(person_bbox, frame_bgr.shape[1], roi_offset_x)
             self._remember(direction)

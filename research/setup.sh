@@ -34,7 +34,19 @@ if command -v apt-get &>/dev/null; then
     libglib2.0-0 \
     libgstreamer1.0-0 \
     gstreamer1.0-tools \
-    gstreamer1.0-plugins-good
+    gstreamer1.0-plugins-good \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    libbz2-dev \
+    libreadline-dev \
+    libsqlite3-dev \
+    libncursesw5-dev \
+    xz-utils \
+    libffi-dev \
+    liblzma-dev \
+    curl \
+    git
   echo "  → System packages installed"
 else
   echo "  → Skipping apt (not Debian/Ubuntu); ensure OpenCV/GStreamer libs are available"
@@ -43,20 +55,62 @@ fi
 # ── 2. Python venv + requirements ───────────────────────────────────
 banner "Creating .venv and installing dependencies"
 
-if command -v python3.12 &>/dev/null; then
-  PYTHON_BIN="python3.12"
-else
-  echo "  ✗ python3.12 not found."
-  echo "    Install Python ${REQUIRED_PYTHON_VERSION} and retry."
-  exit 1
+# Activate pyenv if already installed but not yet on PATH.
+export PYENV_ROOT="${PYENV_ROOT:-${HOME}/.pyenv}"
+if [[ -d "$PYENV_ROOT/bin" ]]; then
+  export PATH="${PYENV_ROOT}/bin:${PATH}"
+  eval "$(pyenv init -)" 2>/dev/null || true
 fi
 
-PY_VERSION="$($PYTHON_BIN -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')"
-if [[ "$PY_VERSION" != "$REQUIRED_PYTHON_VERSION" ]]; then
-  echo "  ✗ Found ${PYTHON_BIN} version ${PY_VERSION}, expected ${REQUIRED_PYTHON_VERSION}."
-  echo "    Install Python ${REQUIRED_PYTHON_VERSION} and retry."
+# Check whether the exact required version is already available.
+PYTHON_BIN=""
+if command -v python3.12 &>/dev/null; then
+  _ver="$(python3.12 -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')"
+  if [[ "$_ver" == "$REQUIRED_PYTHON_VERSION" ]]; then
+    PYTHON_BIN="python3.12"
+  fi
+fi
+
+if [[ -z "$PYTHON_BIN" ]]; then
+  echo "  → Python ${REQUIRED_PYTHON_VERSION} not found; installing via pyenv"
+
+  if ! command -v pyenv &>/dev/null; then
+    echo "  → Installing pyenv..."
+    curl -fsSL https://pyenv.run | bash
+    export PATH="${PYENV_ROOT}/bin:${PATH}"
+    eval "$(pyenv init -)"
+    # Persist pyenv initialisation for future shell sessions.
+    SHELL_RC="${HOME}/.bashrc"
+    if [[ -n "${ZSH_VERSION:-}" ]]; then SHELL_RC="${HOME}/.zshrc"; fi
+    if ! grep -q 'pyenv init' "$SHELL_RC" 2>/dev/null; then
+      {
+        echo ''
+        echo '# pyenv (added by ADA setup.sh)'
+        echo 'export PYENV_ROOT="$HOME/.pyenv"'
+        echo 'export PATH="$PYENV_ROOT/bin:$PATH"'
+        echo 'eval "$(pyenv init -)"'
+      } >> "$SHELL_RC"
+      echo "  → pyenv init added to ${SHELL_RC}"
+    fi
+  fi
+
+  if ! pyenv versions --bare 2>/dev/null | grep -qx "${REQUIRED_PYTHON_VERSION}"; then
+    echo "  → Building Python ${REQUIRED_PYTHON_VERSION} (this takes a few minutes on Pi)..."
+    pyenv install "${REQUIRED_PYTHON_VERSION}"
+  else
+    echo "  → Python ${REQUIRED_PYTHON_VERSION} already installed in pyenv"
+  fi
+
+  PYTHON_BIN="${PYENV_ROOT}/versions/${REQUIRED_PYTHON_VERSION}/bin/python3"
+fi
+
+# Final sanity check.
+_final_ver="$("$PYTHON_BIN" -c 'import sys; print(".".join(map(str, sys.version_info[:3])))')"
+if [[ "$_final_ver" != "$REQUIRED_PYTHON_VERSION" ]]; then
+  echo "  ✗ Expected Python ${REQUIRED_PYTHON_VERSION}, got ${_final_ver}. Aborting."
   exit 1
 fi
+echo "  → Using Python ${_final_ver} (${PYTHON_BIN})"
 
 if [[ -d .venv ]] && [[ -f .venv/bin/python ]]; then
   VENV_VERSION="$(.venv/bin/python -c 'import sys; print(".".join(map(str, sys.version_info[:3])))' 2>/dev/null || true)"
