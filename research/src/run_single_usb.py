@@ -212,7 +212,16 @@ class HeadDirectionEstimator:
             minSize=(min_face, min_face),
         )
         if len(faces) > 0:
-            direction = "CENTER"
+            # Use largest detected face to determine vertical tilt (pitch).
+            fx, fy, fw, fh = max(faces, key=lambda f: f[2] * f[3])
+            roi_h = gray.shape[0]
+            y_norm = (fy + fh / 2.0) / max(roi_h, 1)
+            if y_norm < 0.35:
+                direction = "DOWN"
+            elif y_norm > 0.65:
+                direction = "UP"
+            else:
+                direction = "CENTER"
             self._remember(direction)
             return direction
 
