@@ -644,7 +644,6 @@ def main() -> None:
     else:
         print(_colorize(f"[single-usb] BLE: INACTIVE ({ble.reason})", ANSI_YELLOW), flush=True)
 
-    _frame_ready = threading.Condition(_lock)
     _camera_stop = threading.Event()
     _inference_stop = threading.Event()
     _telemetry_stop = threading.Event()
@@ -694,7 +693,6 @@ def main() -> None:
                     _infer_front, _infer_back = _infer_back, _infer_front
                     if not headless:
                         _main_front, _main_back = _main_back, _main_front
-                    _frame_ready.notify()
             except Exception:
                 if _camera_stop.is_set():
                     break
@@ -713,11 +711,11 @@ def main() -> None:
         main_prealloc: Optional[np.ndarray] = None
 
         while not _inference_stop.is_set():
-            with _frame_ready:
-                _frame_ready.wait(timeout=0.1)
+            with _lock:
                 infer_ref = _infer_front
                 main_ref = _main_front
             if infer_ref is None:
+                time.sleep(0.001)
                 continue
 
             if infer_prealloc is None:
