@@ -155,3 +155,69 @@ final class CachedVehicleRealtime {
     self.buzzerUpdatedAt = data.buzzerUpdatedAt
   }
 }
+
+/// Locally finalized trip captured from BLE stream while Pi was connected.
+@Model
+final class CachedLocalTrip {
+  @Attribute(.unique) var id: UUID = UUID()
+  var createdAt: Date = Date()
+  var vehicleId: String = ""
+  var sessionId: UUID = UUID()
+  var startedAt: Date = Date()
+  var endedAt: Date = Date()
+  var status: String = "ok"
+  var maxSpeedMph: Int = 0
+  var avgSpeedMph: Double = 0
+  var maxIntoxicationScore: Int = 0
+  var speedingEventCount: Int = 0
+  var speedSampleCount: Int = 0
+  var speedSampleSum: Int = 0
+  var phoneDistractionEventCount: Int = 0
+  var drinkingEventCount: Int = 0
+  var routeWaypointsData: Data = Data()
+
+  init() {}
+
+  init(from payload: LocalTripPersistPayload) {
+    id = payload.id
+    createdAt = payload.createdAt
+    vehicleId = payload.vehicleId
+    sessionId = payload.sessionId
+    startedAt = payload.startedAt
+    endedAt = payload.endedAt
+    status = payload.status
+    maxSpeedMph = payload.maxSpeedMph
+    avgSpeedMph = payload.avgSpeedMph
+    maxIntoxicationScore = payload.maxIntoxicationScore
+    speedingEventCount = payload.speedingEventCount
+    speedSampleCount = payload.speedSampleCount
+    speedSampleSum = payload.speedSampleSum
+    phoneDistractionEventCount = payload.phoneDistractionEventCount
+    drinkingEventCount = payload.drinkingEventCount
+    routeWaypointsData = (try? JSONEncoder().encode(payload.routeWaypoints)) ?? Data()
+  }
+
+  func toVehicleTrip() -> VehicleTrip {
+    let routeWaypoints = (try? JSONDecoder().decode([RouteWaypoint].self, from: routeWaypointsData)) ?? []
+    return VehicleTrip(
+      id: id,
+      createdAt: createdAt,
+      vehicleId: vehicleId,
+      sessionId: sessionId,
+      startedAt: startedAt,
+      endedAt: endedAt,
+      status: status,
+      maxSpeedMph: maxSpeedMph,
+      avgSpeedMph: avgSpeedMph,
+      maxIntoxicationScore: maxIntoxicationScore,
+      speedingEventCount: speedingEventCount,
+      speedSampleCount: speedSampleCount,
+      speedSampleSum: speedSampleSum,
+      phoneDistractionEventCount: phoneDistractionEventCount,
+      drinkingEventCount: drinkingEventCount,
+      routeWaypoints: routeWaypoints,
+      crashDetected: nil,
+      crashSeverity: nil
+    )
+  }
+}

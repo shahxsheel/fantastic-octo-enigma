@@ -212,8 +212,8 @@ struct HomeView: View {
     errorMessage = nil
 
     do {
-      async let allTripsTask = supabase.fetchTrips(for: vehicle.vehicleId)
-      async let todayTripsTask = supabase.fetchTripsForToday(for: vehicle.vehicleId)
+      async let allTripsTask = supabase.fetchCombinedTrips(for: vehicle.vehicleId)
+      async let todayTripsTask = supabase.fetchCombinedTripsForToday(for: vehicle.vehicleId)
 
       let (fetchedTrips, fetchedTodayTrips) = try await (allTripsTask, todayTripsTask)
 

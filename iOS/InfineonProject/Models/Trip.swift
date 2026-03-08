@@ -8,6 +8,13 @@
 import MapKit
 import SwiftUI
 
+struct TripTelemetryPoint: Identifiable {
+  let id: Int
+  let timestamp: Date
+  let speedMph: Int
+  let riskScore: Int
+}
+
 /// A wrapper struct for VehicleTrip that provides convenient computed properties for UI display
 struct Trip: Identifiable {
   let vehicleTrip: VehicleTrip
@@ -26,6 +33,18 @@ struct Trip: Identifiable {
   // GPS route
   var routeCoordinates: [CLLocationCoordinate2D] {
     vehicleTrip.routeWaypoints?.map { $0.coordinate } ?? []
+  }
+  var telemetryPoints: [TripTelemetryPoint] {
+    let waypoints = vehicleTrip.routeWaypoints ?? []
+    let sorted = waypoints.sorted { $0.ts < $1.ts }
+    return sorted.enumerated().map { idx, waypoint in
+      TripTelemetryPoint(
+        id: idx,
+        timestamp: waypoint.date,
+        speedMph: waypoint.spd,
+        riskScore: waypoint.ix ?? 0
+      )
+    }
   }
   // Distraction events
   var phoneDistractionEventCount: Int { vehicleTrip.phoneDistractionEventCount ?? 0 }

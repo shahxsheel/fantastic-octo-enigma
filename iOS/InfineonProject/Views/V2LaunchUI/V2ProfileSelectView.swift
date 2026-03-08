@@ -70,10 +70,8 @@ struct V2ProfileSelectView: View {
   func prefetchStatus() async {
     let vehicleId = appData.watchingProfile!.vehicleId
 
-    // Set BLE vehicle ID so the data polling timer feeds realtime data
-    if bluetooth.isConnected {
-      bluetooth.connectedVehicleId = vehicleId
-    }
+    // Persist the preferred vehicle for BLE relay/reconnect flows.
+    bluetooth.connectedVehicleId = vehicleId
 
     // 1. Subscribe to realtime (will skip Supabase channel if BLE connected)
     await supabase.subscribeToVehicleRealtime(vehicleId: vehicleId)

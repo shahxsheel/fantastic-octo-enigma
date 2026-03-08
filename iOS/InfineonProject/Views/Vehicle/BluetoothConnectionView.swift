@@ -60,12 +60,22 @@ struct BluetoothConnectionView: View {
             }
 
             LabeledContent("Status") {
-              HStack(spacing: 6) {
-                Circle()
-                  .fill(.green)
-                  .frame(width: 8, height: 8)
-                Text("Connected")
-                  .foregroundStyle(.green)
+              if bluetooth.isPiDataActive {
+                HStack(spacing: 6) {
+                  Circle()
+                    .fill(.green)
+                    .frame(width: 8, height: 8)
+                  Text("Pi Streaming")
+                    .foregroundStyle(.green)
+                }
+              } else {
+                HStack(spacing: 6) {
+                  Circle()
+                    .fill(.orange)
+                    .frame(width: 8, height: 8)
+                  Text("Pi Inactive")
+                    .foregroundStyle(.orange)
+                }
               }
             }
 

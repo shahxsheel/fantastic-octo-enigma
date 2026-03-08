@@ -24,6 +24,7 @@ struct InfineonProjectApp: App {
     let schema = Schema([
       CachedVehicle.self,
       CachedVehicleRealtime.self,
+      CachedLocalTrip.self,
     ])
     let persistentConfiguration = ModelConfiguration(
       schema: schema,

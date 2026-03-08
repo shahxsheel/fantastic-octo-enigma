@@ -167,6 +167,7 @@ struct RouteWaypoint: Codable {
   let lng: Double
   let spd: Int
   let ts: Int
+  let ix: Int?
 
   var coordinate: CLLocationCoordinate2D {
     CLLocationCoordinate2D(latitude: lat, longitude: lng)
@@ -385,6 +386,31 @@ struct UserProfile: Codable, Identifiable, Equatable {
   var needsSetup: Bool {
     displayName == nil || displayName?.isEmpty == true
   }
+}
+
+enum PiConnectivityState: String {
+  case online
+  case inactive
+  case offline
+}
+
+struct LocalTripPersistPayload {
+  let id: UUID
+  let createdAt: Date
+  let vehicleId: String
+  let sessionId: UUID
+  let startedAt: Date
+  let endedAt: Date
+  let status: String
+  let maxSpeedMph: Int
+  let avgSpeedMph: Double
+  let maxIntoxicationScore: Int
+  let speedingEventCount: Int
+  let speedSampleCount: Int
+  let speedSampleSum: Int
+  let phoneDistractionEventCount: Int
+  let drinkingEventCount: Int
+  let routeWaypoints: [RouteWaypoint]
 }
 
 // MARK: - SupabaseService
@@ -810,6 +836,31 @@ class SupabaseService {
     guard bluetooth.isConnected, let bleData = bluetooth.latestRealtime else { return }
     let realtime = bleData.toVehicleRealtime(vehicleId: vehicleId)
     self.vehicleRealtimeData[vehicleId] = realtime
+    self.saveCachedVehicleRealtime(realtime)
+  }
+
+  func piConnectivityState(for vehicleId: String) -> PiConnectivityState {
+    if bluetooth.connectedVehicleId == vehicleId {
+      // BLE path takes precedence whenever BLE mode is enabled for this selected vehicle.
+      if bluetooth.bleEnabled {
+        if !bluetooth.isConnected {
+          return .offline
+        }
+        switch bluetooth.piConnectionState {
+        case .online: return .online
+        case .inactive: return .inactive
+        case .offline: return .offline
+        }
+      }
+      // If BLE is no longer enabled but stale BLE data exists, treat as offline.
+      if bluetooth.lastDataReceivedAt != nil && !bluetooth.isConnected {
+        return .offline
+      }
+    }
+
+    guard let realtime = vehicleRealtimeData[vehicleId] else { return .offline }
+    let age = Date.now.timeIntervalSince(realtime.updatedAt)
+    return age <= 10 ? .online : .offline
   }
 
   // MARK: - BLE Relay (upload Pi data to Supabase on its behalf)
@@ -993,6 +1044,66 @@ class SupabaseService {
       .value
 
     return trips
+  }
+
+  func saveLocalTrip(_ payload: LocalTripPersistPayload) {
+    guard let modelContext else { return }
+    do {
+      modelContext.insert(CachedLocalTrip(from: payload))
+      try modelContext.save()
+    } catch {
+      print("Error saving local trip: \(error)")
+    }
+  }
+
+  func fetchLocalTrips(for vehicleId: String, limit: Int = 50) -> [VehicleTrip] {
+    guard let modelContext else { return [] }
+    do {
+      var descriptor = FetchDescriptor<CachedLocalTrip>(
+        predicate: #Predicate { $0.vehicleId == vehicleId },
+        sortBy: [SortDescriptor(\.startedAt, order: .reverse)]
+      )
+      descriptor.fetchLimit = limit
+      return try modelContext.fetch(descriptor).map { $0.toVehicleTrip() }
+    } catch {
+      print("Error loading local trips: \(error)")
+      return []
+    }
+  }
+
+  func fetchLocalTripsForToday(for vehicleId: String) -> [VehicleTrip] {
+    guard let modelContext else { return [] }
+    let startOfDay = Calendar.current.startOfDay(for: Date())
+    do {
+      let descriptor = FetchDescriptor<CachedLocalTrip>(
+        predicate: #Predicate {
+          $0.vehicleId == vehicleId && $0.startedAt >= startOfDay
+        },
+        sortBy: [SortDescriptor(\.startedAt, order: .reverse)]
+      )
+      return try modelContext.fetch(descriptor).map { $0.toVehicleTrip() }
+    } catch {
+      print("Error loading today's local trips: \(error)")
+      return []
+    }
+  }
+
+  func fetchCombinedTrips(for vehicleId: String, limit: Int = 50) async throws -> [VehicleTrip] {
+    let remote = try await fetchTrips(for: vehicleId, limit: limit)
+    let local = fetchLocalTrips(for: vehicleId, limit: limit)
+    var mergedById: [UUID: VehicleTrip] = [:]
+    for trip in remote { mergedById[trip.id] = trip }
+    for trip in local { mergedById[trip.id] = trip }
+    return mergedById.values.sorted { $0.startedAt > $1.startedAt }
+  }
+
+  func fetchCombinedTripsForToday(for vehicleId: String) async throws -> [VehicleTrip] {
+    let remote = try await fetchTripsForToday(for: vehicleId)
+    let local = fetchLocalTripsForToday(for: vehicleId)
+    var mergedById: [UUID: VehicleTrip] = [:]
+    for trip in remote { mergedById[trip.id] = trip }
+    for trip in local { mergedById[trip.id] = trip }
+    return mergedById.values.sorted { $0.startedAt > $1.startedAt }
   }
 
   // MARK: - Realtime Subscription

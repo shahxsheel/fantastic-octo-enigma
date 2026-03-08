@@ -70,15 +70,18 @@ struct VehicleRowView: View {
   let realtimeData: VehicleRealtime?
 
   var body: some View {
+    let piState = supabase.piConnectivityState(for: vehicle.id)
     VStack(alignment: .leading, spacing: 8) {
       HStack {
         Text(vehicle.name ?? vehicle.id)
           .font(.headline)
 
         Spacer()
-
-        if let data = realtimeData {
-          DriverStatusBadge(status: data.driverStatus)
+        VStack(alignment: .trailing, spacing: 4) {
+          PiStateBadge(state: piState)
+          if let data = realtimeData {
+            DriverStatusBadge(status: data.driverStatus)
+          }
         }
       }
 
@@ -123,6 +126,7 @@ struct VehicleDetailView: View {
   let realtimeData: VehicleRealtime?
 
   var body: some View {
+    let piState = supabase.piConnectivityState(for: vehicle.id)
     NavigationStack {
       List {
         Section("Vehicle Info") {
@@ -154,6 +158,9 @@ struct VehicleDetailView: View {
 
           Section("Activity") {
             LabeledContent("Moving", value: data.isMoving ? "Yes" : "No")
+            LabeledContent("Pi Status") {
+              PiStateBadge(state: piState)
+            }
             HStack {
               Text("Last Updated")
               Spacer()
@@ -174,6 +181,44 @@ struct VehicleDetailView: View {
       .navigationTitle(vehicle.name ?? "Vehicle")
       .navigationBarTitleDisplayMode(.inline)
     }
+  }
+}
+
+private struct PiStateBadge: View {
+  let state: PiConnectivityState
+
+  private var color: Color {
+    switch state {
+    case .online: .green
+    case .inactive: .orange
+    case .offline: .red
+    }
+  }
+
+  private var label: String {
+    switch state {
+    case .online: "Pi Online"
+    case .inactive: "Pi Inactive"
+    case .offline: "Pi Offline"
+    }
+  }
+
+  private var icon: String {
+    switch state {
+    case .online: "dot.radiowaves.left.and.right"
+    case .inactive: "exclamationmark.triangle.fill"
+    case .offline: "wifi.slash"
+    }
+  }
+
+  var body: some View {
+    Label(label, systemImage: icon)
+      .font(.caption2)
+      .padding(.horizontal, 8)
+      .padding(.vertical, 3)
+      .background(color.opacity(0.15))
+      .foregroundStyle(color)
+      .clipShape(.capsule)
   }
 }
 

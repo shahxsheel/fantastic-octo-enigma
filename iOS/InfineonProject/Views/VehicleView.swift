@@ -86,22 +86,13 @@ struct VehicleView: View {
             Color.clear.frame(height: 290)
 
             VStack(alignment: .leading, spacing: 25) {
-              // BLE connected banner
-              if bluetooth.isConnected {
-                Label {
-                  VStack(alignment: .leading) {
-                    Text("Bluetooth Connection")
-                      .bold()
-                    Text("Offline relay mode enabled")
-                      .font(.caption)
-                  }
-                } icon: {
-                  SettingsBoxView(icon: "antenna.radiowaves.left.and.right", color: .blue)
-                }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.blue.opacity(0.15), in: .rect(cornerRadius: 10))
-              }
+              let piState = supabase.piConnectivityState(for: vehicle.vehicle.id)
+              PiBannerView(
+                icon: piBannerIcon(for: piState),
+                color: piBannerColor(for: piState),
+                title: piBannerTitle(for: piState),
+                subtitle: piBannerSubtitle(for: piState)
+              )
 
               // Driver alert
               if let data = vehicle.realtimeData {
@@ -514,6 +505,22 @@ struct VehicleView: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .background(Color.orange.opacity(0.1), in: .rect(cornerRadius: 10))
     }
+    // Side-look warning
+    else if data.driverStatus.lowercased() == "distracted_side_look" {
+      Label {
+        VStack(alignment: .leading) {
+          Text("Side-Look Warning")
+            .bold()
+          Text("Driver is looking away from center for too long")
+            .font(.caption)
+        }
+      } icon: {
+        SettingsBoxView(icon: "arrow.left.and.right.circle.fill", color: .orange)
+      }
+      .padding()
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(Color.orange.opacity(0.1), in: .rect(cornerRadius: 10))
+    }
     // Impaired alert
     else if data.intoxicationScore >= 4
       || data.driverStatus.lowercased() == "impaired"
@@ -653,6 +660,77 @@ struct VehicleView: View {
     let location2 = CLLocation(latitude: coord2.latitude, longitude: coord2.longitude)
     return location1.distance(from: location2) < thresholdMeters
   }
+
+  private func piBannerIcon(for state: PiConnectivityState) -> String {
+    switch state {
+    case .online:
+      return "antenna.radiowaves.left.and.right"
+    case .inactive:
+      return "antenna.radiowaves.left.and.right.slash"
+    case .offline:
+      return "wifi.slash"
+    }
+  }
+
+  private func piBannerColor(for state: PiConnectivityState) -> Color {
+    switch state {
+    case .online:
+      return .green
+    case .inactive:
+      return .orange
+    case .offline:
+      return .red
+    }
+  }
+
+  private func piBannerTitle(for state: PiConnectivityState) -> String {
+    switch state {
+    case .online:
+      return "Pi Online"
+    case .inactive:
+      return "Pi Inactive"
+    case .offline:
+      return "Pi Offline"
+    }
+  }
+
+  private func piBannerSubtitle(for state: PiConnectivityState) -> String {
+    switch state {
+    case .online:
+      return bluetooth.isConnected
+        ? "Streaming live data over BLE"
+        : "Receiving fresh cloud telemetry"
+    case .inactive:
+      return "Connected but data has gone stale"
+    case .offline:
+      return "No Pi telemetry detected"
+    }
+  }
+}
+
+// MARK: - Pi Status Banner
+
+struct PiBannerView: View {
+  let icon: String
+  let color: Color
+  let title: String
+  let subtitle: String
+
+  var body: some View {
+    Label {
+      VStack(alignment: .leading) {
+        Text(title)
+          .bold()
+        Text(subtitle)
+          .font(.caption)
+      }
+    } icon: {
+      SettingsBoxView(icon: icon, color: color)
+    }
+    .padding()
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(color.opacity(0.15), in: .rect(cornerRadius: 10))
+  }
 }
 
 // MARK: - Driver Status Badge (reused from VehicleListView)
@@ -667,6 +745,7 @@ struct DriverStatusBadge: View {
     case "impaired": return .red
     case "distracted_phone": return .red
     case "distracted_drinking": return .orange
+    case "distracted_side_look": return .orange
     default: return .gray
     }
   }
@@ -678,6 +757,7 @@ struct DriverStatusBadge: View {
     case "impaired": return "exclamationmark.triangle.fill"
     case "distracted_phone": return "iphone.gen3"
     case "distracted_drinking": return "cup.and.saucer.fill"
+    case "distracted_side_look": return "arrow.left.and.right.circle.fill"
     default: return "questionmark.circle.fill"
     }
   }
@@ -686,6 +766,7 @@ struct DriverStatusBadge: View {
     switch status.lowercased() {
     case "distracted_phone": return "Phone"
     case "distracted_drinking": return "Drinking"
+    case "distracted_side_look": return "Side Look"
     default: return status.capitalized
     }
   }

@@ -6,6 +6,7 @@
 //
 
 import MapKit
+import Charts
 import SwiftUI
 
 struct TripDetailView: View {
@@ -24,6 +25,11 @@ struct TripDetailView: View {
     if trip.maxIntoxicationScore >= 4 { return .red }
     if trip.maxIntoxicationScore >= 2 { return .orange }
     return .green
+  }
+
+  private var riskScaleFactor: Double {
+    let baseline = max(24, trip.maxSpeedMph)
+    return Double(baseline) / 6.0
   }
 
   var body: some View {
@@ -143,6 +149,42 @@ struct TripDetailView: View {
             icon: "cup.and.saucer.fill",
             color: .orange
           )
+        }
+
+        if trip.telemetryPoints.count > 1 {
+          Section("Telemetry Graph") {
+            Chart {
+              ForEach(trip.telemetryPoints) { point in
+                LineMark(
+                  x: .value("Time", point.timestamp),
+                  y: .value("Speed", point.speedMph)
+                )
+                .interpolationMethod(.catmullRom)
+                .foregroundStyle(.blue)
+
+                LineMark(
+                  x: .value("Time", point.timestamp),
+                  y: .value("RiskScaled", Double(point.riskScore) * riskScaleFactor)
+                )
+                .interpolationMethod(.catmullRom)
+                .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 4]))
+                .foregroundStyle(.red)
+              }
+            }
+            .frame(height: 220)
+
+            HStack(spacing: 12) {
+              Label("Speed", systemImage: "line.diagonal")
+                .foregroundStyle(.blue)
+              Label("Risk", systemImage: "line.diagonal")
+                .foregroundStyle(.red)
+              Spacer()
+              Text("Risk scaled")
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            }
+            .font(.caption)
+          }
         }
 
         if !routeCoordinates.isEmpty {

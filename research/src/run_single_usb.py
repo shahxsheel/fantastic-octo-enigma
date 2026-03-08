@@ -148,6 +148,46 @@ def _compute_driver_state(objects: list[dict]) -> tuple[str, str, bool, bool, in
     return "FOCUSED", "alert", False, False, 0
 
 
+class SideLookTracker:
+    """Tracks continuous side-looking duration and emits warning when threshold is reached."""
+
+    def __init__(self, threshold_seconds: float = 2.0):
+        self.threshold_seconds = max(0.1, threshold_seconds)
+        self._side_look_start_ts: Optional[float] = None
+
+    def update(self, head_direction: str, now_ts: float) -> bool:
+        direction = head_direction.upper().strip()
+        if direction in ("LEFT", "RIGHT"):
+            if self._side_look_start_ts is None:
+                self._side_look_start_ts = now_ts
+            return (now_ts - self._side_look_start_ts) >= self.threshold_seconds
+
+        if direction == "CENTER":
+            self._side_look_start_ts = None
+
+        return False
+
+
+def _resolve_driver_state(
+    objects: list[dict], sideways_warning_active: bool
+) -> tuple[str, str, bool, bool, int]:
+    """
+    Resolves final driver state with precedence:
+      1) phone alert (4/6)
+      2) side-look warning (2/6)
+      3) drinking warning (2/6)
+      4) focused (0/6)
+    """
+    base_alert, base_status, phone_detected, drinking_detected, base_score = _compute_driver_state(objects)
+    if phone_detected:
+        return base_alert, base_status, phone_detected, drinking_detected, base_score
+
+    if sideways_warning_active:
+        return "WARN", "distracted_side_look", False, drinking_detected, 2
+
+    return base_alert, base_status, phone_detected, drinking_detected, base_score
+
+
 def _generate_invite_code(length: int = 6) -> str:
     alphabet = string.ascii_uppercase + string.digits
     return "".join(random.choice(alphabet) for _ in range(length))
@@ -437,6 +477,7 @@ def main() -> None:
 
     yolo = YoloDetector()
     head_direction_estimator = HeadDirectionEstimator()
+    side_look_tracker = SideLookTracker(threshold_seconds=2.0)
     buzzer = BuzzerController(pin=18)
     buzzer.start()
 
@@ -694,7 +735,6 @@ def main() -> None:
             else:
                 objects = last_objects
 
-            alert_state, driver_status, phone_detected, drinking_detected, intox_score = _compute_driver_state(objects)
             if main_prealloc is not None:
                 head_direction = head_direction_estimator.estimate(
                     main_prealloc,
@@ -710,6 +750,15 @@ def main() -> None:
                     inf_frame_idx,
                     bbox_source_shape=None,
                 )
+
+            sideways_warning_active = side_look_tracker.update(
+                head_direction=head_direction,
+                now_ts=time.time(),
+            )
+            alert_state, driver_status, phone_detected, drinking_detected, intox_score = _resolve_driver_state(
+                objects,
+                sideways_warning_active=sideways_warning_active,
+            )
 
             latency_ms = (time.time() - inference_start) * 1000.0
             inf_frame_idx += 1
