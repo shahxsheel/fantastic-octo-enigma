@@ -25,6 +25,7 @@ from src.components.buzzer import BuzzerController
 from src.components.gps import GPSReader
 from src.components.gyro import GyroReader
 from src.components.speed_limit import SpeedLimitChecker
+from src.infer.face_eye_estimator import FaceEyeEstimator
 from src.infer.yolo_detector import YoloDetector
 
 # Pi 5 ARM SVE + NCNN threading knobs.
@@ -169,18 +170,22 @@ class SideLookTracker:
 
 
 def _resolve_driver_state(
-    objects: list[dict], sideways_warning_active: bool
+    objects: list[dict], sideways_warning_active: bool, is_drowsy: bool = False
 ) -> tuple[str, str, bool, bool, int]:
     """
     Resolves final driver state with precedence:
       1) phone alert (4/6)
-      2) side-look warning (2/6)
-      3) drinking warning (2/6)
-      4) focused (0/6)
+      2) drowsiness alert (5/6)
+      3) side-look warning (2/6)
+      4) drinking warning (2/6)
+      5) focused (0/6)
     """
     base_alert, base_status, phone_detected, drinking_detected, base_score = _compute_driver_state(objects)
     if phone_detected:
         return base_alert, base_status, phone_detected, drinking_detected, base_score
+
+    if is_drowsy:
+        return "ALERT", "drowsy", False, drinking_detected, 5
 
     if sideways_warning_active:
         return "WARN", "distracted_side_look", False, drinking_detected, 2
@@ -191,163 +196,6 @@ def _resolve_driver_state(
 def _generate_invite_code(length: int = 6) -> str:
     alphabet = string.ascii_uppercase + string.digits
     return "".join(random.choice(alphabet) for _ in range(length))
-
-
-class HeadDirectionEstimator:
-    """Local-only head direction estimate using OpenCV cascades inside the driver ROI."""
-
-    def __init__(self):
-        self.enabled = _env_bool("ENABLE_HEAD_DIRECTION", True)
-        self.every_n = max(1, int(os.environ.get("HEAD_DIRECTION_EVERY_N", "4")))
-        self._last_direction = "UNKNOWN"
-        self._last_update_ts = 0.0
-
-        if not self.enabled:
-            self.reason = "disabled by config"
-            self._frontal = None
-            self._profile = None
-            return
-
-        cascade_root = getattr(cv2.data, "haarcascades", "")
-        frontal_path = os.path.join(cascade_root, "haarcascade_frontalface_default.xml")
-        profile_path = os.path.join(cascade_root, "haarcascade_profileface.xml")
-        self._frontal = cv2.CascadeClassifier(frontal_path)
-        self._profile = cv2.CascadeClassifier(profile_path)
-
-        if self._frontal.empty() or self._profile.empty():
-            self.enabled = False
-            self.reason = "OpenCV cascade load failed"
-        else:
-            self.reason = "ok"
-
-    def estimate(
-        self,
-        frame_bgr: np.ndarray,
-        objects: list[dict],
-        frame_idx: int,
-        bbox_source_shape: Optional[tuple[int, int]] = None,
-    ) -> str:
-        if not self.enabled:
-            return "UNKNOWN"
-
-        if frame_idx % self.every_n != 0:
-            return self._last_direction
-
-        person_bbox = _largest_person_bbox(objects)
-        if person_bbox is None:
-            return self._hold_last_direction()
-
-        if bbox_source_shape is not None:
-            src_h, src_w = bbox_source_shape
-            dst_h, dst_w = frame_bgr.shape[:2]
-            if src_h > 0 and src_w > 0 and (src_h != dst_h or src_w != dst_w):
-                person_bbox = _scale_bbox(person_bbox, src_w, src_h, dst_w, dst_h)
-
-        roi, roi_offset_x = self._extract_head_roi(frame_bgr, person_bbox)
-        if roi is None:
-            return self._hold_last_direction()
-
-        gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-        gray = cv2.equalizeHist(gray)
-        min_face = max(24, int(min(gray.shape[:2]) * 0.18))
-        scale_factor = 1.12
-        min_neighbors = 4
-
-        faces = self._frontal.detectMultiScale(
-            gray,
-            scaleFactor=scale_factor,
-            minNeighbors=min_neighbors,
-            minSize=(min_face, min_face),
-        )
-        if len(faces) > 0:
-            # Use largest detected face to determine vertical tilt (pitch).
-            fx, fy, fw, fh = max(faces, key=lambda f: f[2] * f[3])
-            roi_h = gray.shape[0]
-            y_norm = (fy + fh / 2.0) / max(roi_h, 1)
-            if y_norm < 0.35:
-                direction = "UP"
-            elif y_norm > 0.65:
-                direction = "DOWN"
-            else:
-                direction = "CENTER"
-            self._remember(direction)
-            return direction
-
-        left_profiles = self._profile.detectMultiScale(
-            gray,
-            scaleFactor=scale_factor,
-            minNeighbors=min_neighbors,
-            minSize=(min_face, min_face),
-        )
-        flipped = cv2.flip(gray, 1)
-        right_profiles = self._profile.detectMultiScale(
-            flipped,
-            scaleFactor=scale_factor,
-            minNeighbors=min_neighbors,
-            minSize=(min_face, min_face),
-        )
-
-        if len(left_profiles) > 0 or len(right_profiles) > 0:
-            if len(left_profiles) > len(right_profiles):
-                direction = "RIGHT"
-            elif len(right_profiles) > len(left_profiles):
-                direction = "LEFT"
-            else:
-                direction = self._fallback_direction(person_bbox, frame_bgr.shape[1], roi_offset_x)
-            self._remember(direction)
-            return direction
-
-        direction = self._fallback_direction(person_bbox, frame_bgr.shape[1], roi_offset_x)
-        self._remember(direction)
-        return direction
-
-    def _extract_head_roi(
-        self, frame_bgr: np.ndarray, person_bbox: list[int]
-    ) -> tuple[Optional[np.ndarray], int]:
-        frame_h, frame_w = frame_bgr.shape[:2]
-        x1, y1, x2, y2 = person_bbox
-        person_w = max(1, x2 - x1)
-        person_h = max(1, y2 - y1)
-
-        roi_x1 = max(0, x1 - int(person_w * 0.08))
-        roi_x2 = min(frame_w, x2 + int(person_w * 0.08))
-        roi_y1 = max(0, y1)
-        roi_y2 = min(frame_h, y1 + int(person_h * 0.65))
-
-        if roi_x2 - roi_x1 < 32 or roi_y2 - roi_y1 < 32:
-            return None, roi_x1
-
-        roi = frame_bgr[roi_y1:roi_y2, roi_x1:roi_x2]
-        max_dim = max(roi.shape[:2])
-        if max_dim > 220:
-            scale = 220.0 / max_dim
-            roi = cv2.resize(
-                roi,
-                (max(1, int(roi.shape[1] * scale)), max(1, int(roi.shape[0] * scale))),
-                interpolation=cv2.INTER_LINEAR,
-            )
-        return roi, roi_x1
-
-    def _fallback_direction(
-        self, person_bbox: list[int], frame_width: int, _roi_offset_x: int
-    ) -> str:
-        x1, _, x2, _ = person_bbox
-        center_x = (x1 + x2) / 2.0
-        normalized = (center_x - (frame_width / 2.0)) / max(frame_width / 2.0, 1.0)
-        if normalized < -0.18:
-            return "LEFT"
-        if normalized > 0.18:
-            return "RIGHT"
-        return "CENTER"
-
-    def _remember(self, direction: str) -> None:
-        self._last_direction = direction
-        self._last_update_ts = time.time()
-
-    def _hold_last_direction(self) -> str:
-        if (time.time() - self._last_update_ts) <= 1.0:
-            return self._last_direction
-        return "UNKNOWN"
 
 
 def _draw_minimal_graphics(
@@ -411,6 +259,8 @@ def _print_cli_stats(
     speed_limit: Optional[int],
     heading: float,
     night_mode: bool = False,
+    ear: float = 1.0,
+    is_drowsy: bool = False,
 ) -> None:
     """Print single-line dashboard (overwrite with \r)."""
     parts = [
@@ -418,10 +268,13 @@ def _print_cli_stats(
         f"STATE: {alert_state}",
         f"DRIVER: {driver_status}",
         f"LOOK: {head_direction}",
+        f"EAR:{ear:.2f}",
         f"SPEED: {speed_mph}mph",
         f"HDG: {int(round(heading)) % 360}",
     ]
 
+    if is_drowsy:
+        parts.append(_colorize("[DROWSY!]", ANSI_RED))
     if speed_limit is not None:
         parts.append(f"LIMIT: {speed_limit}mph")
     if night_mode:
@@ -476,7 +329,9 @@ def main() -> None:
         return
 
     yolo = YoloDetector()
-    head_direction_estimator = HeadDirectionEstimator()
+    face_eye_estimator = FaceEyeEstimator(
+        model_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "face_landmarker.task")
+    )
     side_look_tracker = SideLookTracker(threshold_seconds=2.0)
     buzzer = BuzzerController(pin=18)
     buzzer.start()
@@ -544,22 +399,10 @@ def main() -> None:
             else:
                 print(_colorize(f"[single-usb] Vehicle registration failed: {e}", ANSI_YELLOW), flush=True)
 
-    if head_direction_estimator.enabled:
-        print(
-            _colorize(
-                f"[single-usb] HEAD DIRECTION: ACTIVE (every {head_direction_estimator.every_n} frames)",
-                ANSI_GREEN,
-            ),
-            flush=True,
-        )
+    if face_eye_estimator.enabled:
+        print(_colorize("[single-usb] FACE/EYE: ACTIVE (MediaPipe FaceLandmarker)", ANSI_GREEN), flush=True)
     else:
-        print(
-            _colorize(
-                f"[single-usb] HEAD DIRECTION: INACTIVE ({head_direction_estimator.reason})",
-                ANSI_YELLOW,
-            ),
-            flush=True,
-        )
+        print(_colorize(f"[single-usb] FACE/EYE: INACTIVE ({face_eye_estimator.reason})", ANSI_YELLOW), flush=True)
 
     gps = GPSReader(force_fake=use_fake_gps)
     gps.start()
@@ -602,6 +445,8 @@ def main() -> None:
         "is_drinking_detected": False,
         "intoxication_score": 0,
         "head_direction": "UNKNOWN",
+        "ear": 1.0,
+        "is_drowsy": False,
         "speed_limit": None,
         "latency_ms": 0.0,
         "infer_fps": 0.0,
@@ -736,21 +581,8 @@ def main() -> None:
             else:
                 objects = last_objects
 
-            if main_prealloc is not None:
-                head_direction = head_direction_estimator.estimate(
-                    main_prealloc,
-                    objects,
-                    inf_frame_idx,
-                    bbox_source_shape=infer_prealloc.shape[:2],
-                )
-            else:
-                # Headless: no display frame captured; run cascade on infer frame directly.
-                head_direction = head_direction_estimator.estimate(
-                    infer_prealloc,
-                    objects,
-                    inf_frame_idx,
-                    bbox_source_shape=None,
-                )
+            src_frame = main_prealloc if main_prealloc is not None else infer_prealloc
+            head_direction, ear, is_drowsy = face_eye_estimator.estimate(src_frame, inf_frame_idx)
 
             sideways_warning_active = side_look_tracker.update(
                 head_direction=head_direction,
@@ -759,6 +591,7 @@ def main() -> None:
             alert_state, driver_status, phone_detected, drinking_detected, intox_score = _resolve_driver_state(
                 objects,
                 sideways_warning_active=sideways_warning_active,
+                is_drowsy=is_drowsy,
             )
 
             latency_ms = (time.time() - inference_start) * 1000.0
@@ -773,6 +606,8 @@ def main() -> None:
                 _shared_results["is_drinking_detected"] = drinking_detected
                 _shared_results["intoxication_score"] = intox_score
                 _shared_results["head_direction"] = head_direction
+                _shared_results["ear"] = ear
+                _shared_results["is_drowsy"] = is_drowsy
                 _shared_results["latency_ms"] = latency_ms
                 _shared_results["gyro"] = gyro_reading
 
@@ -877,6 +712,8 @@ def main() -> None:
                 drinking_detected = bool(_shared_results.get("is_drinking_detected", False))
                 intoxication_score = int(_shared_results.get("intoxication_score", 0))
                 head_direction = _shared_results.get("head_direction", "UNKNOWN")
+                ear = float(_shared_results.get("ear", 1.0))
+                is_drowsy = bool(_shared_results.get("is_drowsy", False))
                 speed_limit = _shared_results.get("speed_limit")
                 latency_ms = float(_shared_results.get("latency_ms", 0.0))
                 infer_fps = float(_shared_results.get("infer_fps", 0.0))
@@ -954,6 +791,7 @@ def main() -> None:
                     "satellites": gps.satellites,
                     "is_phone_detected": phone_detected,
                     "is_drinking_detected": drinking_detected,
+                    "is_drowsy": is_drowsy,
                 }
 
                 # Keep gyro values in logs only unless matching DB columns are added.
@@ -978,6 +816,8 @@ def main() -> None:
                     speed_limit=speed_limit_mph if speed_limit is not None else None,
                     heading=float(heading_degrees),
                     night_mode=night_mode,
+                    ear=ear,
+                    is_drowsy=is_drowsy,
                 )
                 last_cli_update = now
 
@@ -1012,6 +852,11 @@ def main() -> None:
                 cv2.destroyAllWindows()
             except Exception:
                 pass
+
+        try:
+            face_eye_estimator.close()
+        except Exception:
+            pass
 
         try:
             ble.stop()

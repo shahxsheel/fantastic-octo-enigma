@@ -14,7 +14,7 @@ REQUIRED_PYTHON_VERSION="3.12.8"
 # Use Nano only — Small model is too slow for real-time Pi inference.
 YOLO_NCNN_URL="${YOLO_NCNN_MODEL_URL:-https://github.com/shahxsheel/fantastic-octo-enigma/releases/download/v1.1.0/yolov8n_ncnn_model.tar.gz}"
 
-TOTAL_STEPS=4
+TOTAL_STEPS=5
 step=0
 
 banner() {
@@ -176,7 +176,28 @@ else
   echo "  → Done"
 fi
 
-# ── 4. Verify ─────────────────────────────────────────────────────
+# ── 4. MediaPipe face_landmarker model ──────────────────────────────
+banner "Installing MediaPipe face_landmarker model"
+FACE_MODEL="face_landmarker.task"
+FACE_MODEL_URL="${FACE_LANDMARKER_URL:-https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task}"
+if [[ -f "$FACE_MODEL" ]]; then
+  echo "  → Already exists, skipping"
+else
+  echo "  → Downloading from $FACE_MODEL_URL (~6 MB)"
+  if command -v wget &>/dev/null; then
+    wget -O "$FACE_MODEL" --progress=bar:force "$FACE_MODEL_URL" 2>/dev/null || true
+  else
+    curl -sSL -o "$FACE_MODEL" "$FACE_MODEL_URL" 2>/dev/null || true
+  fi
+  if [[ ! -s "$FACE_MODEL" ]]; then
+    rm -f "$FACE_MODEL"
+    echo "  ✗ Download failed. Place face_landmarker.task in research/ or set FACE_LANDMARKER_URL"
+    exit 1
+  fi
+  echo "  → Done"
+fi
+
+# ── 5. Verify ─────────────────────────────────────────────────────
 banner "Verifying installation"
 if [[ ! -f yolov8n_ncnn_model/model.ncnn.param ]] || [[ ! -f yolov8n_ncnn_model/model.ncnn.bin ]]; then
   echo "  ✗ yolov8n_ncnn_model missing (model.ncnn.param / model.ncnn.bin)."
@@ -189,6 +210,16 @@ if ! .venv/bin/python -c "import ncnn; import cv2" 2>/dev/null; then
   exit 1
 fi
 echo "  → Python imports OK"
+if ! .venv/bin/python -c "import mediapipe" 2>/dev/null; then
+  echo "  ✗ mediapipe import failed"
+  exit 1
+fi
+echo "  → mediapipe OK"
+if [[ ! -f face_landmarker.task ]]; then
+  echo "  ✗ face_landmarker.task missing"
+  exit 1
+fi
+echo "  → face_landmarker.task OK"
 
 echo ""
 echo "════════════════════════════════════════════════════════════════"
