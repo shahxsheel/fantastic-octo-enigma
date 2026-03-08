@@ -442,6 +442,8 @@ struct ConnectivityDebugStatus {
   let lastCloudError: String?
   let activeSource: RealtimeDataSource
   let sourceAgeSeconds: TimeInterval?
+  let policyLabel: String
+  let fallbackReason: String?
 }
 
 struct LocalTripPersistPayload {
@@ -497,6 +499,10 @@ class SupabaseService {
   private var realtimeChannel: RealtimeChannelV2?
   private var realtimeSourceByVehicle: [String: RealtimeDataSource] = [:]
   private var realtimeUpdatedAtByVehicle: [String: Date] = [:]
+  private var latestSupabaseRealtimeByVehicle: [String: VehicleRealtime] = [:]
+  private var latestBLERealtimeByVehicle: [String: VehicleRealtime] = [:]
+  private var realtimeCloudErrorByVehicle: [String: String] = [:]
+  private var realtimeFallbackReasonByVehicle: [String: String] = [:]
 
   // BLE relay dedup state
   private var lastRelayedRealtimePacketAt: [String: Date] = [:]
@@ -504,7 +510,9 @@ class SupabaseService {
 
   // Cache
   private var modelContext: ModelContext?
-  private static let bleSupabaseArbitrationWindow: TimeInterval = 4
+  private static let cloudFirstFreshnessWindow: TimeInterval = 5
+  private static let bleFallbackFreshnessWindow: TimeInterval = 5
+  private static let connectivityPolicyLabel = "Cloud-first (BLE fallback)"
 
   init() {
     appConfig = .shared
@@ -673,22 +681,83 @@ class SupabaseService {
     }
   }
 
-  private func shouldPreferBLE(vehicleId: String) -> Bool {
-    guard bluetooth.connectedVehicleId == vehicleId, bluetooth.isConnected else { return false }
-    guard let lastPacketAt = bluetooth.lastDataReceivedAt else { return false }
-    return Date.now.timeIntervalSince(lastPacketAt) <= Self.bleSupabaseArbitrationWindow
+  private func markRealtimeCloudError(vehicleId: String, context: String, error: Error) {
+    realtimeCloudErrorByVehicle[vehicleId] = "\(context): \(error.localizedDescription)"
+    recomputeRealtimeSelection(vehicleId: vehicleId)
+  }
+
+  private func markRealtimeCloudHealthy(vehicleId: String) {
+    realtimeCloudErrorByVehicle.removeValue(forKey: vehicleId)
+  }
+
+  private func selectRealtime(vehicleId: String) -> (VehicleRealtime?, RealtimeDataSource, String?) {
+    let now = Date.now
+    let supabaseRealtime = latestSupabaseRealtimeByVehicle[vehicleId]
+    let bleRealtime = latestBLERealtimeByVehicle[vehicleId]
+    let supabaseAge = supabaseRealtime.map { now.timeIntervalSince($0.updatedAt) }
+    let bleAge = bleRealtime.map { now.timeIntervalSince($0.updatedAt) }
+    let supabaseFresh = supabaseAge.map { $0 <= Self.cloudFirstFreshnessWindow } ?? false
+    let bleFresh = bleAge.map { $0 <= Self.bleFallbackFreshnessWindow } ?? false
+    let cloudErrored = realtimeCloudErrorByVehicle[vehicleId] != nil || !cloudRuntimeState.isOperational
+
+    if let supabaseRealtime, supabaseFresh {
+      return (supabaseRealtime, .supabase, nil)
+    }
+
+    if let bleRealtime, bleFresh {
+      return (bleRealtime, .ble, cloudErrored ? "cloud error" : "cloud stale")
+    }
+
+    if let supabaseRealtime {
+      return (supabaseRealtime, .supabase, cloudErrored ? "cloud error" : "cloud stale")
+    }
+
+    if let bleRealtime {
+      return (bleRealtime, .ble, cloudErrored ? "cloud error" : nil)
+    }
+
+    return (nil, .unknown, cloudErrored ? "cloud error" : nil)
+  }
+
+  private func recomputeRealtimeSelection(vehicleId: String) {
+    let (selected, selectedSource, fallbackReason) = selectRealtime(vehicleId: vehicleId)
+
+    if let selected {
+      vehicleRealtimeData[vehicleId] = selected
+      saveCachedVehicleRealtime(selected)
+      realtimeSourceByVehicle[vehicleId] = selectedSource
+      realtimeUpdatedAtByVehicle[vehicleId] = selected.updatedAt
+    } else {
+      realtimeSourceByVehicle[vehicleId] = selectedSource
+      realtimeUpdatedAtByVehicle.removeValue(forKey: vehicleId)
+    }
+
+    if selectedSource == .ble, let fallbackReason {
+      realtimeFallbackReasonByVehicle[vehicleId] = fallbackReason
+    } else {
+      realtimeFallbackReasonByVehicle.removeValue(forKey: vehicleId)
+    }
   }
 
   private func applyRealtimeData(_ realtime: VehicleRealtime, source: RealtimeDataSource) {
     let vehicleId = realtime.vehicleId
-    if source == .supabase, shouldPreferBLE(vehicleId: vehicleId) {
-      // While BLE packets are fresh, keep BLE as source of truth.
+    switch source {
+    case .supabase:
+      latestSupabaseRealtimeByVehicle[vehicleId] = realtime
+      markRealtimeCloudHealthy(vehicleId: vehicleId)
+    case .ble:
+      latestBLERealtimeByVehicle[vehicleId] = realtime
+    case .cache:
+      vehicleRealtimeData[vehicleId] = realtime
+      realtimeSourceByVehicle[vehicleId] = .cache
+      realtimeUpdatedAtByVehicle[vehicleId] = realtime.updatedAt
+      saveCachedVehicleRealtime(realtime)
+      return
+    case .unknown:
       return
     }
-    vehicleRealtimeData[vehicleId] = realtime
-    saveCachedVehicleRealtime(realtime)
-    realtimeSourceByVehicle[vehicleId] = source
-    realtimeUpdatedAtByVehicle[vehicleId] = realtime.updatedAt
+
+    recomputeRealtimeSelection(vehicleId: vehicleId)
   }
 
   func connectivityDebugStatus(vehicleId: String?) -> ConnectivityDebugStatus {
@@ -696,11 +765,15 @@ class SupabaseService {
     let source = resolvedVehicleId.flatMap { realtimeSourceByVehicle[$0] } ?? .unknown
     let sourceUpdatedAt = resolvedVehicleId.flatMap { realtimeUpdatedAtByVehicle[$0] }
     let age = sourceUpdatedAt.map { Date.now.timeIntervalSince($0) }
+    let fallbackReason = resolvedVehicleId.flatMap { realtimeFallbackReasonByVehicle[$0] }
+
     return ConnectivityDebugStatus(
       cloudState: cloudRuntimeState,
       lastCloudError: lastCloudError,
       activeSource: source,
-      sourceAgeSeconds: age
+      sourceAgeSeconds: age,
+      policyLabel: Self.connectivityPolicyLabel,
+      fallbackReason: fallbackReason
     )
   }
 
@@ -740,6 +813,10 @@ class SupabaseService {
           self.vehicleRealtimeData = [:]
           self.realtimeSourceByVehicle = [:]
           self.realtimeUpdatedAtByVehicle = [:]
+          self.latestSupabaseRealtimeByVehicle = [:]
+          self.latestBLERealtimeByVehicle = [:]
+          self.realtimeCloudErrorByVehicle = [:]
+          self.realtimeFallbackReasonByVehicle = [:]
           self.unsubscribeFromRealtime()
           self.deleteAllCachedData()
 
@@ -773,6 +850,10 @@ class SupabaseService {
       self.vehicleRealtimeData = [:]
       self.realtimeSourceByVehicle = [:]
       self.realtimeUpdatedAtByVehicle = [:]
+      self.latestSupabaseRealtimeByVehicle = [:]
+      self.latestBLERealtimeByVehicle = [:]
+      self.realtimeCloudErrorByVehicle = [:]
+      self.realtimeFallbackReasonByVehicle = [:]
       self.deleteAllCachedData()
     }
     markCloudHealthy()
@@ -976,6 +1057,9 @@ class SupabaseService {
       }
       markCloudHealthy()
     } catch {
+      await MainActor.run {
+        self.markRealtimeCloudError(vehicleId: vehicleId, context: "loadVehicleRealtimeData", error: error)
+      }
       markCloudError(context: "loadVehicleRealtimeData", error: error)
     }
   }
@@ -1449,16 +1533,19 @@ class SupabaseService {
       // Listen for changes
       Task {
         for await change in changes {
-          await handleRealtimeChange(change)
+          await handleRealtimeChange(change, vehicleId: vehicleId)
         }
       }
       markCloudHealthy()
     } catch {
+      await MainActor.run {
+        self.markRealtimeCloudError(vehicleId: vehicleId, context: "subscribeToVehicleRealtime", error: error)
+      }
       markCloudError(context: "subscribeToVehicleRealtime", error: error)
     }
   }
 
-  private func handleRealtimeChange(_ change: AnyAction) async {
+  private func handleRealtimeChange(_ change: AnyAction, vehicleId: String) async {
     do {
       switch change {
       case .insert(let action):
@@ -1482,6 +1569,9 @@ class SupabaseService {
       }
       markCloudHealthy()
     } catch {
+      await MainActor.run {
+        self.markRealtimeCloudError(vehicleId: vehicleId, context: "handleRealtimeChange", error: error)
+      }
       markCloudError(context: "handleRealtimeChange", error: error)
     }
   }

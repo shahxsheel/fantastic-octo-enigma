@@ -46,6 +46,7 @@ create table if not exists public.vehicle_realtime (
   is_moving boolean not null default false,
   driver_status text not null default 'unknown',
   intoxication_score integer not null default 0,
+  is_drowsy boolean default false,
   satellites integer,
   is_phone_detected boolean default false,
   is_drinking_detected boolean default false,
@@ -65,6 +66,7 @@ alter table if exists public.vehicle_realtime add column if not exists is_speedi
 alter table if exists public.vehicle_realtime add column if not exists is_moving boolean not null default false;
 alter table if exists public.vehicle_realtime add column if not exists driver_status text not null default 'unknown';
 alter table if exists public.vehicle_realtime add column if not exists intoxication_score integer not null default 0;
+alter table if exists public.vehicle_realtime add column if not exists is_drowsy boolean default false;
 alter table if exists public.vehicle_realtime add column if not exists satellites integer;
 alter table if exists public.vehicle_realtime add column if not exists is_phone_detected boolean default false;
 alter table if exists public.vehicle_realtime add column if not exists is_drinking_detected boolean default false;

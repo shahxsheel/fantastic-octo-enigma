@@ -195,6 +195,11 @@ struct BluetoothConnectionView: View {
               .font(.caption.monospaced())
               .foregroundStyle(.secondary)
           }
+          LabeledContent("Policy") {
+            Text(debugStatus.policyLabel)
+              .font(.caption)
+              .foregroundStyle(.secondary)
+          }
           LabeledContent("Cloud") {
             Text(debugStatus.cloudState.statusLabel)
               .foregroundStyle(debugStatus.cloudState.isOperational ? .green : .red)
@@ -205,6 +210,14 @@ struct BluetoothConnectionView: View {
           LabeledContent("Source Age") {
             Text(sourceAgeText(debugStatus.sourceAgeSeconds))
               .foregroundStyle(.secondary)
+          }
+          if let fallbackReason = debugStatus.fallbackReason {
+            LabeledContent("Fallback Reason") {
+              Text(fallbackReason)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.trailing)
+            }
           }
           if let detail = debugStatus.cloudState.detail {
             LabeledContent("Cloud Detail") {

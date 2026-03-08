@@ -6,9 +6,11 @@ Threaded USB pipeline optimized for Raspberry Pi.
 - Main thread: handles GUI/CLI, buzzer alerts, and telemetry scheduling.
 """
 
+import ast
 import os
 import queue
 import random
+import re
 import string
 import sys
 import threading
@@ -80,6 +82,35 @@ def _is_placeholder_supabase(url: Optional[str], key: Optional[str]) -> bool:
     return any(token in url_l for token in placeholder_tokens) or any(
         token in key_l for token in placeholder_tokens
     )
+
+
+def _extract_unknown_column_from_postgrest_error(error: Exception) -> Optional[str]:
+    # Supabase Python errors often stringify as dict-like payloads.
+    candidates = [str(error)]
+    for arg in getattr(error, "args", ()):
+        candidates.append(str(arg))
+
+    for text in candidates:
+        payload: Optional[dict] = None
+        try:
+            parsed = ast.literal_eval(text)
+            if isinstance(parsed, dict):
+                payload = parsed
+        except Exception:
+            payload = None
+
+        if payload is None:
+            continue
+
+        if str(payload.get("code", "")).upper() != "PGRST204":
+            continue
+
+        message = str(payload.get("message", ""))
+        match = re.search(r"Could not find the '([^']+)' column", message)
+        if match:
+            return match.group(1)
+
+    return None
 
 
 def create_gamma_lut(gamma: float = 1.5) -> np.ndarray:
@@ -761,6 +792,7 @@ def main() -> None:
     def telemetry_thread_fn() -> None:
         write_failures = 0
         last_write_error_log = 0.0
+        blocked_realtime_fields: set[str] = set()
         while not _telemetry_stop.is_set():
             try:
                 payload = telemetry_queue.get(timeout=0.5)
@@ -773,10 +805,35 @@ def main() -> None:
             if not supabase_client:
                 continue
 
+            payload_type = "vehicle_realtime"
             try:
                 payload_type = payload.pop("type", "vehicle_realtime")
                 if payload_type == "vehicle_realtime":
-                    supabase_client.table("vehicle_realtime").upsert(payload).execute()
+                    sanitized_payload = {
+                        key: value for key, value in payload.items() if key not in blocked_realtime_fields
+                    }
+                    try:
+                        supabase_client.table("vehicle_realtime").upsert(sanitized_payload).execute()
+                    except Exception as write_error:
+                        missing_column = _extract_unknown_column_from_postgrest_error(write_error)
+                        if missing_column and missing_column in sanitized_payload:
+                            blocked_realtime_fields.add(missing_column)
+                            retry_payload = {
+                                key: value
+                                for key, value in sanitized_payload.items()
+                                if key != missing_column
+                            }
+                            print(
+                                _colorize(
+                                    f"[single-usb] Ignoring unknown realtime column '{missing_column}' "
+                                    "for subsequent writes",
+                                    ANSI_YELLOW,
+                                ),
+                                flush=True,
+                            )
+                            supabase_client.table("vehicle_realtime").upsert(retry_payload).execute()
+                        else:
+                            raise write_error
                 elif payload_type == "vehicle_trips":
                     supabase_client.table("vehicle_trips").upsert(payload).execute()
                 write_failures = 0
