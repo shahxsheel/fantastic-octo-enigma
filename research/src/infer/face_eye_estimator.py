@@ -29,8 +29,8 @@ except ImportError:
 
 # MediaPipe canonical landmark indices for EAR computation.
 # (P1, P2, P3, P4, P5, P6) matching the standard 6-point eye model.
-_EYE_LEFT  = (33, 160, 158, 133, 153, 144)
-_EYE_RIGHT = (362, 385, 387, 263, 373, 380)
+_EYE_RIGHT = (33, 160, 158, 133, 153, 144)
+_EYE_LEFT  = (362, 385, 387, 263, 373, 380)
 
 
 def _ear(landmarks, eye_indices: tuple) -> float:
