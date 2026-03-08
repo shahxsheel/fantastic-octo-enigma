@@ -8,7 +8,7 @@ five characteristics that match BluetoothManager.swift on the iOS side:
   0002  settings   write           BLESettingsData  (feature toggles)
   0003  buzzer     write           buzzer command
   0004  trip       read + notify   BLETripData      (session stats)
-  0005  relay      notify          BLERelayData     (full Supabase records)
+  0005  relay      deprecated      reserved for compatibility (no periodic notify)
 
 Requires: bless  (pip install bless)
 BlueZ must be running on the Pi: sudo systemctl enable --now bluetooth
@@ -16,6 +16,7 @@ BlueZ must be running on the Pi: sudo systemctl enable --now bluetooth
 
 import asyncio
 import json
+import os
 import threading
 import time
 from typing import Callable, Optional
@@ -81,6 +82,13 @@ class BluetoothPeripheral:
 
         self.enabled = _BLESS_AVAILABLE
         self.reason = "ok" if _BLESS_AVAILABLE else _BLESS_IMPORT_ERROR
+        self._notify_max_bytes = max(64, int(os.environ.get("BLE_NOTIFY_MAX_BYTES", "180")))
+        self._notify_debug = os.environ.get("BLE_NOTIFY_DEBUG", "0").lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        )
 
         # Trip-level accumulators (reset on each start())
         self._trip_start = time.time()
@@ -158,11 +166,15 @@ class BluetoothPeripheral:
         await server.add_new_characteristic(
             SERVICE_UUID, RELAY_UUID,
             GATTCharacteristicProperties.notify,
-            _enc(self._relay_payload()), rd
+            _enc({"deprecated": True}), rd
         )
 
         await server.start()
-        print(f"[BLE] Advertising as ADA-{self.vehicle_id}", flush=True)
+        print(
+            f"[BLE] Advertising as ADA-{self.vehicle_id} "
+            f"(relay=deprecated, notify_max={self._notify_max_bytes}B)",
+            flush=True,
+        )
 
         tick = 0
         while not self._stop_event.is_set():
@@ -170,22 +182,21 @@ class BluetoothPeripheral:
             self._update_trip_stats()
 
             # Push realtime every 0.5 s
-            char = server.get_characteristic(REALTIME_UUID)
-            if char is not None:
-                char.value = _enc(self._realtime_payload())
-                server.update_value(SERVICE_UUID, REALTIME_UUID)
+            self._safe_notify(
+                server,
+                REALTIME_UUID,
+                self._realtime_payload(),
+                "realtime",
+            )
 
-            # Push trip + relay every 2 s
+            # Push trip every 2 s
             if tick % 4 == 0:
-                char = server.get_characteristic(TRIP_UUID)
-                if char is not None:
-                    char.value = _enc(self._trip_payload())
-                    server.update_value(SERVICE_UUID, TRIP_UUID)
-
-                char = server.get_characteristic(RELAY_UUID)
-                if char is not None:
-                    char.value = _enc(self._relay_payload())
-                    server.update_value(SERVICE_UUID, RELAY_UUID)
+                self._safe_notify(
+                    server,
+                    TRIP_UUID,
+                    self._trip_payload(),
+                    "trip",
+                )
 
             tick += 1
 
@@ -240,25 +251,36 @@ class BluetoothPeripheral:
             "ix_max": self._ix_max,
         }
 
-    def _relay_payload(self) -> dict:
-        with self._lock:
-            rt = {
-                "vehicle_id":        self.vehicle_id,
-                "speed_mph":         int(self._shared.get("speed_mph", 0)),
-                "speed_limit_mph":   int(self._shared.get("speed_limit") or 0),
-                "heading_degrees":   int(self._shared.get("heading_degrees", 0)),
-                "compass_direction": str(self._shared.get("compass_direction", "N")),
-                "is_speeding":       bool(self._shared.get("is_speeding", False)),
-                "is_moving":         bool(self._shared.get("speed_mph", 0) > 0),
-                "driver_status":     str(self._shared.get("driver_status", "alert")),
-                "intoxication_score": int(self._shared.get("intoxication_score", 0)),
-                "satellites":        int(self._shared.get("satellites", 0) or 0),
-                "is_phone_detected":    bool(self._shared.get("is_phone_detected", False)),
-                "is_drinking_detected": bool(self._shared.get("is_drinking_detected", False)),
-                "latitude":  float(self._shared.get("latitude", 0.0)),
-                "longitude": float(self._shared.get("longitude", 0.0)),
-            }
-        return {"rt": rt, "trip": None}
+    def _safe_notify(self, server: "BlessServer", uuid: str, payload: dict, label: str) -> None:
+        """Best-effort notify with guardrails so a bad packet never destabilizes BLE."""
+        char = server.get_characteristic(uuid)
+        if char is None:
+            if self._notify_debug:
+                print(f"[BLE][debug] skip notify {label}: characteristic missing", flush=True)
+            return
+
+        try:
+            encoded = _enc(payload)
+        except Exception as e:
+            print(f"[BLE] notify {label} encode failed: {e}", flush=True)
+            return
+
+        size = len(encoded)
+        if self._notify_debug:
+            print(f"[BLE][debug] notify {label}: {size}B", flush=True)
+
+        if size > self._notify_max_bytes:
+            print(
+                f"[BLE] skip notify {label}: {size}B exceeds BLE_NOTIFY_MAX_BYTES={self._notify_max_bytes}",
+                flush=True,
+            )
+            return
+
+        try:
+            char.value = encoded
+            server.update_value(SERVICE_UUID, uuid)
+        except Exception as e:
+            print(f"[BLE] notify {label} failed ({size}B): {e}", flush=True)
 
     def _update_trip_stats(self) -> None:
         with self._lock:

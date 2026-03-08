@@ -6,6 +6,7 @@
 //
 
 import CoreLocation
+import CryptoKit
 import Supabase
 import SwiftData
 import SwiftUI
@@ -443,6 +444,10 @@ class SupabaseService {
   // Realtime channel
   private var realtimeChannel: RealtimeChannelV2?
 
+  // BLE relay dedup state
+  private var lastRelayedRealtimePacketAt: [String: Date] = [:]
+  private var lastRelayedTripSignature: [String: String] = [:]
+
   // Cache
   private var modelContext: ModelContext?
 
@@ -866,49 +871,144 @@ class SupabaseService {
   // MARK: - BLE Relay (upload Pi data to Supabase on its behalf)
 
   /// Relay BLE data to Supabase. Called by the relay timer when BLE is connected.
-  /// The Pi sends full Supabase-format records via the relay characteristic;
-  /// we upsert them to the database so the Pi works without internet.
+  /// The iOS app builds deterministic relay records from compact BLE caches.
   func relayBLEDataToSupabase(vehicleId: String) async {
-    guard bluetooth.isConnected, let relay = bluetooth.latestRelay else { return }
+    guard bluetooth.isConnected else { return }
 
-    // Relay realtime data
-    if let rt = relay.rt {
-      let record = rt.mapValues { Self.toAnyJSON($0) }
-      do {
-        try await client
-          .from("vehicle_realtime")
-          .upsert(record)
-          .execute()
-      } catch {
-        print("[BLE Relay] Error relaying realtime: \(error)")
+    // Realtime upsert from compact BLE packet.
+    if let realtime = bluetooth.latestRealtime,
+      let packetAt = bluetooth.lastDataReceivedAt
+    {
+      if lastRelayedRealtimePacketAt[vehicleId] != packetAt {
+        let record = Self.realtimeRelayRecord(
+          vehicleId: vehicleId,
+          data: realtime,
+          updatedAt: packetAt
+        )
+        do {
+          try await client
+            .from("vehicle_realtime")
+            .upsert(record)
+            .execute()
+          lastRelayedRealtimePacketAt[vehicleId] = packetAt
+        } catch {
+          print("[BLE Relay] Error relaying realtime: \(error)")
+        }
       }
     }
 
-    // Relay trip data
-    if let trip = relay.trip, let tripIdValue = trip["id"] {
-      let record = trip.filter { $0.key != "id" }.mapValues { Self.toAnyJSON($0) }
-      let tripId: String
-      if case .string(let id) = tripIdValue { tripId = id } else { return }
-      do {
-        try await client
-          .from("vehicle_trips")
-          .update(record)
-          .eq("id", value: tripId)
-          .execute()
-      } catch {
-        print("[BLE Relay] Error relaying trip: \(error)")
+    // Trip upsert from compact BLE trip summary (dedup by payload signature).
+    if let trip = bluetooth.latestTrip {
+      let signature = Self.tripSignature(vehicleId: vehicleId, data: trip)
+      if lastRelayedTripSignature[vehicleId] != signature {
+        let record = Self.tripRelayRecord(vehicleId: vehicleId, data: trip)
+        do {
+          try await client
+            .from("vehicle_trips")
+            .upsert(record)
+            .execute()
+          lastRelayedTripSignature[vehicleId] = signature
+        } catch {
+          print("[BLE Relay] Error relaying trip: \(error)")
+        }
       }
     }
   }
 
-  private static func toAnyJSON(_ value: AnyCodable) -> AnyJSON {
-    switch value {
-    case .string(let v): .string(v)
-    case .int(let v): .double(Double(v))
-    case .double(let v): .double(v)
-    case .bool(let v): .bool(v)
-    case .null: .null
+  private static let relayTimeFormatter: ISO8601DateFormatter = {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    return f
+  }()
+
+  private static func realtimeRelayRecord(
+    vehicleId: String,
+    data: BLERealtimeData,
+    updatedAt: Date
+  ) -> [String: AnyJSON] {
+    [
+      "vehicle_id": .string(vehicleId),
+      "updated_at": .string(relayTimeFormatter.string(from: updatedAt)),
+      "latitude": .double(data.lat),
+      "longitude": .double(data.lng),
+      "speed_mph": .double(Double(data.spd)),
+      "speed_limit_mph": .double(0),
+      "heading_degrees": .double(Double(data.hdg)),
+      "compass_direction": .string(data.dir),
+      "is_speeding": .bool(data.sp),
+      "is_moving": .bool(data.spd > 0),
+      "driver_status": .string(data.ds),
+      "intoxication_score": .double(Double(data.ix)),
+      "satellites": .double(Double(data.sat)),
+      "is_phone_detected": .bool(data.ph),
+      "is_drinking_detected": .bool(data.dr),
+    ]
+  }
+
+  private static func tripRelayRecord(vehicleId: String, data: BLETripData) -> [String: AnyJSON] {
+    let now = Date.now
+    let startedAt = estimatedTripStart(from: data.tid, durationSeconds: data.dur, now: now)
+    let tripId = stableUUID(seed: "ble-trip:\(vehicleId):\(data.tid)")
+    let sessionId = stableUUID(seed: "ble-session:\(vehicleId):\(data.tid)")
+    let sampleCount = max(1, data.dur * 2)
+    let sampleSum = Int((data.avg_spd * Double(sampleCount)).rounded())
+
+    return [
+      "id": .string(tripId.uuidString.lowercased()),
+      "vehicle_id": .string(vehicleId),
+      "session_id": .string(sessionId.uuidString.lowercased()),
+      "started_at": .string(relayTimeFormatter.string(from: startedAt)),
+      "status": .string(tripStatus(from: data)),
+      "max_speed_mph": .double(Double(data.mx_spd)),
+      "avg_speed_mph": .double(data.avg_spd),
+      "max_intoxication_score": .double(Double(data.ix_max)),
+      "speeding_event_count": .double(Double(data.spd_ev)),
+      "speed_sample_count": .double(Double(sampleCount)),
+      "speed_sample_sum": .double(Double(sampleSum)),
+      "phone_distraction_event_count": .double(Double(data.ph_ev)),
+      "drinking_event_count": .double(Double(data.drw_ev)),
+      "ended_at": .null,
+    ]
+  }
+
+  private static func tripStatus(from data: BLETripData) -> String {
+    if data.ix_max >= 4 {
+      return "danger"
     }
+    if data.ix_max >= 2 || data.spd_ev > 0 || data.ph_ev > 0 || data.drw_ev > 0 {
+      return "warning"
+    }
+    return "ok"
+  }
+
+  private static func estimatedTripStart(
+    from tripId: String,
+    durationSeconds: Int,
+    now: Date
+  ) -> Date {
+    if let unixString = tripId.split(separator: "-").last,
+      let unixSeconds = Double(unixString)
+    {
+      let parsed = Date(timeIntervalSince1970: unixSeconds)
+      return parsed > now ? now : parsed
+    }
+    return now.addingTimeInterval(-Double(max(0, durationSeconds)))
+  }
+
+  private static func tripSignature(vehicleId: String, data: BLETripData) -> String {
+    "\(vehicleId)|\(data.tid)|\(data.dur)|\(data.mx_spd)|\(data.avg_spd)|\(data.spd_ev)|\(data.drw_ev)|\(data.ph_ev)|\(data.ix_max)"
+  }
+
+  private static func stableUUID(seed: String) -> UUID {
+    let digest = SHA256.hash(data: Data(seed.utf8))
+    let bytes = Array(digest)
+    let uuidBytes: uuid_t = (
+      bytes[0], bytes[1], bytes[2], bytes[3],
+      bytes[4], bytes[5], (bytes[6] & 0x0F) | 0x50, bytes[7],
+      (bytes[8] & 0x3F) | 0x80, bytes[9], bytes[10], bytes[11],
+      bytes[12], bytes[13], bytes[14], bytes[15]
+    )
+    return UUID(uuid: uuidBytes)
   }
 
   struct BuzzerRelayState {
