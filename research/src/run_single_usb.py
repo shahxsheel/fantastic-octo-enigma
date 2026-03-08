@@ -456,8 +456,12 @@ def main() -> None:
         # Register this vehicle in the vehicles table so the iOS app can discover it.
         # Uses upsert so repeated startups are idempotent and don't overwrite existing metadata.
         try:
+            vehicle_name = os.environ.get("VEHICLE_NAME", "").strip() or None
+            vehicle_row = {"id": vehicle_id}
+            if vehicle_name is not None:
+                vehicle_row["name"] = vehicle_name
             supabase_client.table("vehicles").upsert(
-                {"id": vehicle_id, "updated_at": "now()"},
+                vehicle_row,
                 on_conflict="id",
                 ignore_duplicates=False,
             ).execute()
