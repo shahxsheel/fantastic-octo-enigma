@@ -1,0 +1,88 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/DrowsinessEventsListView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Drowsiness Events",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading events...",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 20
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 23
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retry",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Events",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 35
+        }
+      },
+      {
+        "comment": "",
+        "key": "No drowsiness events recorded for this trip.",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 37
+        }
+      },
+      {
+        "comment": "",
+        "key": "Events",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 60
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld drowsiness event%@ detected during this trip.",
+        "location": {
+          "startingColumn": 11,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/6",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld mph",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 135
+        }
+      }
+    ]
+  },
+  "version": 1
+}

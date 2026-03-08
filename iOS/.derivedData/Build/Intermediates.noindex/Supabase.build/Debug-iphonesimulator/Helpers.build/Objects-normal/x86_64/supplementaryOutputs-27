@@ -1,0 +1,23 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Helpers/AnyJSON/AnyJSON+Codable.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON+Codable.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON+Codable.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON+Codable.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON+Codable.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON+Codable.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Helpers/AnyJSON/AnyJSON.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AnyJSON.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Helpers/AsyncValueSubject.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AsyncValueSubject.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AsyncValueSubject.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AsyncValueSubject.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AsyncValueSubject.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/AsyncValueSubject.swiftdeps"
+  }
+}

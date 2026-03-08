@@ -1,0 +1,44 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Models/CachedModels.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/CachedModels.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/CachedModels.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/CachedModels.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/CachedModels.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/CachedModels.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Models/DrivingScoreCalculator.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DrivingScoreCalculator.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DrivingScoreCalculator.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DrivingScoreCalculator.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DrivingScoreCalculator.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DrivingScoreCalculator.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Models/Trip.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/Trip.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/Trip.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/Trip.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/Trip.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/Trip.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Services/BluetoothManager.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/BluetoothManager.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/BluetoothManager.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/BluetoothManager.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/BluetoothManager.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/BluetoothManager.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Services/DeepLinkManager.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DeepLinkManager.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DeepLinkManager.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DeepLinkManager.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DeepLinkManager.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/DeepLinkManager.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Services/SupabaseService.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/SupabaseService.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/SupabaseService.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/SupabaseService.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/SupabaseService.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/SupabaseService.swiftdeps"
+  }
+}

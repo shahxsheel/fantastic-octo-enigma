@@ -1,0 +1,30 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Deprecated/HeartbeatTimer.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/HeartbeatTimer.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Deprecated/PhoenixTransport.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/PhoenixTransport.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Deprecated/Presence.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Presence.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Realtime/Deprecated/Push.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Realtime.build/Objects-normal/x86_64/Push.swiftdeps"
+  }
+}

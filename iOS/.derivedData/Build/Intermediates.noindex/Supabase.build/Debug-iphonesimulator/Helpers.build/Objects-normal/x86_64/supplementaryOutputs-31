@@ -1,0 +1,23 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Helpers/HTTP/LoggerInterceptor.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/LoggerInterceptor.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Helpers/HTTP/RetryRequestInterceptor.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/RetryRequestInterceptor.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/RetryRequestInterceptor.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/RetryRequestInterceptor.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/RetryRequestInterceptor.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/RetryRequestInterceptor.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Helpers/JWT.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/JWT.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/JWT.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/JWT.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/JWT.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Helpers.build/Objects-normal/x86_64/JWT.swiftdeps"
+  }
+}

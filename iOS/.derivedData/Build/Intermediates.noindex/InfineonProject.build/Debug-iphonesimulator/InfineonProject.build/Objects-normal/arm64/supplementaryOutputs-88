@@ -1,0 +1,37 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/JoinVehicleView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/JoinVehicleView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/JoinVehicleView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/JoinVehicleView.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/JoinVehicleView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/JoinVehicleView.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/ShareAccessView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShareAccessView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShareAccessView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShareAccessView.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShareAccessView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShareAccessView.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/ShazamHistoryView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShazamHistoryView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShazamHistoryView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShazamHistoryView.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShazamHistoryView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/ShazamHistoryView.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/UnidentifiedFacesView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/UnidentifiedFacesView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/UnidentifiedFacesView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/UnidentifiedFacesView.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/UnidentifiedFacesView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/UnidentifiedFacesView.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/VehicleAccessSheet.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/VehicleAccessSheet.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/VehicleAccessSheet.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/VehicleAccessSheet.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/VehicleAccessSheet.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/arm64/VehicleAccessSheet.swiftdeps"
+  }
+}

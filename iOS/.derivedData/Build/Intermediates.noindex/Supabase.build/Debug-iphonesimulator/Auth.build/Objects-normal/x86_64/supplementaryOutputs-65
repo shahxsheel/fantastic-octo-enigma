@@ -1,0 +1,23 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/SessionStorage.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/SessionStorage.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Auth/Internal/URLOpener.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/URLOpener.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/supabase-swift/Sources/Auth/Storage/AuthLocalStorage.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/Supabase.build/Debug-iphonesimulator/Auth.build/Objects-normal/x86_64/AuthLocalStorage.swiftdeps"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/CryptoError_boring.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoError_boring.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoError_boring.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoError_boring.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoError_boring.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoError_boring.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/CryptoKitErrors.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoKitErrors.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoKitErrors.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoKitErrors.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoKitErrors.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/CryptoKitErrors.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Digests/BoringSSL/Digest_boring.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_boring.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_boring.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_boring.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_boring.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_boring.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Digests/Digest.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Digests/Digests.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digests.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digests.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digests.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digests.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digests.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Digests/HashFunctions.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Digests/HashFunctions_SHA2.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA2.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA2.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA2.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA2.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA2.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Digests/HashFunctions_SHA3.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA3.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA3.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA3.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA3.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HashFunctions_SHA3.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/Digests/XKCP/Digest_xkcp.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_xkcp.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_xkcp.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_xkcp.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_xkcp.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/Digest_xkcp.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/HPKE/Ciphersuite/HPKE-AEAD.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-AEAD.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-AEAD.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-AEAD.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-AEAD.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-AEAD.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/HPKE/Ciphersuite/HPKE-Ciphersuite.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-Ciphersuite.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-Ciphersuite.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-Ciphersuite.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-Ciphersuite.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-Ciphersuite.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/swift-crypto/Sources/Crypto/HPKE/Ciphersuite/HPKE-KDF.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-KDF.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-KDF.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-KDF.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-KDF.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/swift-crypto.build/Debug-iphonesimulator/Crypto.build/Objects-normal/arm64/HPKE-KDF.swiftdeps"
+  }
+}

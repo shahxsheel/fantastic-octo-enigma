@@ -1,0 +1,59 @@
+{
+  "" : {
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityExtension-primary.dia",
+    "emit-module-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityExtension-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityExtension-primary-emit-module.dia",
+    "pch" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityExtension-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityExtension-primary.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/VehicleLiveActivity/VehicleLiveActivity.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivity.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivity.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivity.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivity.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivity.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivity.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivity.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivity~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/VehicleLiveActivity/VehicleLiveActivityAttributes.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityAttributes.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityAttributes.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityAttributes.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityAttributes.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityAttributes.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityAttributes.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityAttributes.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityAttributes~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/VehicleLiveActivity/VehicleLiveActivityBundle.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityBundle.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityBundle.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityBundle.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityBundle.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityBundle.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityBundle.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityBundle.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityBundle~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/VehicleLiveActivity/VehicleLiveActivityLiveActivity.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityLiveActivity.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityLiveActivity.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityLiveActivity.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityLiveActivity.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityLiveActivity.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityLiveActivity.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityLiveActivity.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/VehicleLiveActivityExtension.build/Objects-normal/arm64/VehicleLiveActivityLiveActivity~partial.swiftmodule"
+  }
+}

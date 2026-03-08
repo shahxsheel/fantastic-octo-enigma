@@ -1,0 +1,37 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2ProfileSelectView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/VehicleSettingsView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/BluetoothConnectionView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/FaceDetectionsView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/VehicleLiveActivity/VehicleLiveActivityAttributes.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.swiftdeps"
+  }
+}

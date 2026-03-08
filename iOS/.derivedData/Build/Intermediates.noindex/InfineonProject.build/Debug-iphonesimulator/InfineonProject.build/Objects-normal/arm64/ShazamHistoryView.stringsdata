@@ -1,0 +1,96 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/ShazamHistoryView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Shazam History",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 66
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading music history...",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 23
+        }
+      },
+      {
+        "comment": "",
+        "key": "Failed to Load",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retry",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 30
+        }
+      },
+      {
+        "comment": "",
+        "key": "Shazam has detected %lld songs on this vehicle.",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Songs Detected",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "Songs detected by Shazam will appear here",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 55
+        }
+      },
+      {
+        "comment": "",
+        "key": "Shazam",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 200
+        }
+      },
+      {
+        "comment": "",
+        "key": "Apple Music",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 211
+        }
+      },
+      {
+        "comment": "",
+        "key": "Spotify",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 222
+        }
+      },
+      {
+        "comment": "",
+        "key": "Detected %@ ago",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 235
+        }
+      }
+    ]
+  },
+  "version": 1
+}

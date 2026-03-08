@@ -1,0 +1,23 @@
+{
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/Internal/XCTest.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/XCTest.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/XCTest.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/XCTest.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/XCTest.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/XCTest.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IsTesting.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IsTesting.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IsTesting.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IsTesting.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IsTesting.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IsTesting.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/SourcePackages/checkouts/xctest-dynamic-overlay/Sources/IssueReporting/IssueReporter.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IssueReporter.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IssueReporter.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IssueReporter.dia",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IssueReporter.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/xctest-dynamic-overlay.build/Debug-iphonesimulator/IssueReporting.build/Objects-normal/x86_64/IssueReporter.swiftdeps"
+  }
+}

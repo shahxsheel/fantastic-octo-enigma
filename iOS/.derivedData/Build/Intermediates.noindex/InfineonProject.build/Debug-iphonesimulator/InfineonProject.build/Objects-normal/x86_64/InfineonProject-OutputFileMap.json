@@ -1,0 +1,439 @@
+{
+  "" : {
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProject-primary.dia",
+    "emit-module-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProject-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProject-primary-emit-module.dia",
+    "pch" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProject-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProject-primary.swiftdeps"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/DerivedSources/GeneratedStringSymbols_Localizable.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedStringSymbols_Localizable.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedStringSymbols_Localizable.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedStringSymbols_Localizable.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedStringSymbols_Localizable.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedStringSymbols_Localizable.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedStringSymbols_Localizable.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedStringSymbols_Localizable.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/GeneratedStringSymbols_Localizable~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/AppDelegate.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppDelegate.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppDelegate.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppDelegate.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppDelegate.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppDelegate.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppDelegate.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppDelegate.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppDelegate~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/InfineonProjectApp.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProjectApp.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProjectApp.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProjectApp.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProjectApp.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProjectApp.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProjectApp.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProjectApp.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/InfineonProjectApp~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Models/CachedModels.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/CachedModels.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/CachedModels.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/CachedModels.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/CachedModels.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/CachedModels.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/CachedModels.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/CachedModels.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/CachedModels~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Models/DrivingScoreCalculator.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrivingScoreCalculator.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrivingScoreCalculator.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrivingScoreCalculator.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrivingScoreCalculator.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrivingScoreCalculator.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrivingScoreCalculator.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrivingScoreCalculator.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrivingScoreCalculator~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Models/Trip.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Trip.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Trip.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Trip.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Trip.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Trip.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Trip.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Trip.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Trip~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/SceneDelegate.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SceneDelegate.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SceneDelegate.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SceneDelegate.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SceneDelegate.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SceneDelegate.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SceneDelegate.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SceneDelegate.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SceneDelegate~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Services/BluetoothManager.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothManager.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothManager.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothManager.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothManager.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothManager.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothManager.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothManager.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothManager~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Services/DeepLinkManager.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DeepLinkManager.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DeepLinkManager.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DeepLinkManager.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DeepLinkManager.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DeepLinkManager.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DeepLinkManager.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DeepLinkManager.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DeepLinkManager~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Services/SupabaseService.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SupabaseService.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SupabaseService.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SupabaseService.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SupabaseService.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SupabaseService.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SupabaseService.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SupabaseService.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SupabaseService~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Utilities/AaronUIStubs.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AaronUIStubs.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AaronUIStubs.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AaronUIStubs.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AaronUIStubs.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AaronUIStubs.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AaronUIStubs.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AaronUIStubs.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AaronUIStubs~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Utilities/Constants.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Utilities/Constants.template.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.template.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.template.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.template.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.template.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.template.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.template.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.template.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/Constants.template~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/FilterToggleButtonView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FilterToggleButtonView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FilterToggleButtonView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FilterToggleButtonView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FilterToggleButtonView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FilterToggleButtonView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FilterToggleButtonView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FilterToggleButtonView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FilterToggleButtonView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/HomeView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/HomeView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/HomeView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/HomeView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/HomeView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/HomeView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/HomeView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/HomeView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/HomeView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Onboarding/NewUserOnboardingView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/NewUserOnboardingView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/NewUserOnboardingView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/NewUserOnboardingView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/NewUserOnboardingView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/NewUserOnboardingView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/NewUserOnboardingView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/NewUserOnboardingView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/NewUserOnboardingView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Onboarding/OnboardingView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/OnboardingView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/OnboardingView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/OnboardingView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/OnboardingView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/OnboardingView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/OnboardingView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/OnboardingView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/OnboardingView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Onboarding/ProfileSetupView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ProfileSetupView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ProfileSetupView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ProfileSetupView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ProfileSetupView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ProfileSetupView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ProfileSetupView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ProfileSetupView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ProfileSetupView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/DrowsinessEventsListView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrowsinessEventsListView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrowsinessEventsListView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrowsinessEventsListView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrowsinessEventsListView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrowsinessEventsListView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrowsinessEventsListView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrowsinessEventsListView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/DrowsinessEventsListView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/EventDetailView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventDetailView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventDetailView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventDetailView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventDetailView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventDetailView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventDetailView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventDetailView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventDetailView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/EventsListView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventsListView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventsListView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventsListView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventsListView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventsListView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventsListView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventsListView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/EventsListView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/SpeedingEventsListView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SpeedingEventsListView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SpeedingEventsListView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SpeedingEventsListView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SpeedingEventsListView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SpeedingEventsListView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SpeedingEventsListView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SpeedingEventsListView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/SpeedingEventsListView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/TripDetailView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripDetailView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripDetailView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripDetailView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripDetailView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripDetailView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripDetailView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripDetailView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripDetailView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/TripInfoView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripInfoView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripInfoView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripInfoView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripInfoView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripInfoView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripInfoView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripInfoView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/TripInfoView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/Settings/AppearanceSettingsView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppearanceSettingsView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppearanceSettingsView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppearanceSettingsView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppearanceSettingsView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppearanceSettingsView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppearanceSettingsView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppearanceSettingsView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/AppearanceSettingsView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2AccountView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2AccountView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2AccountView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2AccountView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2AccountView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2AccountView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2AccountView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2AccountView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2AccountView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2LaunchUITabView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LaunchUITabView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LaunchUITabView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LaunchUITabView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LaunchUITabView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LaunchUITabView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LaunchUITabView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LaunchUITabView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LaunchUITabView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2LoadingView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LoadingView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LoadingView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LoadingView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LoadingView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LoadingView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LoadingView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LoadingView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2LoadingView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2MainView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2MainView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2MainView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2MainView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2MainView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2MainView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2MainView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2MainView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2MainView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2ProfileSelectView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/V2ProfileSelectView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/VehicleSettingsView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleSettingsView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/BluetoothConnectionView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/BluetoothConnectionView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/FaceDetectionsView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/FaceDetectionsView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/JoinVehicleView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/JoinVehicleView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/JoinVehicleView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/JoinVehicleView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/JoinVehicleView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/JoinVehicleView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/JoinVehicleView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/JoinVehicleView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/JoinVehicleView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/ShareAccessView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShareAccessView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShareAccessView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShareAccessView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShareAccessView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShareAccessView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShareAccessView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShareAccessView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShareAccessView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/ShazamHistoryView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShazamHistoryView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShazamHistoryView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShazamHistoryView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShazamHistoryView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShazamHistoryView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShazamHistoryView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShazamHistoryView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/ShazamHistoryView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/UnidentifiedFacesView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/UnidentifiedFacesView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/UnidentifiedFacesView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/UnidentifiedFacesView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/UnidentifiedFacesView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/UnidentifiedFacesView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/UnidentifiedFacesView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/UnidentifiedFacesView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/UnidentifiedFacesView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/VehicleAccessSheet.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAccessSheet.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAccessSheet.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAccessSheet.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAccessSheet.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAccessSheet.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAccessSheet.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAccessSheet.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAccessSheet~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/VehicleListView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleListView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleListView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleListView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleListView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleListView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleListView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleListView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleListView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/VehicleAnimationView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAnimationView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAnimationView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAnimationView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAnimationView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAnimationView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAnimationView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAnimationView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleAnimationView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/VehicleView.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleView.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleView.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleView.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleView.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleView.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleView.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleView.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleView~partial.swiftmodule"
+  },
+  "/Users/shahxsheel/Downloads/infineon-2/iOS/VehicleLiveActivity/VehicleLiveActivityAttributes.swift" : {
+    "const-values" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.swiftconstvalues",
+    "dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.d",
+    "diagnostics" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.dia",
+    "index-unit-output-path" : "/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.o",
+    "llvm-bc" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.bc",
+    "object" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.o",
+    "swift-dependencies" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes.swiftdeps",
+    "swiftmodule" : "/Users/shahxsheel/Downloads/infineon-2/iOS/.derivedData/Build/Intermediates.noindex/InfineonProject.build/Debug-iphonesimulator/InfineonProject.build/Objects-normal/x86_64/VehicleLiveActivityAttributes~partial.swiftmodule"
+  }
+}

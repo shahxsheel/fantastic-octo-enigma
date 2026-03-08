@@ -1,0 +1,40 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/VehicleLiveActivity/VehicleLiveActivity.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Time:",
+        "location": {
+          "startingColumn": 12,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "Emoji:",
+        "location": {
+          "startingColumn": 12,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "My Widget",
+        "location": {
+          "startingColumn": 31,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "This is an example widget.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 75
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,136 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/BluetoothConnectionView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Phone Connection",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 148
+        }
+      },
+      {
+        "comment": "",
+        "key": "Phone Connection",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 23
+        }
+      },
+      {
+        "comment": "",
+        "key": "Connected",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Off",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 34
+        }
+      },
+      {
+        "comment": "",
+        "key": "Bluetooth",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 49
+        }
+      },
+      {
+        "comment": "",
+        "key": "Connect directly to your vehicle over Bluetooth. Live camera streaming is not available over Bluetooth.",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 52
+        }
+      },
+      {
+        "comment": "",
+        "key": "Device",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "Status",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 62
+        }
+      },
+      {
+        "comment": "",
+        "key": "Connected",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "Disconnect",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "Connection Info",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 82
+        }
+      },
+      {
+        "comment": "",
+        "key": "When connected via Bluetooth, the app can relay vehicle data to the cloud if your phone has internet access.",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "Scanning for nearby devices...",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 93
+        }
+      },
+      {
+        "comment": "",
+        "key": "No devices found",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 102
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 120
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nearby Devices",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 144
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,32 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/Settings/AppearanceSettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Appearance",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 80
+        }
+      },
+      {
+        "comment": "",
+        "key": "English",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "Language",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 71
+        }
+      }
+    ]
+  },
+  "version": 1
+}

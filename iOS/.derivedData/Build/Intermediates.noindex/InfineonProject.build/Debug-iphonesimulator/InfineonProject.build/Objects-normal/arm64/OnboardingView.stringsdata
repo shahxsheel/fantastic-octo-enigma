@@ -1,0 +1,40 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Onboarding/OnboardingView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Sign In Error",
+        "location": {
+          "startingColumn": 7,
+          "startingLine": 251
+        }
+      },
+      {
+        "comment": "",
+        "key": "Continue with Apple",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 238
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 257
+        }
+      },
+      {
+        "comment": "",
+        "key": "Continue",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 337
+        }
+      }
+    ]
+  },
+  "version": 1
+}

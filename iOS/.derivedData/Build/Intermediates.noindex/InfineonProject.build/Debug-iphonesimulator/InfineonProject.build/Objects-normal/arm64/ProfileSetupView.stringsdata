@@ -1,0 +1,56 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Onboarding/ProfileSetupView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "%lld/%lld",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 158
+        }
+      },
+      {
+        "comment": "",
+        "key": "what should we call you?",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 227
+        }
+      },
+      {
+        "comment": "",
+        "key": "your name",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 265
+        }
+      },
+      {
+        "comment": "",
+        "key": "change photo",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 259
+        }
+      },
+      {
+        "comment": "",
+        "key": "add photo",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 259
+        }
+      },
+      {
+        "comment": "",
+        "key": "fire...when should we notify you?",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 314
+        }
+      }
+    ]
+  },
+  "version": 1
+}

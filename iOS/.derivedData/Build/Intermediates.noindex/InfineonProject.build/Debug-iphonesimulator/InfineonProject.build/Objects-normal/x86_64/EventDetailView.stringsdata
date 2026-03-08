@@ -1,0 +1,200 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/EventDetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Event Details",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "Eye Analysis",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 93
+        }
+      },
+      {
+        "comment": "",
+        "key": "Detection Indicators",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 126
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driving Context",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 138
+        }
+      },
+      {
+        "comment": "",
+        "key": "Technical Info",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 160
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading image...",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 37
+        }
+      },
+      {
+        "comment": "",
+        "key": "Image Unavailable",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 55
+        }
+      },
+      {
+        "comment": "",
+        "key": "Could not load the snapshot",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 57
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "Time",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "Event Type",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 81
+        }
+      },
+      {
+        "comment": "",
+        "key": "Risk Score",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 86
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/6",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "Left Eye",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "Right Eye",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "Average EAR",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 119
+        }
+      },
+      {
+        "comment": "",
+        "key": "(%.3f)",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 99
+        }
+      },
+      {
+        "comment": "",
+        "key": "(%.3f)",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 140
+        }
+      },
+      {
+        "comment": "",
+        "key": "Heading",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 152
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld mph",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 142
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld° %@",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 153
+        }
+      },
+      {
+        "comment": "",
+        "key": "Image Path",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 162
+        }
+      },
+      {
+        "comment": "",
+        "key": "Event ID",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 170
+        }
+      }
+    ]
+  },
+  "version": 1
+}

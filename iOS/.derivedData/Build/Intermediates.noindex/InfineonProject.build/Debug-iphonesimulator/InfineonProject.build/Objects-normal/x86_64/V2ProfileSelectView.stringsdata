@@ -1,0 +1,80 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2ProfileSelectView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Select Vehicle",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 198
+        }
+      },
+      {
+        "comment": "",
+        "key": "Join",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 190
+        }
+      },
+      {
+        "comment": "",
+        "key": "ID",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 231
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add Code",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 236
+        }
+      },
+      {
+        "comment": "",
+        "key": "Are you sure you want to remove this vehicle?",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 257
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove Vehicle",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 248
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove Vehicle",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 262
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 277
+        }
+      },
+      {
+        "comment": "",
+        "key": "You won't be able to rejoin without an invite code.",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 280
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,240 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/UnidentifiedFacesView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Identify Faces",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 124
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading faces...",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 34
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 37
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retry",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 41
+        }
+      },
+      {
+        "comment": "",
+        "key": "All Identified",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 49
+        }
+      },
+      {
+        "comment": "",
+        "key": "All detected faces have been identified.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "Existing Profiles",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "Smart Face Grouping",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 81
+        }
+      },
+      {
+        "comment": "",
+        "key": "Similar faces are grouped together. Identifying one face will identify all similar faces automatically.",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unknown People (%lld)",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 110
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld total faces",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 113
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 283
+        }
+      },
+      {
+        "comment": "",
+        "key": "Identify Person",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 445
+        }
+      },
+      {
+        "comment": "",
+        "key": "Who is this?",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 378
+        }
+      },
+      {
+        "comment": "",
+        "key": "No profiles yet. Create one to identify this person.",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 383
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld faces",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 360
+        }
+      },
+      {
+        "comment": "",
+        "key": "View all %lld faces",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 372
+        }
+      },
+      {
+        "comment": "",
+        "key": "Assign to %@",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 419
+        }
+      },
+      {
+        "comment": "",
+        "key": "Will identify %lld faces",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 421
+        }
+      },
+      {
+        "comment": "",
+        "key": "Create New Profile",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 438
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cluster Faces (%lld)",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 562
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading faces...",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 544
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Faces",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 547
+        }
+      },
+      {
+        "comment": "",
+        "key": "No faces found in this cluster.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 549
+        }
+      },
+      {
+        "comment": "",
+        "key": "New Driver Profile",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 740
+        }
+      },
+      {
+        "comment": "",
+        "key": "Profile Info",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 725
+        }
+      },
+      {
+        "comment": "",
+        "key": "Name",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 726
+        }
+      },
+      {
+        "comment": "",
+        "key": "Notes (optional)",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 729
+        }
+      },
+      {
+        "comment": "",
+        "key": "Create",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 750
+        }
+      }
+    ]
+  },
+  "version": 1
+}

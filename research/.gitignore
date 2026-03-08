@@ -1,0 +1,22 @@
+.env*
+!.env.example
+__pycache__
+.venv
+audio_samples/
+test_out.mp4
+test_dark_video.mp4
+test_ultradark_video.mp4
+
+# Model training artifacts
+models/checkpoints/*.pt
+models/checkpoints/*.onnx
+models/checkpoints/*.mlpackage
+models/checkpoints/*.tflite
+!models/checkpoints/.gitkeep
+models/logs/
+!models/logs/.gitkeep
+models/data/
+!models/data/.gitkeep
+
+# Recordings
+recordings/

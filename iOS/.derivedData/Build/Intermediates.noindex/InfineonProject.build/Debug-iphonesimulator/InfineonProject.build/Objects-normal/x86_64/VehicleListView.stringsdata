@@ -1,0 +1,248 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/VehicleListView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "My Vehicles",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Vehicles",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 19
+        }
+      },
+      {
+        "comment": "",
+        "key": "Join a vehicle using an invite code to see real-time data.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 21
+        }
+      },
+      {
+        "comment": "",
+        "key": "Join Vehicle",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 23
+        }
+      },
+      {
+        "comment": "",
+        "key": "No data available",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 122
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld mph",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 101
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld° %@",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 110
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle Info",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 191
+        }
+      },
+      {
+        "comment": "",
+        "key": "Face Detections",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 198
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed & Direction",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 208
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver Status",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 219
+        }
+      },
+      {
+        "comment": "",
+        "key": "Activity",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 238
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld unidentified face%@",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 170
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add a profile",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 174
+        }
+      },
+      {
+        "comment": "",
+        "key": "ID",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 192
+        }
+      },
+      {
+        "comment": "",
+        "key": "Name",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 193
+        }
+      },
+      {
+        "comment": "",
+        "key": "Invite Code",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 194
+        }
+      },
+      {
+        "comment": "",
+        "key": "View Face Snapshots",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 202
+        }
+      },
+      {
+        "comment": "",
+        "key": "Current Speed",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 209
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed Limit",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 210
+        }
+      },
+      {
+        "comment": "",
+        "key": "Heading",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 211
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speeding!",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 214
+        }
+      },
+      {
+        "comment": "",
+        "key": "Intoxication Score",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "High Risk - Driver may be impaired!",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 229
+        }
+      },
+      {
+        "comment": "",
+        "key": "Moderate Risk - Driver may be drowsy",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 233
+        }
+      },
+      {
+        "comment": "",
+        "key": "Status",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 221
+        }
+      },
+      {
+        "comment": "",
+        "key": "Moving",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 239
+        }
+      },
+      {
+        "comment": "",
+        "key": "Last Updated",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 241
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Data",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 250
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle is not currently transmitting data.",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 252
+        }
+      }
+    ]
+  },
+  "version": 1
+}

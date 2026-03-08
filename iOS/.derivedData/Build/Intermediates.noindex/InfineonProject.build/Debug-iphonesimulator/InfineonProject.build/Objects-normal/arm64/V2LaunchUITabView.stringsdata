@@ -1,0 +1,16 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2LaunchUITabView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Switch",
+        "location": {
+          "startingColumn": 12,
+          "startingLine": 89
+        }
+      }
+    ]
+  },
+  "version": 1
+}

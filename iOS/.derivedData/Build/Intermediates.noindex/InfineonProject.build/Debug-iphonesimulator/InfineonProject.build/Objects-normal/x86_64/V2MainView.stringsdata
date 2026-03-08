@@ -1,0 +1,24 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/V2MainView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "© 2026 Aaron Ma.",
+        "location": {
+          "startingColumn": 82,
+          "startingLine": 83
+        }
+      },
+      {
+        "comment": "",
+        "key": "Screenshot Not Allowed",
+        "location": {
+          "startingColumn": 9,
+          "startingLine": 83
+        }
+      }
+    ]
+  },
+  "version": 1
+}

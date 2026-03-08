@@ -1,0 +1,176 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/VehicleAccessSheet.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Vehicle Access",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 116
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove Access",
+        "location": {
+          "startingColumn": 9,
+          "startingLine": 135
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading...",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 47
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retry",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "Owner",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 60
+        }
+      },
+      {
+        "comment": "",
+        "key": "No one else has access to this vehicle.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "Authorized Drivers",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "As the owner, you can remove access from anyone.",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 89
+        }
+      },
+      {
+        "comment": "",
+        "key": "You can only remove your own access.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 92
+        }
+      },
+      {
+        "comment": "",
+        "key": "Name",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 98
+        }
+      },
+      {
+        "comment": "",
+        "key": "ID",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 101
+        }
+      },
+      {
+        "comment": "",
+        "key": "Description",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 104
+        }
+      },
+      {
+        "comment": "",
+        "key": "Debug",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 109
+        }
+      },
+      {
+        "comment": "",
+        "key": "Currently chosen vehicle info. Connected to server.",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "Share",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 128
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 142
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 147
+        }
+      },
+      {
+        "comment": "",
+        "key": "Are you sure you want to leave this vehicle? You will need an invite code to rejoin.",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 153
+        }
+      },
+      {
+        "comment": "",
+        "key": "Are you sure you want to remove %@'s access?",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 156
+        }
+      },
+      {
+        "comment": "",
+        "key": "Owner",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 247
+        }
+      }
+    ]
+  },
+  "version": 1
+}

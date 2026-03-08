@@ -1,0 +1,88 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/VehicleLiveActivity/VehicleLiveActivityLiveActivity.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Riskiness: %lld/6, driver is: %@",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 46
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speeding",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 42,
+          "startingLine": 29
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 38
+        }
+      },
+      {
+        "comment": "",
+        "key": "mph",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 43
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "mph",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 79
+        }
+      },
+      {
+        "comment": "",
+        "key": "Riskiness: %lld/6, driver is: %@",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 82
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "mph",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 99
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -1,0 +1,160 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/V2LaunchUI/VehicleSettingsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Vehicle Settings",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 158
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle Name",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 60
+        }
+      },
+      {
+        "comment": "",
+        "key": "Description",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 64
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle Info",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "Note",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 94
+        }
+      },
+      {
+        "comment": "",
+        "key": "Hardware",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 98
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle ID",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 38
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle ID",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 45
+        }
+      },
+      {
+        "comment": "",
+        "key": "This is your hardware's unique identifier.",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 47
+        }
+      },
+      {
+        "comment": "",
+        "key": "Invite Code",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 51
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle name",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle description",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "Name",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "Description",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 81
+        }
+      },
+      {
+        "comment": "",
+        "key": "Only the vehicle owner can edit these settings.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 88
+        }
+      },
+      {
+        "comment": "",
+        "key": "These changes will take effect when the device restarts.",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 95
+        }
+      },
+      {
+        "comment": "",
+        "key": "Features",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 155
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 172
+        }
+      },
+      {
+        "comment": "",
+        "key": "Saving...",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 200
+        }
+      }
+    ]
+  },
+  "version": 1
+}

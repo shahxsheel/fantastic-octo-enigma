@@ -1,0 +1,64 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/JoinVehicleView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Join Vehicle",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 137
+        }
+      },
+      {
+        "comment": "",
+        "key": "Scan QR code",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 66
+        }
+      },
+      {
+        "comment": "",
+        "key": "Scan QR code",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "Invite Code",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter the invite code",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ask the vehicle owner for the invite code to get access to real-time vehicle data.",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
+        "key": "Join Vehicle",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 119
+        }
+      }
+    ]
+  },
+  "version": 1
+}

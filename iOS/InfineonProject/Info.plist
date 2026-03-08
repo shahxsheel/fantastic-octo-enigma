@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.aaronhma.InfineonProject</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>infineon</string>
+			</array>
+		</dict>
+	</array>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>plus</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Pick from online car catalog</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Add a vehicle</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.aaronhma.InfineonProject.add-vehicle</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>paperplane</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Let me know how I can help</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Something went wrong?</string>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.aaronhma.InfineonProject.feedback</string>
+		</dict>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+	</array>
+</dict>
+</plist>

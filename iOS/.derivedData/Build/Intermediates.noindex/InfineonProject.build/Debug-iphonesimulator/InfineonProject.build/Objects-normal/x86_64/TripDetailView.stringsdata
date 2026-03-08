@@ -1,0 +1,320 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/TripDetailView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Trip Statistics",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 119
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver Monitoring",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 142
+        }
+      },
+      {
+        "comment": "",
+        "key": "Distraction Events",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 231
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed Violations",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 288
+        }
+      },
+      {
+        "comment": "",
+        "key": "Trip Route",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 317
+        }
+      },
+      {
+        "comment": "",
+        "key": "Trip in progress",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "Crash Detected",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 85
+        }
+      },
+      {
+        "comment": "",
+        "key": "(%@)",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 88
+        }
+      },
+      {
+        "comment": "",
+        "key": "Max Speed",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 120
+        }
+      },
+      {
+        "comment": "",
+        "key": "Average Speed",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "Face Detections",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "Session ID",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 134
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld mph",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 121
+        }
+      },
+      {
+        "comment": "",
+        "key": " mph",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 131
+        }
+      },
+      {
+        "comment": "",
+        "key": "Max Risk Score",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 224
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld Drowsiness Event%@",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 149
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tap to view details",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "No drowsiness detected",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 163
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld Excessive Blinking Event%@",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 176
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tap to view details",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 178
+        }
+      },
+      {
+        "comment": "",
+        "key": "No excessive blinking detected",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 190
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld Unstable Eyes Event%@",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 203
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tap to view details",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 205
+        }
+      },
+      {
+        "comment": "",
+        "key": "No unstable eyes detected",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 217
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/6",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 225
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld Phone Distraction%@",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 238
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tap to view details",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 240
+        }
+      },
+      {
+        "comment": "",
+        "key": "No phone distractions",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 252
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld Drinking Event%@",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 265
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tap to view details",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 267
+        }
+      },
+      {
+        "comment": "",
+        "key": "No drinking detected",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 279
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld Speeding Event%@",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 294
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tap to view details",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 296
+        }
+      },
+      {
+        "comment": "",
+        "key": "No speeding violations",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 308
+        }
+      },
+      {
+        "comment": "",
+        "key": "Camera data unavailable",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 480
+        }
+      },
+      {
+        "comment": "",
+        "key": "Low confidence",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 491
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 12,
+          "startingLine": 644
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ %@",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 671
+        }
+      }
+    ]
+  },
+  "version": 1
+}

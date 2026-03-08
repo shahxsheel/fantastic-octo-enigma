@@ -1,0 +1,48 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/TripInfoView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "LIVE",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 31
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 92
+        }
+      },
+      {
+        "comment": "",
+        "key": " mph",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 12,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 12,
+          "startingLine": 197
+        }
+      }
+    ]
+  },
+  "version": 1
+}

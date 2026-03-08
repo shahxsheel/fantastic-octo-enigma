@@ -1,0 +1,11 @@
+# Get staged files
+STAGED_IOS=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^iOS/.*\.swift$" || true)
+
+# Format iOS files if any are staged
+if [ -n "$STAGED_IOS" ]; then
+  echo "Formatting Swift files..."
+  echo "$STAGED_IOS" | while IFS= read -r file; do
+    swift-format format -i "$file"
+    git add "$file"
+  done
+fi

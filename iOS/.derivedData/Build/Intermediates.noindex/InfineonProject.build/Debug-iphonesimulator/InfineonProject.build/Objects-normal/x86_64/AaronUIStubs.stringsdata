@@ -1,0 +1,32 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Utilities/AaronUIStubs.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Crop Image",
+        "location": {
+          "startingColumn": 12,
+          "startingLine": 113
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 125
+        }
+      },
+      {
+        "comment": "",
+        "key": "Use Photo",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 130
+        }
+      }
+    ]
+  },
+  "version": 1
+}

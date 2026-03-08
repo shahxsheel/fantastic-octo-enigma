@@ -1,0 +1,408 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Vehicle/FaceDetectionsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Face Detections",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 113
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading detections...",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retry",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Detections",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 83
+        }
+      },
+      {
+        "comment": "",
+        "key": "No face detections recorded for this vehicle yet.",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 86
+        }
+      },
+      {
+        "comment": "",
+        "key": "No detections found for this filter.",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 88
+        }
+      },
+      {
+        "comment": "",
+        "key": "Show All",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 92
+        }
+      },
+      {
+        "comment": "",
+        "key": "All Drivers",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 128
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unidentified",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 152
+        }
+      },
+      {
+        "comment": "",
+        "key": "Detection Details",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 325
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 296
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 305
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 340
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading profile...",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 299
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unidentified",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 310
+        }
+      },
+      {
+        "comment": "",
+        "key": "Eye State",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 426
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver Alerts",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 466
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driving Context",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 505
+        }
+      },
+      {
+        "comment": "",
+        "key": "Timestamp",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 535
+        }
+      },
+      {
+        "comment": "",
+        "key": "View all detections",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 359
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading image...",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 402
+        }
+      },
+      {
+        "comment": "",
+        "key": "Image unavailable",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 413
+        }
+      },
+      {
+        "comment": "",
+        "key": "(%.3f)",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 434
+        }
+      },
+      {
+        "comment": "",
+        "key": "Left Eye",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 429
+        }
+      },
+      {
+        "comment": "",
+        "key": "(%.3f)",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 446
+        }
+      },
+      {
+        "comment": "",
+        "key": "Right Eye",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 441
+        }
+      },
+      {
+        "comment": "",
+        "key": "%.4f",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 456
+        }
+      },
+      {
+        "comment": "",
+        "key": "Avg EAR",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 454
+        }
+      },
+      {
+        "comment": "",
+        "key": "Drowsy",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 477
+        }
+      },
+      {
+        "comment": "",
+        "key": "Excessive Blinking",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 483
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unstable Eyes",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 489
+        }
+      },
+      {
+        "comment": "",
+        "key": "No alerts",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 495
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/6",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 471
+        }
+      },
+      {
+        "comment": "",
+        "key": "Intoxication Score",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 469
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speeding",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 525
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld mph",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 511
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 509
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld° %@",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 520
+        }
+      },
+      {
+        "comment": "",
+        "key": "Heading",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 518
+        }
+      },
+      {
+        "comment": "",
+        "key": "Captured",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 538
+        }
+      },
+      {
+        "comment": "",
+        "key": "Session",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 545
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver Detections",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 667
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading detections...",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 606
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 609
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retry",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 613
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Detections",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 621
+        }
+      },
+      {
+        "comment": "",
+        "key": "No detections found for %@.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 623
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld detection%@",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 644
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 671
+        }
+      }
+    ]
+  },
+  "version": 1
+}

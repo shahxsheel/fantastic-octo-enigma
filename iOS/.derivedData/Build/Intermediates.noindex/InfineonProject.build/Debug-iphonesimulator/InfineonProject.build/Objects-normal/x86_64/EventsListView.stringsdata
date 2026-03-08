@@ -1,0 +1,72 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/Trip/EventsListView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "%@ Events",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading events...",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 21
+        }
+      },
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 24
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retry",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 28
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Events",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "No %@ events recorded for this trip.",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 38
+        }
+      },
+      {
+        "comment": "",
+        "key": "Events",
+        "location": {
+          "startingColumn": 15,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld %@ event%@ detected during this trip.",
+        "location": {
+          "startingColumn": 11,
+          "startingLine": 55
+        }
+      }
+    ]
+  },
+  "version": 1
+}

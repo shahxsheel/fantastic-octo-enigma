@@ -1,0 +1,672 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/VehicleView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "%lld MPH",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 84
+        }
+      },
+      {
+        "comment": "",
+        "key": "Parked",
+        "location": {
+          "startingColumn": 61,
+          "startingLine": 84
+        }
+      },
+      {
+        "comment": "",
+        "key": "Bluetooth Connection",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 103
+        }
+      },
+      {
+        "comment": "",
+        "key": "Offline mode enabled",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 105
+        }
+      },
+      {
+        "comment": "",
+        "key": "Previous",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 143
+        }
+      },
+      {
+        "comment": "",
+        "key": "Pause",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 147
+        }
+      },
+      {
+        "comment": "",
+        "key": "Next",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "Previous Source",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 161
+        }
+      },
+      {
+        "comment": "",
+        "key": "Volume",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 165
+        }
+      },
+      {
+        "comment": "",
+        "key": "Next Source",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 169
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld Unidentified Face%@",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 215
+        }
+      },
+      {
+        "comment": "",
+        "key": "Face Detections",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 237
+        }
+      },
+      {
+        "comment": "",
+        "key": "Trips",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 256
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 427
+        }
+      },
+      {
+        "comment": "",
+        "key": "Heading",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 446
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver Status",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 461
+        }
+      },
+      {
+        "comment": "",
+        "key": "Risk Score",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 465
+        }
+      },
+      {
+        "comment": "",
+        "key": "GPS Satellites",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 476
+        }
+      },
+      {
+        "comment": "",
+        "key": "Distraction",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 488
+        }
+      },
+      {
+        "comment": "",
+        "key": "Live Camera",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 279
+        }
+      },
+      {
+        "comment": "",
+        "key": "Alert",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 299
+        }
+      },
+      {
+        "comment": "",
+        "key": "Live Location",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 327
+        }
+      },
+      {
+        "comment": "",
+        "key": "Location Unavailable",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 329
+        }
+      },
+      {
+        "comment": "",
+        "key": "%.4f, %.4f",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 338
+        }
+      },
+      {
+        "comment": "",
+        "key": "No GPS data",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 342
+        }
+      },
+      {
+        "comment": "",
+        "key": "Phone Connection",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 383
+        }
+      },
+      {
+        "comment": "",
+        "key": "Connected",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 386
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle Settings",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 415
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 430
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@/%lldMPH",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 430
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld° %@",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 456
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/6",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 466
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 480
+        }
+      },
+      {
+        "comment": "",
+        "key": "Phone",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 491
+        }
+      },
+      {
+        "comment": "",
+        "key": "Drinking",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 500
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unable to load location.",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 614
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speeding!",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 662
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld MPH in a %lld MPH zone",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 664
+        }
+      },
+      {
+        "comment": "",
+        "key": "Phone Detected!",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 681
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver is looking at phone - dangerous!",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 683
+        }
+      },
+      {
+        "comment": "",
+        "key": "Drinking Detected",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 699
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver is drinking - stay focused",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 701
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver May Be Impaired",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 717
+        }
+      },
+      {
+        "comment": "",
+        "key": "Intoxication score: %lld/6",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 719
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver May Be Drowsy",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 733
+        }
+      },
+      {
+        "comment": "",
+        "key": "Consider taking a break",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 735
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle Location",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 1128
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Location Data",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 1122
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vehicle GPS coordinates are not available.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1124
+        }
+      },
+      {
+        "comment": "",
+        "key": "Moving at %lld mph %@",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 1159
+        }
+      },
+      {
+        "comment": "",
+        "key": "Alert Control",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 1622
+        }
+      },
+      {
+        "comment": "",
+        "key": "The vehicle buzzer is currently sounding",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 1436
+        }
+      },
+      {
+        "comment": "",
+        "key": "Buzzer Active",
+        "location": {
+          "startingColumn": 33,
+          "startingLine": 1430
+        }
+      },
+      {
+        "comment": "",
+        "key": "Buzzer Inactive",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 1430
+        }
+      },
+      {
+        "comment": "",
+        "key": "Type",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 1449
+        }
+      },
+      {
+        "comment": "",
+        "key": "Buzzer Type",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1457
+        }
+      },
+      {
+        "comment": "",
+        "key": "Custom Equalizer",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 1464
+        }
+      },
+      {
+        "comment": "",
+        "key": "Play Custom Tone",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 1542
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sound Design",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1555
+        }
+      },
+      {
+        "comment": "",
+        "key": "Stop Buzzer",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 1579
+        }
+      },
+      {
+        "comment": "",
+        "key": "Start Buzzer",
+        "location": {
+          "startingColumn": 53,
+          "startingLine": 1579
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remote Control",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 1608
+        }
+      },
+      {
+        "comment": "",
+        "key": "This will activate the buzzer on %@. The buzzer will sound continuously until stopped.",
+        "location": {
+          "startingColumn": 17,
+          "startingLine": 1611
+        }
+      },
+      {
+        "comment": "",
+        "key": "Live Camera",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 2100
+        }
+      },
+      {
+        "comment": "",
+        "key": "Waiting for camera feed...",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1983
+        }
+      },
+      {
+        "comment": "",
+        "key": "Connecting to camera...",
+        "location": {
+          "startingColumn": 65,
+          "startingLine": 1983
+        }
+      },
+      {
+        "comment": "",
+        "key": "BLE",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 1971
+        }
+      },
+      {
+        "comment": "",
+        "key": "Stream Unavailable",
+        "location": {
+          "startingColumn": 21,
+          "startingLine": 1987
+        }
+      },
+      {
+        "comment": "",
+        "key": "Retry",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1991
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 2010
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@/%lldMPH",
+        "location": {
+          "startingColumn": 19,
+          "startingLine": 2010
+        }
+      },
+      {
+        "comment": "",
+        "key": "Speed",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 2007
+        }
+      },
+      {
+        "comment": "",
+        "key": "Heading",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 2023
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld° %@",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 2029
+        }
+      },
+      {
+        "comment": "",
+        "key": "Status",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 2037
+        }
+      },
+      {
+        "comment": "",
+        "key": "Moving",
+        "location": {
+          "startingColumn": 40,
+          "startingLine": 2043
+        }
+      },
+      {
+        "comment": "",
+        "key": "Parked",
+        "location": {
+          "startingColumn": 51,
+          "startingLine": 2043
+        }
+      },
+      {
+        "comment": "",
+        "key": "Driver Status",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 2051
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld/6",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 2062
+        }
+      },
+      {
+        "comment": "",
+        "key": "Risk Score",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 2060
+        }
+      },
+      {
+        "comment": "",
+        "key": "GPS Satellites",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 2072
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 2077
+        }
+      },
+      {
+        "comment": "",
+        "key": "Last Updated",
+        "location": {
+          "startingColumn": 23,
+          "startingLine": 2087
+        }
+      }
+    ]
+  },
+  "version": 1
+}

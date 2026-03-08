@@ -1,0 +1,56 @@
+{
+  "source": "/Users/shahxsheel/Downloads/infineon-2/iOS/InfineonProject/Views/FilterToggleButtonView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Filters",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 46
+        }
+      },
+      {
+        "comment": "",
+        "key": "Toggle Filter",
+        "location": {
+          "startingColumn": 7,
+          "startingLine": 70
+        }
+      },
+      {
+        "comment": "",
+        "key": "Filtered by",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 77
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ %@",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 81
+        }
+      },
+      {
+        "comment": "",
+        "key": "Numbers List",
+        "location": {
+          "startingColumn": 1,
+          "startingLine": 103
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld",
+        "location": {
+          "startingColumn": 1,
+          "startingLine": 103
+        }
+      }
+    ]
+  },
+  "version": 1
+}
