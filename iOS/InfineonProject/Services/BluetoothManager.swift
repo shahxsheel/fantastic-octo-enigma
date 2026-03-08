@@ -752,10 +752,12 @@ extension BluetoothManager: CBCentralManagerDelegate {
     )
     cleanup(clearSelectedContext: false)
     if consecutiveConnectFailures >= Self.reconnectFailureLimit {
-      allowAutoReconnect = false
+      // Reset failure count and scan so that if the Pi starts advertising,
+      // it is discovered and auto-connected without requiring a manual tap.
+      consecutiveConnectFailures = 0
       reconnectWorkItem?.cancel()
       reconnectScheduled = false
-      statusMessage = "Connection failed. Tap vehicle to retry"
+      statusMessage = "Searching for Pi..."
       beginScan()
       return
     }

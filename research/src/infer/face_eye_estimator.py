@@ -166,7 +166,7 @@ class FaceEyeEstimator:
                 yaw   = math.degrees(math.atan2(-float(m[2][0]), sy))
                 pitch = math.degrees(math.atan2(float(m[2][1]), float(m[2][2])))
                 if abs(yaw) > self._yaw_threshold:
-                    return "LEFT" if yaw < 0 else "RIGHT"
+                    return "LEFT" if yaw > 0 else "RIGHT"
                 if pitch > self._pitch_threshold:
                     return "DOWN"
                 if pitch < -self._pitch_threshold:

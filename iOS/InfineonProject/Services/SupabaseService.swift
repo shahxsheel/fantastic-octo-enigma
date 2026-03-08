@@ -845,22 +845,19 @@ class SupabaseService {
   }
 
   func piConnectivityState(for vehicleId: String) -> PiConnectivityState {
-    if bluetooth.connectedVehicleId == vehicleId {
-      // BLE path takes precedence whenever BLE mode is enabled for this selected vehicle.
-      if bluetooth.bleEnabled {
-        if !bluetooth.isConnected {
-          return .offline
-        }
+    if bluetooth.connectedVehicleId == vehicleId && bluetooth.bleEnabled {
+      if bluetooth.isConnected {
         switch bluetooth.piConnectionState {
         case .online: return .online
         case .inactive: return .inactive
         case .offline: return .offline
         }
       }
-      // If BLE is no longer enabled but stale BLE data exists, treat as offline.
-      if bluetooth.lastDataReceivedAt != nil && !bluetooth.isConnected {
+      // BLE had data before but lost connection → definitely offline, don't show stale Supabase.
+      if bluetooth.lastDataReceivedAt != nil {
         return .offline
       }
+      // BLE never received data yet (still connecting for first time) → fall through to Supabase.
     }
 
     guard let realtime = vehicleRealtimeData[vehicleId] else { return .offline }

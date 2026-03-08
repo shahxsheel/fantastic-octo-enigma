@@ -169,16 +169,40 @@ class SideLookTracker:
         return False
 
 
+class VerticalLookTracker:
+    """Tracks continuous up/down looking duration and emits warning when threshold is reached."""
+
+    def __init__(self, threshold_seconds: float = 2.0):
+        self.threshold_seconds = max(0.1, threshold_seconds)
+        self._vertical_look_start_ts: Optional[float] = None
+
+    def update(self, head_direction: str, now_ts: float) -> bool:
+        direction = head_direction.upper().strip()
+        if direction in ("UP", "DOWN"):
+            if self._vertical_look_start_ts is None:
+                self._vertical_look_start_ts = now_ts
+            return (now_ts - self._vertical_look_start_ts) >= self.threshold_seconds
+
+        if direction == "CENTER":
+            self._vertical_look_start_ts = None
+
+        return False
+
+
 def _resolve_driver_state(
-    objects: list[dict], sideways_warning_active: bool, is_drowsy: bool = False
+    objects: list[dict],
+    sideways_warning_active: bool,
+    vertical_warning_active: bool = False,
+    is_drowsy: bool = False,
 ) -> tuple[str, str, bool, bool, int]:
     """
     Resolves final driver state with precedence:
       1) phone alert (4/6)
       2) drowsiness alert (5/6)
       3) side-look warning (2/6)
-      4) drinking warning (2/6)
-      5) focused (0/6)
+      4) vertical-look warning (2/6)
+      5) drinking warning (2/6)
+      6) focused (0/6)
     """
     base_alert, base_status, phone_detected, drinking_detected, base_score = _compute_driver_state(objects)
     if phone_detected:
@@ -189,6 +213,9 @@ def _resolve_driver_state(
 
     if sideways_warning_active:
         return "WARN", "distracted_side_look", False, drinking_detected, 2
+
+    if vertical_warning_active:
+        return "WARN", "distracted_vertical_look", False, drinking_detected, 2
 
     return base_alert, base_status, phone_detected, drinking_detected, base_score
 
@@ -334,6 +361,7 @@ def main() -> None:
         model_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "face_landmarker.task")
     )
     side_look_tracker = SideLookTracker(threshold_seconds=2.0)
+    vertical_look_tracker = VerticalLookTracker(threshold_seconds=2.0)
     buzzer = BuzzerController(pin=18)
     buzzer.start()
 
@@ -586,13 +614,19 @@ def main() -> None:
             src_frame = main_prealloc if main_prealloc is not None else infer_prealloc
             head_direction, left_ear, right_ear, is_drowsy = face_eye_estimator.estimate(src_frame, inf_frame_idx)
 
+            now_ts = time.time()
             sideways_warning_active = side_look_tracker.update(
                 head_direction=head_direction,
-                now_ts=time.time(),
+                now_ts=now_ts,
+            )
+            vertical_warning_active = vertical_look_tracker.update(
+                head_direction=head_direction,
+                now_ts=now_ts,
             )
             alert_state, driver_status, phone_detected, drinking_detected, intox_score = _resolve_driver_state(
                 objects,
                 sideways_warning_active=sideways_warning_active,
+                vertical_warning_active=vertical_warning_active,
                 is_drowsy=is_drowsy,
             )
 
@@ -691,6 +725,7 @@ def main() -> None:
 
     last_distraction_buzzer_time = 0.0
     distraction_buzzer_cooldown = 2.0
+    last_vertical_look_buzzer_time = 0.0
     last_speed_buzzer_time = 0.0
 
     telemetry_interval_sec = 1.0
@@ -771,6 +806,11 @@ def main() -> None:
             if (phone_detected or drinking_detected) and (now - last_distraction_buzzer_time) >= distraction_buzzer_cooldown:
                 buzzer.play_distraction_alert()
                 last_distraction_buzzer_time = now
+
+            # Buzzer: vertical look warning (up/down for too long).
+            if driver_status == "distracted_vertical_look" and (now - last_vertical_look_buzzer_time) >= distraction_buzzer_cooldown:
+                buzzer.play_distraction_alert()
+                last_vertical_look_buzzer_time = now
 
             # Buzzer: speeding alerts every 10s while speeding.
             if is_speeding and (now - last_speed_buzzer_time) >= 10.0:

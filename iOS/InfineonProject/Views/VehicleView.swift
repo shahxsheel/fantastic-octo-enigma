@@ -521,6 +521,22 @@ struct VehicleView: View {
       .frame(maxWidth: .infinity, alignment: .leading)
       .background(Color.orange.opacity(0.1), in: .rect(cornerRadius: 10))
     }
+    // Vertical look warning
+    else if data.driverStatus.lowercased() == "distracted_vertical_look" {
+      Label {
+        VStack(alignment: .leading) {
+          Text("Looking Up/Down Warning")
+            .bold()
+          Text("Driver is looking up or down — keep eyes on the road")
+            .font(.caption)
+        }
+      } icon: {
+        SettingsBoxView(icon: "arrow.up.and.down.circle.fill", color: .orange)
+      }
+      .padding()
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(Color.orange.opacity(0.1), in: .rect(cornerRadius: 10))
+    }
     // Impaired alert
     else if data.intoxicationScore >= 4
       || data.driverStatus.lowercased() == "impaired"
