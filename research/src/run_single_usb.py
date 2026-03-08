@@ -29,8 +29,8 @@ from src.infer.yolo_detector import YoloDetector
 
 # Pi 5 ARM SVE + NCNN threading knobs.
 os.environ.setdefault("XNNPACK_FORCE_QUIRK_FOR_ARM_SVE", "1")
-os.environ.setdefault("OMP_NUM_THREADS", "4")
-os.environ.setdefault("NCNN_THREADS", "4")
+os.environ.setdefault("OMP_NUM_THREADS", "2")
+os.environ.setdefault("NCNN_THREADS", "2")
 
 # CLI update rate (seconds).
 CLI_UPDATE_INTERVAL = 0.5
@@ -644,6 +644,7 @@ def main() -> None:
     else:
         print(_colorize(f"[single-usb] BLE: INACTIVE ({ble.reason})", ANSI_YELLOW), flush=True)
 
+    _frame_ready = threading.Condition(_lock)
     _camera_stop = threading.Event()
     _inference_stop = threading.Event()
     _telemetry_stop = threading.Event()
@@ -693,15 +694,17 @@ def main() -> None:
                     _infer_front, _infer_back = _infer_back, _infer_front
                     if not headless:
                         _main_front, _main_back = _main_back, _main_front
+                    _frame_ready.notify()
             except Exception:
                 if _camera_stop.is_set():
                     break
                 time.sleep(0.001)
             else:
-                elapsed = time.time() - cam_loop_start
-                sleep_time = (1.0 / CAMERA_TARGET_FPS) - elapsed
-                if sleep_time > 0:
-                    time.sleep(sleep_time)
+                if not getattr(cam, 'using_gstreamer', False):
+                    elapsed = time.time() - cam_loop_start
+                    sleep_time = (1.0 / CAMERA_TARGET_FPS) - elapsed
+                    if sleep_time > 0:
+                        time.sleep(sleep_time)
 
     def inference_thread_fn() -> None:
         inf_frame_idx = 0
@@ -710,11 +713,11 @@ def main() -> None:
         main_prealloc: Optional[np.ndarray] = None
 
         while not _inference_stop.is_set():
-            with _lock:
+            with _frame_ready:
+                _frame_ready.wait(timeout=0.1)
                 infer_ref = _infer_front
                 main_ref = _main_front
             if infer_ref is None:
-                time.sleep(0.001)
                 continue
 
             if infer_prealloc is None:
@@ -905,7 +908,8 @@ def main() -> None:
                         flush=True,
                     )
                 else:
-                    key = cv2.waitKey(1) & 0xFF
+                    wait_ms = max(1, 33 - int((time.time() - loop_start) * 1000))
+                    key = cv2.waitKey(wait_ms) & 0xFF
                     if key == ord("q"):
                         break
 
@@ -979,11 +983,8 @@ def main() -> None:
                 )
                 last_cli_update = now
 
-            process_time = time.time() - loop_start
             if headless:
-                # No GUI to pace — yield the GIL briefly instead of capping at 30fps.
-                time.sleep(0.001)
-            else:
+                process_time = time.time() - loop_start
                 sleep_time = (1.0 / 30.0) - process_time
                 if sleep_time > 0:
                     time.sleep(sleep_time)

@@ -188,6 +188,10 @@ final class BluetoothManager: NSObject {
       if bleEnabled {
         allowAutoReconnect = true
         userInitiatedDisconnect = false
+        reconnectAttempt = 0
+        consecutiveConnectFailures = 0
+        reconnectWorkItem?.cancel()
+        reconnectScheduled = false
         startScanning()
       } else {
         allowAutoReconnect = false
@@ -239,6 +243,7 @@ final class BluetoothManager: NSObject {
   private var localTripFinalizeWorkItem: DispatchWorkItem?
   private var reconnectAttempt = 0
   private var reconnectScheduled = false
+  private var consecutiveConnectFailures = 0
   private var userInitiatedDisconnect = false
   private var allowAutoReconnect = true
   private var connectingPeripheralId: UUID?
@@ -254,6 +259,7 @@ final class BluetoothManager: NSObject {
   private static let scanTimeout: TimeInterval = 15
   private static let reconnectBaseDelay: TimeInterval = 1
   private static let reconnectMaxDelay: TimeInterval = 12
+  private static let reconnectFailureLimit = 6
 
   override init() {
     if let rawVehicleId = UserDefaults.standard.string(forKey: DefaultsKey.preferredVehicleId),
@@ -473,6 +479,7 @@ final class BluetoothManager: NSObject {
 
   func connectToDevice(_ device: DiscoveredBLEDevice) {
     guard let cm = centralManager else { return }
+    guard bleEnabled else { return }
     if connectionPhase == .connecting, connectingPeripheralId == device.id {
       return
     }
@@ -482,6 +489,7 @@ final class BluetoothManager: NSObject {
     allowAutoReconnect = true
     userInitiatedDisconnect = false
     reconnectAttempt = 0
+    consecutiveConnectFailures = 0
     reconnectWorkItem?.cancel()
     reconnectScheduled = false
     localTripFinalizeWorkItem?.cancel()
@@ -490,6 +498,9 @@ final class BluetoothManager: NSObject {
     connectionPhase = .idle
     isScanning = false
     scanTimer?.invalidate()
+    // Promote the user-selected peripheral to sticky target immediately.
+    targetPeripheralId = device.peripheral.identifier
+    UserDefaults.standard.set(device.peripheral.identifier.uuidString, forKey: DefaultsKey.targetPeripheralId)
     statusMessage = "Connecting..."
     connectPeripheral(device.peripheral)
   }
@@ -557,7 +568,7 @@ final class BluetoothManager: NSObject {
     connectionPhase = .scanning
     statusMessage = "Scanning..."
     cm.scanForPeripherals(
-      withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+      withServices: [serviceUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
 
     // Scan timeout
     scanTimer?.invalidate()
@@ -584,6 +595,8 @@ final class BluetoothManager: NSObject {
     if manual {
       userInitiatedDisconnect = true
       allowAutoReconnect = false
+      reconnectAttempt = 0
+      consecutiveConnectFailures = 0
     }
     if let peripheral = connectedPeripheral {
       centralManager?.cancelPeripheralConnection(peripheral)
@@ -622,6 +635,7 @@ final class BluetoothManager: NSObject {
 
   private func scheduleReconnect() {
     guard bleEnabled, allowAutoReconnect else { return }
+    guard consecutiveConnectFailures < Self.reconnectFailureLimit else { return }
     guard !reconnectScheduled else { return }
     guard connectionPhase != .connected, connectionPhase != .connecting else { return }
     statusMessage = "Reconnecting..."
@@ -697,11 +711,12 @@ extension BluetoothManager: CBCentralManagerDelegate {
         discoveredDevices.append(device)
       }
 
-      // Sticky reconnect to target, otherwise auto-connect to vehicle peripherals.
+      // Sticky reconnect only: never auto-connect to non-target peripherals.
       // Respect `allowAutoReconnect` so manual disconnect does not auto-reconnect.
       let isTarget = targetPeripheralId == peripheral.identifier
       if allowAutoReconnect, isTarget {
-        connectToDevice(device)
+        statusMessage = "Reconnecting..."
+        connectPeripheral(peripheral)
       }
     }
   }
@@ -709,6 +724,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
   func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
     isConnected = true
     reconnectAttempt = 0
+    consecutiveConnectFailures = 0
     reconnectScheduled = false
     userInitiatedDisconnect = false
     connectionPhase = .connected
@@ -729,10 +745,20 @@ extension BluetoothManager: CBCentralManagerDelegate {
     didFailToConnect peripheral: CBPeripheral,
     error: Error?
   ) {
+    consecutiveConnectFailures += 1
     print(
-      "[BLE] didFailToConnect \(peripheral.identifier.uuidString) error=\(describe(error: error))"
+      "[BLE] didFailToConnect \(peripheral.identifier.uuidString) error=\(describe(error: error)) "
+        + "failure=\(consecutiveConnectFailures)"
     )
     cleanup(clearSelectedContext: false)
+    if consecutiveConnectFailures >= Self.reconnectFailureLimit {
+      allowAutoReconnect = false
+      reconnectWorkItem?.cancel()
+      reconnectScheduled = false
+      statusMessage = "Connection failed. Tap vehicle to retry"
+      beginScan()
+      return
+    }
     scheduleReconnect()
   }
 

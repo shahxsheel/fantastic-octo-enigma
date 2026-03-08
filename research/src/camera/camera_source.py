@@ -53,12 +53,15 @@ class USBCameraSource(CameraSource):
                 "jpegdec ! videoconvert ! appsink drop=true sync=false max-buffers=1"
             )
             self.cap = cv2.VideoCapture(pipeline, cv2.CAP_GSTREAMER)
+            self.using_gstreamer = True
         else:
             self.cap = None
+            self.using_gstreamer = False
 
         # Fallback to V4L2 if GStreamer failed or disabled
         if self.cap is None or not self.cap.isOpened():
             self.cap = cv2.VideoCapture(index, cv2.CAP_V4L2)
+            self.using_gstreamer = False
             self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.capture_w)
             self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.capture_h)
             try:
@@ -81,7 +84,7 @@ class USBCameraSource(CameraSource):
             raise RuntimeError("USB camera read failed")
         h, w = frame.shape[:2]
         if w != self.capture_w or h != self.capture_h:
-            frame = cv2.resize(frame, (self.capture_w, self.capture_h), interpolation=cv2.INTER_AREA)
+            frame = cv2.resize(frame, (self.capture_w, self.capture_h), interpolation=cv2.INTER_LINEAR)
 
         if os.environ.get("SWAP_RB", "0") == "1":
             frame = frame[:, :, ::-1].copy()
@@ -90,7 +93,7 @@ class USBCameraSource(CameraSource):
         if self.infer_w == self.capture_w and self.infer_h == self.capture_h:
             infer = frame
         else:
-            infer = cv2.resize(frame, (self.infer_w, self.infer_h), interpolation=cv2.INTER_AREA)
+            infer = cv2.resize(frame, (self.infer_w, self.infer_h), interpolation=cv2.INTER_LINEAR)
         self.frame_id += 1
         ts_ms = int(time.time() * 1000)
         return FrameBundle(frame_id=self.frame_id, ts_ms=ts_ms, main_bgr=frame, infer_bgr=infer)

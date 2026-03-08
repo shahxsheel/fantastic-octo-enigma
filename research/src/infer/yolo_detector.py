@@ -50,6 +50,7 @@ def _detect_pi4() -> bool:
 def _letterbox(
     img_bgr: np.ndarray, new_size: int, pad_color: Tuple[int, int, int] = (114, 114, 114)
 ) -> Tuple[np.ndarray, float, Tuple[int, int]]:
+    """Legacy module-level letterbox (unused; kept for backward compat)."""
     h, w = img_bgr.shape[:2]
     scale = min(new_size / w, new_size / h)
     nw, nh = int(round(w * scale)), int(round(h * scale))
@@ -59,7 +60,6 @@ def _letterbox(
     resized = cv2.resize(img_bgr, (nw, nh), interpolation=cv2.INTER_LINEAR)
     canvas = np.full((new_size, new_size, 3), pad_color, dtype=np.uint8)
     canvas[dh:dh + nh, dw:dw + nw] = resized
-    # Convert to RGB for model
     canvas = canvas[:, :, ::-1]
     return canvas, scale, (dw, dh)
 
@@ -109,8 +109,8 @@ class YoloDetector:
         self._net.opt.use_packing_layout = True
         self._net.opt.use_fp16_storage = True
         self._net.opt.use_fp16_arithmetic = True
-        # Maximize threads: use all Pi 4 CPU cores by default (env NCNN_THREADS can override).
-        self._net.opt.num_threads = 4
+        # Leave cores for camera/telemetry/BLE (env NCNN_THREADS can override).
+        self._net.opt.num_threads = 2
         if os.environ.get("NCNN_THREADS") is not None:
             self._net.opt.num_threads = int(os.environ.get("NCNN_THREADS", "4"))
         self._net.load_param(param_path)
@@ -121,12 +121,35 @@ class YoloDetector:
         default_input_size = "256" if self._is_pi4 else "640"
         self._input_size = int(os.environ.get("YOLO_INPUT_SIZE", default_input_size))
 
+        # Pre-allocate letterbox buffers to avoid per-frame allocations.
+        sz = self._input_size
+        self._canvas = np.full((sz, sz, 3), 114, dtype=np.uint8)
+        self._canvas_rgb = np.empty((sz, sz, 3), dtype=np.uint8)
+
         print(
             f"[infer] YOLO backend: raw ncnn ({self.model_path}, "
             f"input={self._input_size}x{self._input_size}, "
             f"threads={self._net.opt.num_threads})",
             flush=True,
         )
+
+    def _letterbox_fast(self, img_bgr: np.ndarray) -> Tuple[np.ndarray, float, Tuple[int, int]]:
+        """Reuses pre-allocated canvas buffers to avoid per-frame allocations."""
+        new_size = self._input_size
+        h, w = img_bgr.shape[:2]
+        scale = min(new_size / w, new_size / h)
+        nw, nh = int(round(w * scale)), int(round(h * scale))
+        dw, dh = (new_size - nw) // 2, (new_size - nh) // 2
+
+        resized = cv2.resize(img_bgr, (nw, nh), interpolation=cv2.INTER_LINEAR)
+        # Fill only pad strips, not entire canvas
+        self._canvas[:dh, :] = 114
+        self._canvas[dh + nh:, :] = 114
+        self._canvas[dh:dh + nh, :dw] = 114
+        self._canvas[dh:dh + nh, dw + nw:] = 114
+        self._canvas[dh:dh + nh, dw:dw + nw] = resized
+        cv2.cvtColor(self._canvas, cv2.COLOR_BGR2RGB, dst=self._canvas_rgb)
+        return self._canvas_rgb, scale, (dw, dh)
 
     # ── public API ───────────────────────────────────────────────
     def detect(self, frame_bgr: np.ndarray) -> List[dict]:
@@ -135,7 +158,7 @@ class YoloDetector:
         h, w = frame_bgr.shape[:2]
         sz = self._input_size
 
-        img_rgb, scale, (dw, dh) = _letterbox(frame_bgr, sz)
+        img_rgb, scale, (dw, dh) = self._letterbox_fast(frame_bgr)
         mat_in = _ncnn.Mat.from_pixels(img_rgb, _ncnn.Mat.PixelType.PIXEL_RGB, sz, sz)
         mat_in.substract_mean_normalize([0.0, 0.0, 0.0], [1 / 255.0] * 3)
 
