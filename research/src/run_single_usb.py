@@ -353,7 +353,6 @@ def _draw_minimal_graphics(
 
 
 def _print_cli_stats(
-    display_fps: float,
     infer_fps: float,
     latency_ms: float,
     alert_state: str,
@@ -367,7 +366,6 @@ def _print_cli_stats(
 ) -> None:
     """Print single-line dashboard (overwrite with \r)."""
     parts = [
-        f"[DISPLAY: {display_fps:.0f}fps]",
         f"[INFER: {infer_fps:.1f}fps ({latency_ms:.0f}ms)]",
         f"STATE: {alert_state}",
         f"DRIVER: {driver_status}",
@@ -529,10 +527,12 @@ def main() -> None:
 
     try:
         first_infer_frame = bundle.infer_bgr.copy()
-        first_main_frame = bundle.main_bgr.copy()
         if night_mode and gamma_table is not None:
             first_infer_frame = cv2.LUT(first_infer_frame, gamma_table)
-            first_main_frame = cv2.LUT(first_main_frame, gamma_table)
+        if not headless:
+            first_main_frame = bundle.main_bgr.copy()
+            if night_mode and gamma_table is not None:
+                first_main_frame = cv2.LUT(first_main_frame, gamma_table)
     except Exception as e:
         print(f"[single-usb] Failed to prime buffers: {e}", flush=True)
         return
@@ -544,12 +544,13 @@ def main() -> None:
     _infer_front = _infer_buf0
     _infer_back = _infer_buf1
 
-    main_h, main_w = first_main_frame.shape[:2]
-    _main_buf0 = np.empty((main_h, main_w, 3), dtype=np.uint8)
-    _main_buf1 = np.empty((main_h, main_w, 3), dtype=np.uint8)
-    np.copyto(_main_buf0, first_main_frame)
-    _main_front = _main_buf0
-    _main_back = _main_buf1
+    if not headless:
+        main_h, main_w = first_main_frame.shape[:2]
+        _main_buf0 = np.empty((main_h, main_w, 3), dtype=np.uint8)
+        _main_buf1 = np.empty((main_h, main_w, 3), dtype=np.uint8)
+        np.copyto(_main_buf0, first_main_frame)
+        _main_front = _main_buf0
+        _main_back = _main_buf1
 
     def camera_thread_fn() -> None:
         nonlocal _infer_front, _infer_back, _main_front, _main_back
@@ -558,13 +559,16 @@ def main() -> None:
             try:
                 local_bundle = cam.read()
                 np.copyto(_infer_back, local_bundle.infer_bgr)
-                np.copyto(_main_back, local_bundle.main_bgr)
                 if night_mode and gamma_table is not None:
                     np.copyto(_infer_back, cv2.LUT(_infer_back, gamma_table))
-                    np.copyto(_main_back, cv2.LUT(_main_back, gamma_table))
+                if not headless:
+                    np.copyto(_main_back, local_bundle.main_bgr)
+                    if night_mode and gamma_table is not None:
+                        np.copyto(_main_back, cv2.LUT(_main_back, gamma_table))
                 with _lock:
                     _infer_front, _infer_back = _infer_back, _infer_front
-                    _main_front, _main_back = _main_back, _main_front
+                    if not headless:
+                        _main_front, _main_back = _main_back, _main_front
             except Exception:
                 if _camera_stop.is_set():
                     break
@@ -585,16 +589,18 @@ def main() -> None:
             with _lock:
                 infer_ref = _infer_front
                 main_ref = _main_front
-            if infer_ref is None or main_ref is None:
+            if infer_ref is None:
                 time.sleep(0.001)
                 continue
 
             if infer_prealloc is None:
                 infer_prealloc = np.empty_like(infer_ref)
-            if main_prealloc is None:
-                main_prealloc = np.empty_like(main_ref)
             np.copyto(infer_prealloc, infer_ref)
-            np.copyto(main_prealloc, main_ref)
+
+            if main_ref is not None:
+                if main_prealloc is None:
+                    main_prealloc = np.empty_like(main_ref)
+                np.copyto(main_prealloc, main_ref)
 
             inference_start = time.time()
 
@@ -606,12 +612,21 @@ def main() -> None:
                 objects = last_objects
 
             alert_state, driver_status, phone_detected, drinking_detected, intox_score = _compute_driver_state(objects)
-            head_direction = head_direction_estimator.estimate(
-                main_prealloc,
-                objects,
-                inf_frame_idx,
-                bbox_source_shape=infer_prealloc.shape[:2],
-            )
+            if main_prealloc is not None:
+                head_direction = head_direction_estimator.estimate(
+                    main_prealloc,
+                    objects,
+                    inf_frame_idx,
+                    bbox_source_shape=infer_prealloc.shape[:2],
+                )
+            else:
+                # Headless: no display frame captured; run cascade on infer frame directly.
+                head_direction = head_direction_estimator.estimate(
+                    infer_prealloc,
+                    objects,
+                    inf_frame_idx,
+                    bbox_source_shape=None,
+                )
 
             latency_ms = (time.time() - inference_start) * 1000.0
             inf_frame_idx += 1
@@ -701,9 +716,6 @@ def main() -> None:
                 flush=True,
             )
 
-    display_fps = 0.0
-    display_count = 0
-    display_t0 = time.time()
     last_cli_update = 0.0
 
     last_distraction_buzzer_time = 0.0
@@ -741,12 +753,7 @@ def main() -> None:
                 time.sleep(0.001)
                 continue
 
-            display_count += 1
             now = time.time()
-            if now - display_t0 >= 1.0:
-                display_fps = display_count / (now - display_t0)
-                display_count = 0
-                display_t0 = now
 
             if not headless:
                 if vis_buffer is None:
@@ -817,7 +824,6 @@ def main() -> None:
 
             if now - last_cli_update >= CLI_UPDATE_INTERVAL:
                 _print_cli_stats(
-                    display_fps=display_fps,
                     infer_fps=infer_fps,
                     latency_ms=latency_ms,
                     alert_state=alert_state,
@@ -832,9 +838,13 @@ def main() -> None:
                 last_cli_update = now
 
             process_time = time.time() - loop_start
-            sleep_time = (1.0 / 30.0) - process_time
-            if sleep_time > 0:
-                time.sleep(sleep_time)
+            if headless:
+                # No GUI to pace — yield the GIL briefly instead of capping at 30fps.
+                time.sleep(0.001)
+            else:
+                sleep_time = (1.0 / 30.0) - process_time
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
 
     finally:
         _camera_stop.set()
