@@ -259,7 +259,8 @@ def _print_cli_stats(
     speed_limit: Optional[int],
     heading: float,
     night_mode: bool = False,
-    ear: float = 1.0,
+    left_ear: float = 1.0,
+    right_ear: float = 1.0,
     is_drowsy: bool = False,
 ) -> None:
     """Print single-line dashboard (overwrite with \r)."""
@@ -268,7 +269,7 @@ def _print_cli_stats(
         f"STATE: {alert_state}",
         f"DRIVER: {driver_status}",
         f"LOOK: {head_direction}",
-        f"EYES:{min(100, int(ear / 0.35 * 100))}%",
+        f"L:{min(100, int(left_ear / 0.35 * 100))}% R:{min(100, int(right_ear / 0.35 * 100))}%",
         f"SPEED: {speed_mph}mph",
         f"HDG: {int(round(heading)) % 360}",
     ]
@@ -445,7 +446,8 @@ def main() -> None:
         "is_drinking_detected": False,
         "intoxication_score": 0,
         "head_direction": "UNKNOWN",
-        "ear": 1.0,
+        "left_ear": 1.0,
+        "right_ear": 1.0,
         "is_drowsy": False,
         "speed_limit": None,
         "latency_ms": 0.0,
@@ -582,7 +584,7 @@ def main() -> None:
                 objects = last_objects
 
             src_frame = main_prealloc if main_prealloc is not None else infer_prealloc
-            head_direction, ear, is_drowsy = face_eye_estimator.estimate(src_frame, inf_frame_idx)
+            head_direction, left_ear, right_ear, is_drowsy = face_eye_estimator.estimate(src_frame, inf_frame_idx)
 
             sideways_warning_active = side_look_tracker.update(
                 head_direction=head_direction,
@@ -606,7 +608,8 @@ def main() -> None:
                 _shared_results["is_drinking_detected"] = drinking_detected
                 _shared_results["intoxication_score"] = intox_score
                 _shared_results["head_direction"] = head_direction
-                _shared_results["ear"] = ear
+                _shared_results["left_ear"] = left_ear
+                _shared_results["right_ear"] = right_ear
                 _shared_results["is_drowsy"] = is_drowsy
                 _shared_results["latency_ms"] = latency_ms
                 _shared_results["gyro"] = gyro_reading
@@ -712,7 +715,8 @@ def main() -> None:
                 drinking_detected = bool(_shared_results.get("is_drinking_detected", False))
                 intoxication_score = int(_shared_results.get("intoxication_score", 0))
                 head_direction = _shared_results.get("head_direction", "UNKNOWN")
-                ear = float(_shared_results.get("ear", 1.0))
+                left_ear = float(_shared_results.get("left_ear", 1.0))
+                right_ear = float(_shared_results.get("right_ear", 1.0))
                 is_drowsy = bool(_shared_results.get("is_drowsy", False))
                 speed_limit = _shared_results.get("speed_limit")
                 latency_ms = float(_shared_results.get("latency_ms", 0.0))
@@ -816,7 +820,8 @@ def main() -> None:
                     speed_limit=speed_limit_mph if speed_limit is not None else None,
                     heading=float(heading_degrees),
                     night_mode=night_mode,
-                    ear=ear,
+                    left_ear=left_ear,
+                    right_ear=right_ear,
                     is_drowsy=is_drowsy,
                 )
                 last_cli_update = now
