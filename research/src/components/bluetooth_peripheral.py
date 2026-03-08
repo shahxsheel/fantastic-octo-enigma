@@ -17,6 +17,8 @@ BlueZ must be running on the Pi: sudo systemctl enable --now bluetooth
 import asyncio
 import json
 import os
+import shutil
+import subprocess
 import threading
 import time
 from typing import Callable, Optional
@@ -135,6 +137,7 @@ class BluetoothPeripheral:
 
     async def _serve(self) -> None:
         self._stop_event = asyncio.Event()
+        self._log_startup_diagnostics()
 
         server = BlessServer(name=f"ADA-{self.vehicle_id}", loop=self._loop)
         server.read_request_func = self._read_request
@@ -172,7 +175,7 @@ class BluetoothPeripheral:
         await server.start()
         print(
             f"[BLE] Advertising as ADA-{self.vehicle_id} "
-            f"(relay=deprecated, notify_max={self._notify_max_bytes}B)",
+            f"(relay=deprecated, notify_max={self._notify_max_bytes}B, mode=connectable)",
             flush=True,
         )
 
@@ -281,6 +284,70 @@ class BluetoothPeripheral:
             server.update_value(SERVICE_UUID, uuid)
         except Exception as e:
             print(f"[BLE] notify {label} failed ({size}B): {e}", flush=True)
+
+    def _log_startup_diagnostics(self) -> None:
+        adapter = os.environ.get("BLE_ADAPTER", "hci0")
+        print(f"[BLE][diag] adapter={adapter} expected_connectable=true", flush=True)
+
+        bluetoothctl = shutil.which("bluetoothctl")
+        if bluetoothctl:
+            try:
+                proc = subprocess.run(
+                    [bluetoothctl, "show"],
+                    capture_output=True,
+                    text=True,
+                    timeout=2.0,
+                    check=False,
+                )
+                if proc.returncode == 0:
+                    powered = self._extract_show_value(proc.stdout, "Powered:")
+                    discoverable = self._extract_show_value(proc.stdout, "Discoverable:")
+                    pairable = self._extract_show_value(proc.stdout, "Pairable:")
+                    print(
+                        "[BLE][diag] bluetoothctl"
+                        f" powered={powered or 'unknown'}"
+                        f" discoverable={discoverable or 'unknown'}"
+                        f" pairable={pairable or 'unknown'}",
+                        flush=True,
+                    )
+                else:
+                    print(f"[BLE][diag] bluetoothctl show failed rc={proc.returncode}", flush=True)
+            except Exception as e:
+                print(f"[BLE][diag] bluetoothctl show error={e}", flush=True)
+        else:
+            print("[BLE][diag] bluetoothctl unavailable", flush=True)
+
+        hciconfig = shutil.which("hciconfig")
+        if hciconfig:
+            try:
+                proc = subprocess.run(
+                    [hciconfig, adapter],
+                    capture_output=True,
+                    text=True,
+                    timeout=2.0,
+                    check=False,
+                )
+                if proc.returncode == 0:
+                    lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+                    adapter_state = lines[1] if len(lines) > 1 else (lines[0] if lines else "unknown")
+                    print(f"[BLE][diag] {adapter} state={adapter_state}", flush=True)
+                else:
+                    print(
+                        f"[BLE][diag] hciconfig {adapter} failed rc={proc.returncode}",
+                        flush=True,
+                    )
+            except Exception as e:
+                print(f"[BLE][diag] hciconfig error={e}", flush=True)
+        else:
+            print("[BLE][diag] hciconfig unavailable", flush=True)
+
+    @staticmethod
+    def _extract_show_value(output: str, prefix: str) -> Optional[str]:
+        for line in output.splitlines():
+            text = line.strip()
+            if text.startswith(prefix):
+                return text[len(prefix) :].strip()
+        return None
 
     def _update_trip_stats(self) -> None:
         with self._lock:

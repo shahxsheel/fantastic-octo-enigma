@@ -503,6 +503,9 @@ class SupabaseService {
   private var latestBLERealtimeByVehicle: [String: VehicleRealtime] = [:]
   private var realtimeCloudErrorByVehicle: [String: String] = [:]
   private var realtimeFallbackReasonByVehicle: [String: String] = [:]
+  private var lastLoggedPiConnectivityStateByVehicle: [String: PiConnectivityState] = [:]
+  private var lastLoggedPiConnectivitySourceByVehicle: [String: String] = [:]
+  private var lastLoggedPiConnectivityAtByVehicle: [String: Date] = [:]
 
   // BLE relay dedup state
   private var lastRelayedRealtimePacketAt: [String: Date] = [:]
@@ -512,6 +515,8 @@ class SupabaseService {
   private var modelContext: ModelContext?
   private static let cloudFirstFreshnessWindow: TimeInterval = 5
   private static let bleFallbackFreshnessWindow: TimeInterval = 5
+  private static let piConnectivityFreshnessWindow: TimeInterval = 10
+  private static let piConnectivityLogInterval: TimeInterval = 10
   private static let connectivityPolicyLabel = "Cloud-first (BLE fallback)"
 
   init() {
@@ -817,6 +822,9 @@ class SupabaseService {
           self.latestBLERealtimeByVehicle = [:]
           self.realtimeCloudErrorByVehicle = [:]
           self.realtimeFallbackReasonByVehicle = [:]
+          self.lastLoggedPiConnectivityStateByVehicle = [:]
+          self.lastLoggedPiConnectivitySourceByVehicle = [:]
+          self.lastLoggedPiConnectivityAtByVehicle = [:]
           self.unsubscribeFromRealtime()
           self.deleteAllCachedData()
 
@@ -854,6 +862,9 @@ class SupabaseService {
       self.latestBLERealtimeByVehicle = [:]
       self.realtimeCloudErrorByVehicle = [:]
       self.realtimeFallbackReasonByVehicle = [:]
+      self.lastLoggedPiConnectivityStateByVehicle = [:]
+      self.lastLoggedPiConnectivitySourceByVehicle = [:]
+      self.lastLoggedPiConnectivityAtByVehicle = [:]
       self.deleteAllCachedData()
     }
     markCloudHealthy()
@@ -1075,18 +1086,68 @@ class SupabaseService {
   func piConnectivityState(for vehicleId: String) -> PiConnectivityState {
     if bluetooth.connectedVehicleId == vehicleId && bluetooth.bleEnabled {
       if bluetooth.isConnected, bluetooth.lastDataReceivedAt != nil {
+        let bleState: PiConnectivityState
         switch bluetooth.piConnectionState {
-        case .online: return .online
-        case .inactive: return .inactive
-        case .offline: break
+        case .online: bleState = .online
+        case .inactive: bleState = .inactive
+        case .offline: bleState = .offline
+        }
+        if bleState != .offline {
+          let bleAge = bluetooth.lastDataReceivedAt.map { Date.now.timeIntervalSince($0) }
+          logPiConnectivityDecision(vehicleId: vehicleId, state: bleState, source: "ble", age: bleAge)
+          return bleState
         }
       }
       // BLE disconnected or stale: fall through to cloud data if available.
     }
 
-    guard let realtime = vehicleRealtimeData[vehicleId] else { return .offline }
+    let cloudRealtime =
+      latestSupabaseRealtimeByVehicle[vehicleId]
+      ?? {
+        if let source = realtimeSourceByVehicle[vehicleId], source == .supabase || source == .cache {
+          return vehicleRealtimeData[vehicleId]
+        }
+        return nil
+      }()
+
+    guard let realtime = cloudRealtime else {
+      logPiConnectivityDecision(
+        vehicleId: vehicleId,
+        state: .offline,
+        source: "cloud_missing",
+        age: nil
+      )
+      return .offline
+    }
     let age = Date.now.timeIntervalSince(realtime.updatedAt)
-    return age <= 10 ? .online : .offline
+    let state: PiConnectivityState = age <= Self.piConnectivityFreshnessWindow ? .online : .offline
+    logPiConnectivityDecision(vehicleId: vehicleId, state: state, source: "cloud", age: age)
+    return state
+  }
+
+  private func logPiConnectivityDecision(
+    vehicleId: String,
+    state: PiConnectivityState,
+    source: String,
+    age: TimeInterval?
+  ) {
+    let now = Date.now
+    let previousState = lastLoggedPiConnectivityStateByVehicle[vehicleId]
+    let previousSource = lastLoggedPiConnectivitySourceByVehicle[vehicleId]
+    let previousLoggedAt = lastLoggedPiConnectivityAtByVehicle[vehicleId]
+    let ageText = age.map { String(format: "%.1f", max(0, $0)) } ?? "nil"
+    let shouldLog =
+      previousState != state
+      || previousSource != source
+      || previousLoggedAt == nil
+      || now.timeIntervalSince(previousLoggedAt ?? .distantPast) >= Self.piConnectivityLogInterval
+
+    guard shouldLog else { return }
+    print(
+      "[Supabase][pi_status] vehicle=\(vehicleId) state=\(state.rawValue) source=\(source) age_s=\(ageText)")
+    lastLoggedPiConnectivityStateByVehicle[vehicleId] = state
+    lastLoggedPiConnectivitySourceByVehicle[vehicleId] = source
+    lastLoggedPiConnectivityAtByVehicle[vehicleId] = now
   }
 
   // MARK: - BLE Relay (upload Pi data to Supabase on its behalf)

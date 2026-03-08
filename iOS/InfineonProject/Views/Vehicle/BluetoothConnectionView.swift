@@ -169,8 +169,18 @@ struct BluetoothConnectionView: View {
                           .foregroundStyle(.blue)
                           .clipShape(Capsule())
                       }
+                      if device.isConnectable == false {
+                        Text("Not Connectable")
+                          .font(.caption2)
+                          .fontWeight(.medium)
+                          .padding(.horizontal, 6)
+                          .padding(.vertical, 2)
+                          .background(.orange.opacity(0.15))
+                          .foregroundStyle(.orange)
+                          .clipShape(Capsule())
+                      }
                     }
-                    Text(signalDescription(rssi: device.rssi))
+                    Text(signalDescription(rssi: device.rssi, isConnectable: device.isConnectable))
                       .font(.caption)
                       .foregroundStyle(.secondary)
                   }
@@ -182,6 +192,7 @@ struct BluetoothConnectionView: View {
                 }
               }
               .tint(.primary)
+              .disabled(device.isConnectable == false)
             }
           } header: {
             Text("Nearby Devices")
@@ -268,12 +279,15 @@ struct BluetoothConnectionView: View {
     }
   }
 
-  private func signalDescription(rssi: Int) -> String {
+  private func signalDescription(rssi: Int, isConnectable: Bool?) -> String {
+    if isConnectable == false {
+      return "Discoverable, but not connectable yet. Keep Pi BLE advertising."
+    }
     switch rssi {
-    case -50...0: "Excellent signal (\(rssi) dBm)"
-    case -70..<(-50): "Good signal (\(rssi) dBm)"
-    case -85..<(-70): "Fair signal (\(rssi) dBm)"
-    default: "Weak signal (\(rssi) dBm)"
+    case -50...0: return "Excellent signal (\(rssi) dBm)"
+    case -70..<(-50): return "Good signal (\(rssi) dBm)"
+    case -85..<(-70): return "Fair signal (\(rssi) dBm)"
+    default: return "Weak signal (\(rssi) dBm)"
     }
   }
 

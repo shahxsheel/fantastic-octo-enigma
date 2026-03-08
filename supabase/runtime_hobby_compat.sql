@@ -74,6 +74,22 @@ alter table if exists public.vehicle_realtime add column if not exists buzzer_ac
 alter table if exists public.vehicle_realtime add column if not exists buzzer_type text default 'alert';
 alter table if exists public.vehicle_realtime add column if not exists buzzer_updated_at timestamptz;
 
+create or replace function public.update_updated_at_column()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists update_vehicle_realtime_updated_at on public.vehicle_realtime;
+create trigger update_vehicle_realtime_updated_at
+before update on public.vehicle_realtime
+for each row
+execute function public.update_updated_at_column();
+
 create table if not exists public.vehicle_trips (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
@@ -183,3 +199,6 @@ create policy "hobby_runtime_vehicle_trips_update_public"
   for update to anon, authenticated
   using (true)
   with check (true);
+
+-- Ensure PostgREST refreshes schema cache after compatibility updates.
+notify pgrst, 'reload schema';

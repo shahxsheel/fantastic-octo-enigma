@@ -15,6 +15,7 @@ import string
 import sys
 import threading
 import time
+from datetime import datetime, timezone
 from typing import Optional
 
 import cv2
@@ -111,6 +112,11 @@ def _extract_unknown_column_from_postgrest_error(error: Exception) -> Optional[s
             return match.group(1)
 
     return None
+
+
+def _iso8601_now_utc() -> str:
+    """Return a Supabase-friendly UTC timestamp with millisecond precision."""
+    return datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
 def create_gamma_lut(gamma: float = 1.5) -> np.ndarray:
@@ -1003,6 +1009,7 @@ def main() -> None:
                 payload = {
                     "type": "vehicle_realtime",
                     "vehicle_id": vehicle_id,
+                    "updated_at": _iso8601_now_utc(),
                     "latitude": gps.latitude,
                     "longitude": gps.longitude,
                     "speed_mph": speed_mph,

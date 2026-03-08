@@ -147,13 +147,15 @@ struct DiscoveredBLEDevice: Identifiable {
   let name: String
   var rssi: Int
   let isVehicle: Bool
+  var isConnectable: Bool?
 
-  init(peripheral: CBPeripheral, rssi: Int, isVehicle: Bool) {
+  init(peripheral: CBPeripheral, rssi: Int, isVehicle: Bool, isConnectable: Bool?) {
     self.id = peripheral.identifier
     self.peripheral = peripheral
     self.name = peripheral.name ?? "Unknown Device"
     self.rssi = rssi
     self.isVehicle = isVehicle
+    self.isConnectable = isConnectable
   }
 }
 
@@ -207,6 +209,7 @@ final class BluetoothManager: NSObject {
         reconnectAttempt = 0
         consecutiveConnectFailures = 0
         staleTargetRetrievalMisses = 0
+        bypassCachedTargetReconnectOnce = false
         reconnectWorkItem?.cancel()
         reconnectScheduled = false
         startScanning()
@@ -266,6 +269,7 @@ final class BluetoothManager: NSObject {
   private var allowAutoReconnect = true
   private var connectingPeripheralId: UUID?
   private var targetPeripheralId: UUID?
+  private var bypassCachedTargetReconnectOnce = false
 
   // BLE → vehicleRealtimeData polling
   private var dataTimer: Timer?
@@ -523,11 +527,22 @@ final class BluetoothManager: NSObject {
     if connectionPhase == .connected, connectedPeripheral?.identifier == device.id {
       return
     }
+    if device.isConnectable == false {
+      statusMessage = "Device not connectable. Keep Pi BLE advertising and retry."
+      bleLog(
+        "connect_blocked_not_connectable",
+        details: [
+          "id": device.peripheral.identifier.uuidString,
+          "name": device.name,
+        ])
+      return
+    }
     allowAutoReconnect = true
     userInitiatedDisconnect = false
     reconnectAttempt = 0
     consecutiveConnectFailures = 0
     staleTargetRetrievalMisses = 0
+    bypassCachedTargetReconnectOnce = false
     reconnectWorkItem?.cancel()
     reconnectScheduled = false
     localTripFinalizeWorkItem?.cancel()
@@ -545,6 +560,7 @@ final class BluetoothManager: NSObject {
         "id": device.peripheral.identifier.uuidString,
         "name": device.name,
         "rssi": "\(device.rssi)",
+        "connectable": connectableString(device.isConnectable),
       ])
     statusMessage = "Connecting..."
     connectPeripheral(device.peripheral)
@@ -556,6 +572,7 @@ final class BluetoothManager: NSObject {
     reconnectAttempt = 0
     consecutiveConnectFailures = 0
     staleTargetRetrievalMisses = 0
+    bypassCachedTargetReconnectOnce = false
     allowAutoReconnect = false
 
     if isConnected || connectionPhase == .connecting {
@@ -599,15 +616,18 @@ final class BluetoothManager: NSObject {
     reconnectScheduled = false
     connectionPhase = .connecting
     connectingPeripheralId = peripheral.identifier
-    bleLog("connect_attempt", details: ["id": peripheral.identifier.uuidString])
+    let connectable = discoveredDevices.first(where: { $0.id == peripheral.identifier })?.isConnectable
+    bleLog(
+      "connect_attempt",
+      details: [
+        "id": peripheral.identifier.uuidString,
+        "connectable": connectableString(connectable),
+        "options": "nil",
+      ])
     statusMessage = "Connecting..."
     connectedPeripheral = peripheral
     peripheral.delegate = self
-    var options: [String: Any] = [:]
-    if #available(iOS 17.0, *) {
-      options[CBConnectPeripheralOptionEnableAutoReconnect] = true
-    }
-    cm.connect(peripheral, options: options)
+    cm.connect(peripheral, options: nil)
   }
 
   private func attemptReconnectOrScan() {
@@ -616,6 +636,18 @@ final class BluetoothManager: NSObject {
     guard connectionPhase != .connecting, connectionPhase != .connected else { return }
     guard !isScanning else { return }
     if allowAutoReconnect, let targetPeripheralId {
+      if bypassCachedTargetReconnectOnce {
+        bypassCachedTargetReconnectOnce = false
+        staleTargetRetrievalMisses = 0
+        bleLog(
+          "target_reconnect_scan_forced",
+          details: [
+            "id": targetPeripheralId.uuidString,
+            "reason": "invalid_parameters",
+          ])
+        beginScan()
+        return
+      }
       let known = cm.retrievePeripherals(withIdentifiers: [targetPeripheralId])
       if let peripheral = known.first {
         staleTargetRetrievalMisses = 0
@@ -685,6 +717,7 @@ final class BluetoothManager: NSObject {
       reconnectAttempt = 0
       consecutiveConnectFailures = 0
       staleTargetRetrievalMisses = 0
+      bypassCachedTargetReconnectOnce = false
     }
     writeRelayLeaseHeartbeat(active: false)
     if let peripheral = connectedPeripheral {
@@ -767,6 +800,7 @@ final class BluetoothManager: NSObject {
     guard targetPeripheralId != nil else { return }
     bleLog("target_cleared", details: ["reason": reason, "id": targetPeripheralId?.uuidString ?? "nil"])
     targetPeripheralId = nil
+    bypassCachedTargetReconnectOnce = false
     UserDefaults.standard.removeObject(forKey: DefaultsKey.targetPeripheralId)
   }
 
@@ -786,6 +820,17 @@ final class BluetoothManager: NSObject {
     guard let ns = error as NSError? else { return "none" }
     let message = ns.localizedDescription.replacingOccurrences(of: "\n", with: " ")
     return "\(ns.domain)(\(ns.code)) \(message)"
+  }
+
+  private func connectableString(_ flag: Bool?) -> String {
+    guard let flag else { return "unknown" }
+    return flag ? "true" : "false"
+  }
+
+  private func isInvalidParameterConnectError(_ error: Error?) -> Bool {
+    guard let nsError = error as NSError? else { return false }
+    return nsError.domain == CBErrorDomain
+      && nsError.code == CBError.Code.invalidParameters.rawValue
   }
 }
 
@@ -824,27 +869,61 @@ extension BluetoothManager: CBCentralManagerDelegate {
     let advertisedServices =
       advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? []
     let isVehicle = advertisedServices.contains(serviceUUID)
+    let isConnectable: Bool? = {
+      if let boolValue = advertisementData[CBAdvertisementDataIsConnectable] as? Bool {
+        return boolValue
+      }
+      if let numberValue = advertisementData[CBAdvertisementDataIsConnectable] as? NSNumber {
+        return numberValue.boolValue
+      }
+      return nil
+    }()
 
     // Update existing or add new
     if let idx = discoveredDevices.firstIndex(where: {
       $0.peripheral.identifier == peripheral.identifier
     }) {
       discoveredDevices[idx].rssi = rssi
+      discoveredDevices[idx].isConnectable = isConnectable
     } else {
-      let device = DiscoveredBLEDevice(peripheral: peripheral, rssi: rssi, isVehicle: isVehicle)
+      let device = DiscoveredBLEDevice(
+        peripheral: peripheral,
+        rssi: rssi,
+        isVehicle: isVehicle,
+        isConnectable: isConnectable
+      )
       // Insert vehicles at the top, others at the bottom
       if isVehicle {
         discoveredDevices.insert(device, at: 0)
       } else {
         discoveredDevices.append(device)
       }
+      bleLog(
+        "device_discovered",
+        details: [
+          "id": peripheral.identifier.uuidString,
+          "name": peripheral.name ?? "Unknown",
+          "rssi": "\(rssi)",
+          "connectable": connectableString(isConnectable),
+          "vehicle": "\(isVehicle)",
+        ])
 
       // Sticky reconnect only: never auto-connect to non-target peripherals.
       // Respect `allowAutoReconnect` so manual disconnect does not auto-reconnect.
       let isTarget = targetPeripheralId == peripheral.identifier
       if allowAutoReconnect, isTarget {
+        if isConnectable == false {
+          statusMessage = "Saved device found but not connectable. Keep Pi advertising."
+          bleLog("target_not_connectable", details: ["id": peripheral.identifier.uuidString])
+          return
+        }
         statusMessage = "Reconnecting..."
-        bleLog("target_discovered", details: ["id": peripheral.identifier.uuidString])
+        bleLog(
+          "target_discovered",
+          details: [
+            "id": peripheral.identifier.uuidString,
+            "connectable": connectableString(isConnectable),
+          ])
         connectPeripheral(peripheral)
       }
     }
@@ -855,6 +934,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     reconnectAttempt = 0
     consecutiveConnectFailures = 0
     staleTargetRetrievalMisses = 0
+    bypassCachedTargetReconnectOnce = false
     reconnectScheduled = false
     userInitiatedDisconnect = false
     connectionPhase = .connected
@@ -877,6 +957,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     didFailToConnect peripheral: CBPeripheral,
     error: Error?
   ) {
+    let invalidParameters = isInvalidParameterConnectError(error)
     consecutiveConnectFailures += 1
     bleLog(
       "connect_failed",
@@ -884,7 +965,18 @@ extension BluetoothManager: CBCentralManagerDelegate {
         "id": peripheral.identifier.uuidString,
         "error": describe(error: error),
         "failure": "\(consecutiveConnectFailures)",
+        "invalid_parameters": "\(invalidParameters)",
       ])
+    if invalidParameters {
+      bypassCachedTargetReconnectOnce = true
+      staleTargetRetrievalMisses = 0
+      bleLog(
+        "connect_failed_fresh_scan_required",
+        details: [
+          "id": peripheral.identifier.uuidString,
+          "reason": "invalid_parameters",
+        ])
+    }
     clearTransientConnectionState()
     if consecutiveConnectFailures >= Self.reconnectFailureLimit {
       // The sticky target is likely stale. Clear it and force manual re-selection.

@@ -589,3 +589,6 @@ begin
   end if;
 end;
 $$;
+
+-- Ensure PostgREST refreshes schema cache after setup changes.
+notify pgrst, 'reload schema';
