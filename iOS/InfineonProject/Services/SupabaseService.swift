@@ -395,6 +395,55 @@ enum PiConnectivityState: String {
   case offline
 }
 
+enum CloudRuntimeState: Equatable {
+  case active
+  case degraded(String)
+  case disabled(String)
+
+  var isOperational: Bool {
+    switch self {
+    case .disabled:
+      return false
+    case .active, .degraded:
+      return true
+    }
+  }
+
+  var statusLabel: String {
+    switch self {
+    case .active:
+      return "Active"
+    case .degraded:
+      return "Degraded"
+    case .disabled:
+      return "Disabled"
+    }
+  }
+
+  var detail: String? {
+    switch self {
+    case .active:
+      return nil
+    case .degraded(let reason), .disabled(let reason):
+      return reason
+    }
+  }
+}
+
+enum RealtimeDataSource: String {
+  case ble = "BLE"
+  case supabase = "Supabase"
+  case cache = "Cache"
+  case unknown = "Unknown"
+}
+
+struct ConnectivityDebugStatus {
+  let cloudState: CloudRuntimeState
+  let lastCloudError: String?
+  let activeSource: RealtimeDataSource
+  let sourceAgeSeconds: TimeInterval?
+}
+
 struct LocalTripPersistPayload {
   let id: UUID
   let createdAt: Date
@@ -419,6 +468,7 @@ struct LocalTripPersistPayload {
 @Observable
 class SupabaseService {
   let client: SupabaseClient
+  let appConfig: AppConfig
 
   // Auth state
   var isLoggedIn = false
@@ -440,9 +490,13 @@ class SupabaseService {
   // Vehicle state
   var vehicles: [Vehicle] = []
   var vehicleRealtimeData: [String: VehicleRealtime] = [:]
+  var cloudRuntimeState: CloudRuntimeState = .disabled("Not configured")
+  var lastCloudError: String?
 
   // Realtime channel
   private var realtimeChannel: RealtimeChannelV2?
+  private var realtimeSourceByVehicle: [String: RealtimeDataSource] = [:]
+  private var realtimeUpdatedAtByVehicle: [String: Date] = [:]
 
   // BLE relay dedup state
   private var lastRelayedRealtimePacketAt: [String: Date] = [:]
@@ -450,27 +504,35 @@ class SupabaseService {
 
   // Cache
   private var modelContext: ModelContext?
+  private static let bleSupabaseArbitrationWindow: TimeInterval = 4
 
   init() {
-    let configuredURL =
-      URL(string: Constants.Supabase.supabaseURL)
-      ?? URL(string: "https://placeholder.supabase.co")!
+    appConfig = .shared
 
-    if URL(string: Constants.Supabase.supabaseURL) == nil {
-      print("Invalid SUPABASE_URL in Constants.swift. Using placeholder URL so app can still launch.")
+    let supabaseConfig = appConfig.supabase
+    if let reason = supabaseConfig.validationError {
+      cloudRuntimeState = .disabled(reason)
+      isLoading = false
+      isRefreshingSession = false
+      print("[Supabase] Disabled: \(reason) (source=\(supabaseConfig.sourceDescription))")
+    } else {
+      cloudRuntimeState = .active
+      print("[Supabase] Configured via \(supabaseConfig.sourceDescription)")
     }
 
     self.client = SupabaseClient(
-      supabaseURL: configuredURL,
-      supabaseKey: Constants.Supabase.supabasePublishableKey,
+      supabaseURL: supabaseConfig.resolvedURL,
+      supabaseKey: supabaseConfig.publishableKey ?? "placeholder-key",
       options: SupabaseClientOptions(
         db: .init(decoder: JSONDecoder.supabaseDecoder),
         auth: .init(emitLocalSessionAsInitialSession: true)  // see https://github.com/supabase/supabase-swift/pull/822
       )
     )
 
-    Task {
-      await listenToAuthChanges()
+    if cloudRuntimeState.isOperational {
+      Task {
+        await listenToAuthChanges()
+      }
     }
   }
 
@@ -538,7 +600,10 @@ class SupabaseService {
       let descriptor = FetchDescriptor<CachedVehicleRealtime>()
       let cached = try modelContext.fetch(descriptor)
       for item in cached {
-        self.vehicleRealtimeData[item.vehicleId] = item.toVehicleRealtime()
+        let realtime = item.toVehicleRealtime()
+        self.vehicleRealtimeData[item.vehicleId] = realtime
+        realtimeSourceByVehicle[item.vehicleId] = .cache
+        realtimeUpdatedAtByVehicle[item.vehicleId] = realtime.updatedAt
       }
     } catch {
       print("Error loading cached realtime data: \(error)")
@@ -578,6 +643,67 @@ class SupabaseService {
     }
   }
 
+  private func cloudAvailable(for operation: String) -> Bool {
+    guard cloudRuntimeState.isOperational else {
+      if case .disabled(let reason) = cloudRuntimeState {
+        print("[Supabase][\(operation)] skipped: \(reason)")
+      } else {
+        print("[Supabase][\(operation)] skipped: cloud not operational")
+      }
+      return false
+    }
+    return true
+  }
+
+  private func cloudUnavailableError(_ message: String) -> NSError {
+    NSError(domain: "SupabaseService", code: 503, userInfo: [NSLocalizedDescriptionKey: message])
+  }
+
+  private func markCloudError(context: String, error: Error) {
+    let message = "\(context): \(error.localizedDescription)"
+    lastCloudError = message
+    cloudRuntimeState = .degraded(message)
+    print("[Supabase][error] \(message)")
+  }
+
+  private func markCloudHealthy() {
+    lastCloudError = nil
+    if case .degraded = cloudRuntimeState {
+      cloudRuntimeState = .active
+    }
+  }
+
+  private func shouldPreferBLE(vehicleId: String) -> Bool {
+    guard bluetooth.connectedVehicleId == vehicleId, bluetooth.isConnected else { return false }
+    guard let lastPacketAt = bluetooth.lastDataReceivedAt else { return false }
+    return Date.now.timeIntervalSince(lastPacketAt) <= Self.bleSupabaseArbitrationWindow
+  }
+
+  private func applyRealtimeData(_ realtime: VehicleRealtime, source: RealtimeDataSource) {
+    let vehicleId = realtime.vehicleId
+    if source == .supabase, shouldPreferBLE(vehicleId: vehicleId) {
+      // While BLE packets are fresh, keep BLE as source of truth.
+      return
+    }
+    vehicleRealtimeData[vehicleId] = realtime
+    saveCachedVehicleRealtime(realtime)
+    realtimeSourceByVehicle[vehicleId] = source
+    realtimeUpdatedAtByVehicle[vehicleId] = realtime.updatedAt
+  }
+
+  func connectivityDebugStatus(vehicleId: String?) -> ConnectivityDebugStatus {
+    let resolvedVehicleId = vehicleId ?? bluetooth.connectedVehicleId
+    let source = resolvedVehicleId.flatMap { realtimeSourceByVehicle[$0] } ?? .unknown
+    let sourceUpdatedAt = resolvedVehicleId.flatMap { realtimeUpdatedAtByVehicle[$0] }
+    let age = sourceUpdatedAt.map { Date.now.timeIntervalSince($0) }
+    return ConnectivityDebugStatus(
+      cloudState: cloudRuntimeState,
+      lastCloudError: lastCloudError,
+      activeSource: source,
+      sourceAgeSeconds: age
+    )
+  }
+
   // MARK: - Auth Methods
 
   private func listenToAuthChanges() async {
@@ -612,6 +738,8 @@ class SupabaseService {
           self.isRefreshingSession = false
           self.userProfile = nil
           self.vehicleRealtimeData = [:]
+          self.realtimeSourceByVehicle = [:]
+          self.realtimeUpdatedAtByVehicle = [:]
           self.unsubscribeFromRealtime()
           self.deleteAllCachedData()
 
@@ -625,6 +753,7 @@ class SupabaseService {
   }
 
   func loadOrCreateUser(userId: UUID, email: String, fullName: String? = nil) async {
+    guard cloudAvailable(for: "loadOrCreateUser") else { return }
     await MainActor.run {
       self.isLoggedIn = true
     }
@@ -633,14 +762,20 @@ class SupabaseService {
   }
 
   func signOut() async throws {
+    guard cloudAvailable(for: "signOut") else {
+      throw cloudUnavailableError("Supabase is disabled")
+    }
     try await client.auth.signOut()
     await MainActor.run {
       self.isLoggedIn = false
       self.currentUser = nil
       self.userProfile = nil
       self.vehicleRealtimeData = [:]
+      self.realtimeSourceByVehicle = [:]
+      self.realtimeUpdatedAtByVehicle = [:]
       self.deleteAllCachedData()
     }
+    markCloudHealthy()
     await loadVehicles()
   }
 
@@ -649,6 +784,7 @@ class SupabaseService {
   /// Loads the user's profile, creating one if it doesn't exist
   /// - Parameter initialDisplayName: Optional display name to set when creating a new profile.
   func loadUserProfile(initialDisplayName: String? = nil) async {
+    guard cloudAvailable(for: "loadUserProfile") else { return }
     guard let userId = currentUser?.id else { return }
 
     do {
@@ -709,8 +845,9 @@ class SupabaseService {
           }
         }
       }
+      markCloudHealthy()
     } catch {
-      print("Error loading user profile: \(error)")
+      markCloudError(context: "loadUserProfile", error: error)
     }
   }
 
@@ -722,6 +859,9 @@ class SupabaseService {
     notificationsEnabled: Bool? = nil,
     pushToken: String? = nil
   ) async throws {
+    guard cloudAvailable(for: "updateUserProfile") else {
+      throw cloudUnavailableError("Supabase is disabled")
+    }
     guard let userId = currentUser?.id else { return }
 
     var updateData: [String: AnyJSON] = [:]
@@ -757,10 +897,14 @@ class SupabaseService {
     await MainActor.run {
       self.userProfile = profile
     }
+    markCloudHealthy()
   }
 
   /// Uploads a user avatar image and returns the storage path
   func uploadUserAvatar(imageData: Data) async throws -> String {
+    guard cloudAvailable(for: "uploadUserAvatar") else {
+      throw cloudUnavailableError("Supabase is disabled")
+    }
     guard let userId = currentUser?.id else {
       throw NSError(
         domain: "SupabaseService", code: 401,
@@ -770,7 +914,7 @@ class SupabaseService {
     let fileName = "\(userId.uuidString)/avatar.jpg"
 
     // Remove existing avatar if it exists (upsert)
-    try? await client.storage
+    _ = try? await client.storage
       .from("user-avatars")
       .remove(paths: [fileName])
 
@@ -779,12 +923,14 @@ class SupabaseService {
       .from("user-avatars")
       .upload(fileName, data: imageData, options: .init(contentType: "image/jpeg", upsert: true))
 
+    markCloudHealthy()
     return fileName
   }
 
   /// Gets the public URL for a user avatar
   func getUserAvatarURL(path: String) -> URL? {
-    try? client.storage
+    guard cloudAvailable(for: "getUserAvatarURL") else { return nil }
+    return try? client.storage
       .from("user-avatars")
       .getPublicURL(path: path)
   }
@@ -792,6 +938,7 @@ class SupabaseService {
   // MARK: - Vehicle Methods
 
   func loadVehicles() async {
+    guard cloudAvailable(for: "loadVehicles") else { return }
     do {
       let vehicleList: [Vehicle] =
         try await client
@@ -805,16 +952,14 @@ class SupabaseService {
         self.vehicles = vehicleList
         self.saveCachedVehicles(vehicleList)
       }
+      markCloudHealthy()
     } catch {
-      print("Error loading public vehicles: \(error)")
+      markCloudError(context: "loadVehicles", error: error)
     }
   }
 
   func loadVehicleRealtimeData(vehicleId: String) async {
-    // BLE takes priority — skip Supabase fetch when connected
-    if bluetooth.isConnected {
-      return
-    }
+    guard cloudAvailable(for: "loadVehicleRealtimeData") else { return }
 
     do {
       let realtimeData: VehicleRealtime =
@@ -827,11 +972,11 @@ class SupabaseService {
         .value
 
       await MainActor.run {
-        self.vehicleRealtimeData[vehicleId] = realtimeData
-        self.saveCachedVehicleRealtime(realtimeData)
+        self.applyRealtimeData(realtimeData, source: .supabase)
       }
+      markCloudHealthy()
     } catch {
-      print("Error loading vehicle realtime data: \(error)")
+      markCloudError(context: "loadVehicleRealtimeData", error: error)
     }
   }
 
@@ -840,24 +985,19 @@ class SupabaseService {
   func updateFromBLE(vehicleId: String) {
     guard bluetooth.isConnected, let bleData = bluetooth.latestRealtime else { return }
     let realtime = bleData.toVehicleRealtime(vehicleId: vehicleId)
-    self.vehicleRealtimeData[vehicleId] = realtime
-    self.saveCachedVehicleRealtime(realtime)
+    applyRealtimeData(realtime, source: .ble)
   }
 
   func piConnectivityState(for vehicleId: String) -> PiConnectivityState {
     if bluetooth.connectedVehicleId == vehicleId && bluetooth.bleEnabled {
-      if bluetooth.isConnected {
+      if bluetooth.isConnected, bluetooth.lastDataReceivedAt != nil {
         switch bluetooth.piConnectionState {
         case .online: return .online
         case .inactive: return .inactive
-        case .offline: return .offline
+        case .offline: break
         }
       }
-      // BLE had data before but lost connection → definitely offline, don't show stale Supabase.
-      if bluetooth.lastDataReceivedAt != nil {
-        return .offline
-      }
-      // BLE never received data yet (still connecting for first time) → fall through to Supabase.
+      // BLE disconnected or stale: fall through to cloud data if available.
     }
 
     guard let realtime = vehicleRealtimeData[vehicleId] else { return .offline }
@@ -871,6 +1011,7 @@ class SupabaseService {
   /// The iOS app builds deterministic relay records from compact BLE caches.
   func relayBLEDataToSupabase(vehicleId: String) async {
     guard bluetooth.isConnected else { return }
+    guard cloudAvailable(for: "relayBLEDataToSupabase") else { return }
 
     // Realtime upsert from compact BLE packet.
     if let realtime = bluetooth.latestRealtime,
@@ -888,8 +1029,9 @@ class SupabaseService {
             .upsert(record)
             .execute()
           lastRelayedRealtimePacketAt[vehicleId] = packetAt
+          markCloudHealthy()
         } catch {
-          print("[BLE Relay] Error relaying realtime: \(error)")
+          markCloudError(context: "relayBLEDataToSupabase.realtime", error: error)
         }
       }
     }
@@ -905,8 +1047,9 @@ class SupabaseService {
             .upsert(record)
             .execute()
           lastRelayedTripSignature[vehicleId] = signature
+          markCloudHealthy()
         } catch {
-          print("[BLE Relay] Error relaying trip: \(error)")
+          markCloudError(context: "relayBLEDataToSupabase.trip", error: error)
         }
       }
     }
@@ -1013,9 +1156,59 @@ class SupabaseService {
     let type: String
   }
 
+  func fetchVehicleRealtimeRow(vehicleId: String) async -> VehicleRealtime? {
+    guard cloudAvailable(for: "fetchVehicleRealtimeRow") else { return nil }
+    do {
+      let rows: [VehicleRealtime] =
+        try await client
+        .from("vehicle_realtime")
+        .select()
+        .eq("vehicle_id", value: vehicleId)
+        .execute()
+        .value
+      markCloudHealthy()
+      if let row = rows.first {
+        await MainActor.run {
+          self.applyRealtimeData(row, source: .supabase)
+        }
+      }
+      return rows.first
+    } catch {
+      markCloudError(context: "fetchVehicleRealtimeRow", error: error)
+      return nil
+    }
+  }
+
+  func setVehicleBuzzerState(vehicleId: String, active: Bool, type: String = "alert") async throws {
+    guard cloudAvailable(for: "setVehicleBuzzerState") else {
+      throw cloudUnavailableError("Supabase is disabled")
+    }
+    do {
+      if active {
+        try await client.rpc(
+          "activate_vehicle_buzzer",
+          params: [
+            "p_vehicle_id": vehicleId,
+            "p_buzzer_type": type,
+          ]
+        ).execute()
+      } else {
+        try await client.rpc(
+          "deactivate_vehicle_buzzer",
+          params: ["p_vehicle_id": vehicleId]
+        ).execute()
+      }
+      markCloudHealthy()
+    } catch {
+      markCloudError(context: "setVehicleBuzzerState", error: error)
+      throw error
+    }
+  }
+
   /// Fetch buzzer state from Supabase to relay back to Pi via BLE.
   /// Returns non-nil only when the buzzer state has changed.
   func fetchBuzzerStateForRelay(vehicleId: String) async -> BuzzerRelayState? {
+    guard cloudAvailable(for: "fetchBuzzerStateForRelay") else { return nil }
     do {
       struct BuzzerRow: Decodable {
         let buzzerActive: Bool?
@@ -1043,11 +1236,13 @@ class SupabaseService {
       let lastState = UserDefaults.standard.bool(forKey: key)
       if active != lastState {
         UserDefaults.standard.set(active, forKey: key)
+        markCloudHealthy()
         return BuzzerRelayState(active: active, type: type)
       }
+      markCloudHealthy()
       return nil
     } catch {
-      print("[BLE Relay] Error fetching buzzer state: \(error)")
+      markCloudError(context: "fetchBuzzerStateForRelay", error: error)
       return nil
     }
   }
@@ -1064,6 +1259,9 @@ class SupabaseService {
     enableCamera: Bool? = nil,
     enableDashcam: Bool? = nil
   ) async throws {
+    guard cloudAvailable(for: "updateVehicle") else {
+      throw cloudUnavailableError("Supabase is disabled")
+    }
     var updateData: [String: AnyJSON] = [:]
 
     if let name {
@@ -1104,11 +1302,15 @@ class SupabaseService {
       }
       self.saveCachedVehicles(self.vehicles)
     }
+    markCloudHealthy()
   }
 
   // MARK: - Vehicle Trip Methods
 
   func fetchTrips(for vehicleId: String, limit: Int = 50) async throws -> [VehicleTrip] {
+    guard cloudAvailable(for: "fetchTrips") else {
+      return fetchLocalTrips(for: vehicleId, limit: limit)
+    }
     let trips: [VehicleTrip] =
       try await client
       .from("vehicle_trips")
@@ -1119,10 +1321,14 @@ class SupabaseService {
       .execute()
       .value
 
+    markCloudHealthy()
     return trips
   }
 
   func fetchTripsForToday(for vehicleId: String) async throws -> [VehicleTrip] {
+    guard cloudAvailable(for: "fetchTripsForToday") else {
+      return fetchLocalTripsForToday(for: vehicleId)
+    }
     let calendar = Calendar.current
     let startOfDay = calendar.startOfDay(for: Date())
 
@@ -1140,6 +1346,7 @@ class SupabaseService {
       .execute()
       .value
 
+    markCloudHealthy()
     return trips
   }
 
@@ -1186,7 +1393,13 @@ class SupabaseService {
   }
 
   func fetchCombinedTrips(for vehicleId: String, limit: Int = 50) async throws -> [VehicleTrip] {
-    let remote = try await fetchTrips(for: vehicleId, limit: limit)
+    let remote: [VehicleTrip]
+    do {
+      remote = try await fetchTrips(for: vehicleId, limit: limit)
+    } catch {
+      markCloudError(context: "fetchCombinedTrips.remote", error: error)
+      remote = []
+    }
     let local = fetchLocalTrips(for: vehicleId, limit: limit)
     var mergedById: [UUID: VehicleTrip] = [:]
     for trip in remote { mergedById[trip.id] = trip }
@@ -1195,7 +1408,13 @@ class SupabaseService {
   }
 
   func fetchCombinedTripsForToday(for vehicleId: String) async throws -> [VehicleTrip] {
-    let remote = try await fetchTripsForToday(for: vehicleId)
+    let remote: [VehicleTrip]
+    do {
+      remote = try await fetchTripsForToday(for: vehicleId)
+    } catch {
+      markCloudError(context: "fetchCombinedTripsForToday.remote", error: error)
+      remote = []
+    }
     let local = fetchLocalTripsForToday(for: vehicleId)
     var mergedById: [UUID: VehicleTrip] = [:]
     for trip in remote { mergedById[trip.id] = trip }
@@ -1206,14 +1425,12 @@ class SupabaseService {
   // MARK: - Realtime Subscription
 
   func subscribeToVehicleRealtime(vehicleId: String) async {
+    guard cloudAvailable(for: "subscribeToVehicleRealtime") else { return }
     // Unsubscribe from existing channel
     unsubscribeFromRealtime()
 
     // Load initial realtime data
     await loadVehicleRealtimeData(vehicleId: vehicleId)
-
-    // If BLE is connected, data flows via the BLE polling timer — skip Supabase realtime
-    guard !bluetooth.isConnected else { return }
 
     do {
       let channel = client.realtimeV2.channel("vehicle_realtime_\(vehicleId)")
@@ -1235,8 +1452,9 @@ class SupabaseService {
           await handleRealtimeChange(change)
         }
       }
+      markCloudHealthy()
     } catch {
-      print("Realtime subscription failed (BLE may provide data): \(error)")
+      markCloudError(context: "subscribeToVehicleRealtime", error: error)
     }
   }
 
@@ -1248,8 +1466,7 @@ class SupabaseService {
           as: VehicleRealtime.self, decoder: JSONDecoder.supabaseDecoder)
         await MainActor.run {
           if self.vehicles.contains(where: { $0.id == data.vehicleId }) {
-            self.vehicleRealtimeData[data.vehicleId] = data
-            self.saveCachedVehicleRealtime(data)
+            self.applyRealtimeData(data, source: .supabase)
           }
         }
       case .update(let action):
@@ -1257,15 +1474,15 @@ class SupabaseService {
           as: VehicleRealtime.self, decoder: JSONDecoder.supabaseDecoder)
         await MainActor.run {
           if self.vehicles.contains(where: { $0.id == data.vehicleId }) {
-            self.vehicleRealtimeData[data.vehicleId] = data
-            self.saveCachedVehicleRealtime(data)
+            self.applyRealtimeData(data, source: .supabase)
           }
         }
       case .delete:
         break
       }
+      markCloudHealthy()
     } catch {
-      print("Error decoding realtime change: \(error)")
+      markCloudError(context: "handleRealtimeChange", error: error)
     }
   }
 

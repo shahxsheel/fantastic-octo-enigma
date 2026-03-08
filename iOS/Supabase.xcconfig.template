@@ -1,0 +1,5 @@
+// Copy to iOS/Supabase.xcconfig (or your local xcconfig)
+// and wire it into the InfineonProject target build configuration.
+
+SUPABASE_URL = https://your-project-id.supabase.co
+SUPABASE_PUBLISHABLE_KEY = sb_publishable_your_key_here

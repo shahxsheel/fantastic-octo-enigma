@@ -5,7 +5,7 @@ Advertises service A1B2C3D4-E5F6-7890-ABCD-1234567890AB and exposes
 five characteristics that match BluetoothManager.swift on the iOS side:
 
   0001  realtime   read + notify   BLERealtimeData  (compact telemetry)
-  0002  settings   write           BLESettingsData  (feature toggles)
+  0002  settings   write           BLESettingsData  (feature toggles + optional relay lease)
   0003  buzzer     write           buzzer command
   0004  trip       read + notify   BLETripData      (session stats)
   0005  relay      deprecated      reserved for compatibility (no periodic notify)

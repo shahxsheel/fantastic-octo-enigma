@@ -58,6 +58,19 @@ struct BLESettingsData: Codable {
   var mic: Bool
   var cam: Bool
   var dash: Bool
+  var relayActive: Bool?
+  var relayLeaseSec: Int?
+  var relayEpoch: Int?
+
+  enum CodingKeys: String, CodingKey {
+    case yolo
+    case mic
+    case cam
+    case dash
+    case relayActive = "relay_active"
+    case relayLeaseSec = "relay_lease_sec"
+    case relayEpoch = "relay_epoch"
+  }
 
   /// Build from existing Vehicle toggle values.
   init(from vehicle: Vehicle) {
@@ -65,6 +78,9 @@ struct BLESettingsData: Codable {
     mic = vehicle.enableMicrophone
     cam = vehicle.enableCamera
     dash = vehicle.enableDashcam
+    relayActive = nil
+    relayLeaseSec = nil
+    relayEpoch = nil
   }
 }
 
@@ -190,6 +206,7 @@ final class BluetoothManager: NSObject {
         userInitiatedDisconnect = false
         reconnectAttempt = 0
         consecutiveConnectFailures = 0
+        staleTargetRetrievalMisses = 0
         reconnectWorkItem?.cancel()
         reconnectScheduled = false
         startScanning()
@@ -244,6 +261,7 @@ final class BluetoothManager: NSObject {
   private var reconnectAttempt = 0
   private var reconnectScheduled = false
   private var consecutiveConnectFailures = 0
+  private var staleTargetRetrievalMisses = 0
   private var userInitiatedDisconnect = false
   private var allowAutoReconnect = true
   private var connectingPeripheralId: UUID?
@@ -260,6 +278,11 @@ final class BluetoothManager: NSObject {
   private static let reconnectBaseDelay: TimeInterval = 1
   private static let reconnectMaxDelay: TimeInterval = 12
   private static let reconnectFailureLimit = 6
+  private static let staleTargetMissLimit = 3
+  private static let relayLeaseSeconds = 8
+
+  var hasSavedPeripheral: Bool { targetPeripheralId != nil }
+  var savedPeripheralId: String? { targetPeripheralId?.uuidString }
 
   override init() {
     if let rawVehicleId = UserDefaults.standard.string(forKey: DefaultsKey.preferredVehicleId),
@@ -295,8 +318,9 @@ final class BluetoothManager: NSObject {
 
   private func startRelayTimer() {
     guard relayTimer == nil else { return }
-    relayTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+    relayTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
       guard let self, let vid = self.connectedVehicleId else { return }
+      self.writeRelayLeaseHeartbeat(active: true)
       Task {
         await supabase.relayBLEDataToSupabase(vehicleId: vid)
         // Poll buzzer state from Supabase and relay back to Pi
@@ -313,6 +337,17 @@ final class BluetoothManager: NSObject {
   private func stopRelayTimer() {
     relayTimer?.invalidate()
     relayTimer = nil
+  }
+
+  private func writeRelayLeaseHeartbeat(active: Bool) {
+    guard let char = settingsCharacteristic, let peripheral = connectedPeripheral else { return }
+    let payload: [String: Any] = [
+      "relay_active": active,
+      "relay_lease_sec": Self.relayLeaseSeconds,
+      "relay_epoch": Int(Date.now.timeIntervalSince1970),
+    ]
+    guard let data = try? JSONSerialization.data(withJSONObject: payload) else { return }
+    peripheral.writeValue(data, for: char, type: .withResponse)
   }
 
   private func updatePiConnectionState() {
@@ -490,6 +525,7 @@ final class BluetoothManager: NSObject {
     userInitiatedDisconnect = false
     reconnectAttempt = 0
     consecutiveConnectFailures = 0
+    staleTargetRetrievalMisses = 0
     reconnectWorkItem?.cancel()
     reconnectScheduled = false
     localTripFinalizeWorkItem?.cancel()
@@ -501,8 +537,36 @@ final class BluetoothManager: NSObject {
     // Promote the user-selected peripheral to sticky target immediately.
     targetPeripheralId = device.peripheral.identifier
     UserDefaults.standard.set(device.peripheral.identifier.uuidString, forKey: DefaultsKey.targetPeripheralId)
+    bleLog(
+      "connect_request",
+      details: [
+        "id": device.peripheral.identifier.uuidString,
+        "name": device.name,
+        "rssi": "\(device.rssi)",
+      ])
     statusMessage = "Connecting..."
     connectPeripheral(device.peripheral)
+  }
+
+  func forgetSavedPeripheral() {
+    bleLog("forget_saved_peripheral", details: ["had_saved_id": "\(targetPeripheralId != nil)"])
+    clearTargetPeripheral(reason: "user_requested")
+    reconnectAttempt = 0
+    consecutiveConnectFailures = 0
+    staleTargetRetrievalMisses = 0
+    allowAutoReconnect = false
+
+    if isConnected || connectionPhase == .connecting {
+      disconnect(manual: true)
+      return
+    }
+
+    if bleEnabled {
+      statusMessage = "Select a device"
+      beginScan()
+    } else {
+      statusMessage = "Off"
+    }
   }
 
   // MARK: - Scanning
@@ -510,6 +574,7 @@ final class BluetoothManager: NSObject {
   private func startScanning() {
     if centralManager == nil {
       centralManager = CBCentralManager(delegate: self, queue: .main)
+      bleLog("central_start")
       // Scanning starts in centralManagerDidUpdateState once powered on
     } else if centralManager?.state == .poweredOn {
       attemptReconnectOrScan()
@@ -532,6 +597,7 @@ final class BluetoothManager: NSObject {
     reconnectScheduled = false
     connectionPhase = .connecting
     connectingPeripheralId = peripheral.identifier
+    bleLog("connect_attempt", details: ["id": peripheral.identifier.uuidString])
     statusMessage = "Connecting..."
     connectedPeripheral = peripheral
     peripheral.delegate = self
@@ -550,9 +616,23 @@ final class BluetoothManager: NSObject {
     if allowAutoReconnect, let targetPeripheralId {
       let known = cm.retrievePeripherals(withIdentifiers: [targetPeripheralId])
       if let peripheral = known.first {
+        staleTargetRetrievalMisses = 0
         statusMessage = "Reconnecting..."
+        bleLog("target_reconnect_attempt", details: ["id": peripheral.identifier.uuidString])
         connectPeripheral(peripheral)
         return
+      }
+      staleTargetRetrievalMisses += 1
+      bleLog(
+        "target_reconnect_miss",
+        details: [
+          "id": targetPeripheralId.uuidString,
+          "misses": "\(staleTargetRetrievalMisses)",
+        ])
+      if staleTargetRetrievalMisses >= Self.staleTargetMissLimit {
+        clearTargetPeripheral(reason: "unresolvable_cached_peripheral")
+        allowAutoReconnect = false
+        statusMessage = "Select a device"
       }
     }
     beginScan()
@@ -563,6 +643,7 @@ final class BluetoothManager: NSObject {
     guard bleEnabled else { return }
     guard connectionPhase != .connecting, connectionPhase != .connected else { return }
     guard !isScanning else { return }
+    bleLog("scan_start")
     discoveredDevices = []
     isScanning = true
     connectionPhase = .scanning
@@ -580,8 +661,12 @@ final class BluetoothManager: NSObject {
       self.connectionPhase = .idle
       if self.discoveredDevices.isEmpty {
         self.statusMessage = "Device not found"
+        self.bleLog("scan_timeout", details: ["result": "empty"])
       } else {
         self.statusMessage = "Select a device"
+        self.bleLog(
+          "scan_timeout",
+          details: ["result": "devices_found", "count": "\(self.discoveredDevices.count)"])
       }
     }
   }
@@ -597,7 +682,9 @@ final class BluetoothManager: NSObject {
       allowAutoReconnect = false
       reconnectAttempt = 0
       consecutiveConnectFailures = 0
+      staleTargetRetrievalMisses = 0
     }
+    writeRelayLeaseHeartbeat(active: false)
     if let peripheral = connectedPeripheral {
       centralManager?.cancelPeripheralConnection(peripheral)
     }
@@ -605,28 +692,39 @@ final class BluetoothManager: NSObject {
     if let trip = activeLocalTrip {
       persistAndClearLocalTrip(endedAt: max(Date.now, trip.lastSampleAt))
     }
-    cleanup(clearSelectedContext: !bleEnabled)
+    clearSessionState(clearSelectedContext: !bleEnabled)
+    bleLog("disconnect", details: ["manual": "\(manual)"])
     statusMessage = bleEnabled ? "Disconnected" : "Off"
   }
 
-  private func cleanup(clearSelectedContext: Bool) {
+  private func clearTransientConnectionState() {
+    scanTimer?.invalidate()
+    scanTimer = nil
+    reconnectWorkItem?.cancel()
+    reconnectWorkItem = nil
+    reconnectScheduled = false
     stopDataTimer()
     stopRelayTimer()
+    centralManager?.stopScan()
     isConnected = false
     isScanning = false
     connectedPeripheral = nil
     settingsCharacteristic = nil
     buzzerCharacteristic = nil
+    connectedDeviceName = nil
+    connectingPeripheralId = nil
+    connectionPhase = .idle
+  }
+
+  private func clearSessionState(clearSelectedContext: Bool) {
+    clearTransientConnectionState()
     latestRealtime = nil
     latestTrip = nil
     latestRelay = nil
-    connectedDeviceName = nil
     discoveredDevices = []
-    connectingPeripheralId = nil
     lastDataReceivedAt = nil
     isPiDataActive = false
     piConnectionState = .offline
-    connectionPhase = .idle
     lastAppendedRealtimeAt = nil
     if clearSelectedContext {
       connectedVehicleId = nil
@@ -639,6 +737,12 @@ final class BluetoothManager: NSObject {
     guard !reconnectScheduled else { return }
     guard connectionPhase != .connected, connectionPhase != .connecting else { return }
     statusMessage = "Reconnecting..."
+    bleLog(
+      "reconnect_scheduled",
+      details: [
+        "attempt": "\(reconnectAttempt + 1)",
+        "failures": "\(consecutiveConnectFailures)",
+      ])
     reconnectWorkItem?.cancel()
     reconnectScheduled = true
     reconnectAttempt += 1
@@ -650,15 +754,36 @@ final class BluetoothManager: NSObject {
     let work = DispatchWorkItem { [weak self] in
       guard let self else { return }
       self.reconnectScheduled = false
+      self.bleLog("reconnect_execute", details: ["attempt": "\(self.reconnectAttempt)"])
       self.attemptReconnectOrScan()
     }
     reconnectWorkItem = work
     DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
   }
 
+  private func clearTargetPeripheral(reason: String) {
+    guard targetPeripheralId != nil else { return }
+    bleLog("target_cleared", details: ["reason": reason, "id": targetPeripheralId?.uuidString ?? "nil"])
+    targetPeripheralId = nil
+    UserDefaults.standard.removeObject(forKey: DefaultsKey.targetPeripheralId)
+  }
+
+  private func bleLog(_ event: String, details: [String: String] = [:]) {
+    let detailText = details
+      .sorted(by: { $0.key < $1.key })
+      .map { "\($0.key)=\($0.value)" }
+      .joined(separator: " ")
+    if detailText.isEmpty {
+      print("[BLE][\(event)]")
+    } else {
+      print("[BLE][\(event)] \(detailText)")
+    }
+  }
+
   private func describe(error: Error?) -> String {
     guard let ns = error as NSError? else { return "none" }
-    return "\(ns.domain)(\(ns.code))"
+    let message = ns.localizedDescription.replacingOccurrences(of: "\n", with: " ")
+    return "\(ns.domain)(\(ns.code)) \(message)"
   }
 }
 
@@ -674,7 +799,8 @@ extension BluetoothManager: CBCentralManagerDelegate {
       }
     case .poweredOff:
       statusMessage = "Bluetooth is off"
-      cleanup(clearSelectedContext: false)
+      clearSessionState(clearSelectedContext: false)
+      bleLog("powered_off")
     case .unauthorized:
       statusMessage = "Bluetooth not authorized"
     case .unsupported:
@@ -716,6 +842,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
       let isTarget = targetPeripheralId == peripheral.identifier
       if allowAutoReconnect, isTarget {
         statusMessage = "Reconnecting..."
+        bleLog("target_discovered", details: ["id": peripheral.identifier.uuidString])
         connectPeripheral(peripheral)
       }
     }
@@ -725,6 +852,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     isConnected = true
     reconnectAttempt = 0
     consecutiveConnectFailures = 0
+    staleTargetRetrievalMisses = 0
     reconnectScheduled = false
     userInitiatedDisconnect = false
     connectionPhase = .connected
@@ -735,6 +863,8 @@ extension BluetoothManager: CBCentralManagerDelegate {
     discoveredDevices = []
     targetPeripheralId = peripheral.identifier
     UserDefaults.standard.set(peripheral.identifier.uuidString, forKey: DefaultsKey.targetPeripheralId)
+    bleLog("connected", details: ["id": peripheral.identifier.uuidString, "name": peripheral.name ?? "Unknown"])
+    writeRelayLeaseHeartbeat(active: true)
     startDataTimer()
     startRelayTimer()
     peripheral.discoverServices([serviceUUID])
@@ -746,18 +876,23 @@ extension BluetoothManager: CBCentralManagerDelegate {
     error: Error?
   ) {
     consecutiveConnectFailures += 1
-    print(
-      "[BLE] didFailToConnect \(peripheral.identifier.uuidString) error=\(describe(error: error)) "
-        + "failure=\(consecutiveConnectFailures)"
-    )
-    cleanup(clearSelectedContext: false)
+    bleLog(
+      "connect_failed",
+      details: [
+        "id": peripheral.identifier.uuidString,
+        "error": describe(error: error),
+        "failure": "\(consecutiveConnectFailures)",
+      ])
+    clearTransientConnectionState()
     if consecutiveConnectFailures >= Self.reconnectFailureLimit {
-      // Reset failure count and scan so that if the Pi starts advertising,
-      // it is discovered and auto-connected without requiring a manual tap.
+      // The sticky target is likely stale. Clear it and force manual re-selection.
+      clearTargetPeripheral(reason: "consecutive_failures")
       consecutiveConnectFailures = 0
+      staleTargetRetrievalMisses = 0
       reconnectWorkItem?.cancel()
       reconnectScheduled = false
-      statusMessage = "Searching for Pi..."
+      allowAutoReconnect = false
+      statusMessage = "Saved device unavailable. Select a device."
       beginScan()
       return
     }
@@ -769,9 +904,12 @@ extension BluetoothManager: CBCentralManagerDelegate {
     didDisconnectPeripheral peripheral: CBPeripheral,
     error: Error?
   ) {
-    print(
-      "[BLE] didDisconnect \(peripheral.identifier.uuidString) error=\(describe(error: error))"
-    )
+    bleLog(
+      "disconnected",
+      details: [
+        "id": peripheral.identifier.uuidString,
+        "error": describe(error: error),
+      ])
     let wasManual = userInitiatedDisconnect
     userInitiatedDisconnect = false
 
@@ -791,7 +929,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
       }
     }
 
-    cleanup(clearSelectedContext: false)
+    clearTransientConnectionState()
     if !wasManual {
       scheduleReconnect()
     }

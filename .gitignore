@@ -4,6 +4,7 @@
 
 # Environment/API keys
 iOS/InfineonProject/Utilities/Constants.swift
+iOS/Supabase.xcconfig
 .DS_Store
 cuda-gpu-models
 

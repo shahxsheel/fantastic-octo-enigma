@@ -4,9 +4,9 @@
 //
 //  Created by Aaron Ma on 1/13/26.
 //
-//  1. Copy this file and rename it to "Constants.swift" in the same directory
-//  2. Replace placeholder values with your actual API keys
-//  3. The Constants.swift file is gitignored and won't be committed to version control
+//  Legacy fallback only:
+//  Runtime config now prefers process env / Info.plist keys injected from build settings.
+//  Keep this file for backward compatibility when build-time injection is not configured.
 //
 //  SUPABASE (for Authentication):
 //  ==============================

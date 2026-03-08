@@ -5,6 +5,7 @@
 //  Created by Aaron Ma on 3/4/26.
 //
 
+import Foundation
 import SwiftUI
 
 struct BluetoothConnectionView: View {
@@ -88,6 +89,16 @@ struct BluetoothConnectionView: View {
                 Spacer()
               }
             }
+
+            Button(role: .destructive) {
+              bluetooth.forgetSavedPeripheral()
+            } label: {
+              HStack {
+                Spacer()
+                Text("Forget Pi")
+                Spacer()
+              }
+            }
           } header: {
             Text("Connection Info")
           } footer: {
@@ -96,6 +107,28 @@ struct BluetoothConnectionView: View {
             )
           }
         } else if bluetooth.bleEnabled {
+          if bluetooth.hasSavedPeripheral {
+            Section {
+              LabeledContent("Saved Peripheral") {
+                Text(shortPeripheralId(bluetooth.savedPeripheralId))
+                  .font(.caption.monospaced())
+                  .foregroundStyle(.secondary)
+              }
+
+              Button(role: .destructive) {
+                bluetooth.forgetSavedPeripheral()
+              } label: {
+                HStack {
+                  Spacer()
+                  Text("Forget Saved Device")
+                  Spacer()
+                }
+              }
+            } header: {
+              Text("Saved Device")
+            }
+          }
+
           Section {
             if bluetooth.isScanning {
               HStack(spacing: 12) {
@@ -154,6 +187,38 @@ struct BluetoothConnectionView: View {
             Text("Nearby Devices")
           }
         }
+
+        Section {
+          let debugStatus = supabase.connectivityDebugStatus(vehicleId: bluetooth.connectedVehicleId)
+          LabeledContent("Cloud") {
+            Text(debugStatus.cloudState.statusLabel)
+              .foregroundStyle(debugStatus.cloudState.isOperational ? .green : .red)
+          }
+          LabeledContent("Data Source") {
+            Text(debugStatus.activeSource.rawValue)
+          }
+          LabeledContent("Source Age") {
+            Text(sourceAgeText(debugStatus.sourceAgeSeconds))
+              .foregroundStyle(.secondary)
+          }
+          if let detail = debugStatus.cloudState.detail {
+            LabeledContent("Cloud Detail") {
+              Text(detail)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.trailing)
+            }
+          } else if let lastError = debugStatus.lastCloudError {
+            LabeledContent("Last Cloud Error") {
+              Text(lastError)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.trailing)
+            }
+          }
+        } header: {
+          Text("Connectivity Debug")
+        }
       }
       .navigationTitle("Phone Connection")
       .navigationBarTitleDisplayMode(.inline)
@@ -192,6 +257,16 @@ struct BluetoothConnectionView: View {
     case -85..<(-70): "Fair signal (\(rssi) dBm)"
     default: "Weak signal (\(rssi) dBm)"
     }
+  }
+
+  private func sourceAgeText(_ age: TimeInterval?) -> String {
+    guard let age else { return "--" }
+    return String(format: "%.1fs", max(0, age))
+  }
+
+  private func shortPeripheralId(_ id: String?) -> String {
+    guard let id, !id.isEmpty else { return "None" }
+    return id.count > 8 ? String(id.prefix(8)) + "..." : id
   }
 }
 

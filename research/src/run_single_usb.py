@@ -491,13 +491,88 @@ def main() -> None:
         "longitude": 0.0,
         "satellites": 0,
         "is_speeding": False,
+        "telemetry_writer_mode": "PI_PRIMARY",
     }
+
+    relay_lease_active = False
+    relay_lease_expires_at = 0.0
+    relay_lease_epoch = 0
+    relay_lease_sec = 0
+    telemetry_writer_mode = "PI_PRIMARY"
+    relay_last_log_ts = 0.0
+    print("[single-usb] TELEMETRY_WRITER: PI_PRIMARY", flush=True)
+
+    def _current_telemetry_writer(now_ts: float) -> str:
+        if relay_lease_active and now_ts < relay_lease_expires_at:
+            return "IOS_RELAY"
+        return "PI_PRIMARY"
+
+    def _log_writer_mode_if_changed(now_ts: float) -> str:
+        nonlocal telemetry_writer_mode
+        mode = _current_telemetry_writer(now_ts)
+        if mode != telemetry_writer_mode:
+            telemetry_writer_mode = mode
+            with _lock:
+                _shared_results["telemetry_writer_mode"] = mode
+            print(f"[single-usb] TELEMETRY_WRITER: {mode}", flush=True)
+        return mode
 
     # ── BLE peripheral ──────────────────────────────────────────────────────
     def _on_ble_settings(data: dict) -> None:
         """iOS wrote new feature-toggle settings; apply them to the runtime."""
-        # These are advisory — the Pi honours them on a best-effort basis.
-        print(f"[BLE] Settings update from app: {data}", flush=True)
+        nonlocal relay_lease_active
+        nonlocal relay_lease_expires_at
+        nonlocal relay_lease_epoch
+        nonlocal relay_lease_sec
+        nonlocal relay_last_log_ts
+
+        now_ts = time.time()
+        relay_keys = ("relay_active", "relay_lease_sec", "relay_epoch")
+        has_relay_update = any(k in data for k in relay_keys)
+
+        if has_relay_update:
+            prev_active = relay_lease_active
+            prev_mode = _current_telemetry_writer(now_ts)
+
+            try:
+                requested_active = bool(data.get("relay_active", relay_lease_active))
+            except Exception:
+                requested_active = relay_lease_active
+
+            try:
+                lease_sec = int(data.get("relay_lease_sec", relay_lease_sec or 8))
+            except Exception:
+                lease_sec = relay_lease_sec or 8
+            lease_sec = max(2, min(60, lease_sec))
+
+            try:
+                relay_epoch = int(data.get("relay_epoch", relay_lease_epoch))
+            except Exception:
+                relay_epoch = relay_lease_epoch
+
+            relay_lease_sec = lease_sec
+            relay_lease_active = requested_active
+            relay_lease_expires_at = (now_ts + lease_sec) if requested_active else 0.0
+
+            mode = _log_writer_mode_if_changed(now_ts)
+            should_log = (
+                requested_active != prev_active
+                or mode != prev_mode
+                or (now_ts - relay_last_log_ts) >= 15.0
+            )
+            if should_log:
+                expires_in = max(0.0, relay_lease_expires_at - now_ts)
+                print(
+                    f"[BLE] Relay lease active={requested_active} lease_sec={lease_sec} "
+                    f"epoch={relay_epoch} expires_in={expires_in:.1f}s mode={mode}",
+                    flush=True,
+                )
+                relay_last_log_ts = now_ts
+
+        # These are advisory toggles — the Pi honours them on a best-effort basis.
+        settings_only = {k: v for k, v in data.items() if k not in relay_keys}
+        if settings_only:
+            print(f"[BLE] Settings update from app: {settings_only}", flush=True)
 
     def _on_ble_buzzer(data: dict) -> None:
         """iOS wrote a buzzer command; fire the local buzzer immediately."""
@@ -817,8 +892,14 @@ def main() -> None:
                 buzzer.play_speeding_alert()
                 last_speed_buzzer_time = now
 
+            writer_mode = _log_writer_mode_if_changed(now)
+
             # Heartbeat telemetry to keep app realtime view fresh.
-            if supabase_client and (now - last_telemetry_time) >= telemetry_interval_sec:
+            if (
+                supabase_client
+                and writer_mode == "PI_PRIMARY"
+                and (now - last_telemetry_time) >= telemetry_interval_sec
+            ):
                 payload = {
                     "type": "vehicle_realtime",
                     "vehicle_id": vehicle_id,

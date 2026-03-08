@@ -569,20 +569,9 @@ struct VehicleView: View {
     // When BLE is connected, buzzer state is local — skip Supabase fetch
     guard !bluetooth.isConnected else { return }
 
-    do {
-      let response: [VehicleRealtime] = try await supabase.client
-        .from("vehicle_realtime")
-        .select()
-        .eq("vehicle_id", value: vehicle.vehicle.id)
-        .execute()
-        .value
-
-      if let data = response.first {
-        cachedBuzzerActive = data.buzzerActive
-        cachedBuzzerType = data.buzzerType
-      }
-    } catch {
-      // Keep cached values as nil, will fetch fresh in VehicleAlertControlView
+    if let data = await supabase.fetchVehicleRealtimeRow(vehicleId: vehicle.vehicle.id) {
+      cachedBuzzerActive = data.buzzerActive
+      cachedBuzzerType = data.buzzerType
     }
   }
 
@@ -1283,24 +1272,15 @@ struct VehicleAlertControlView: View {
     // When BLE is connected, buzzer state is managed locally — skip Supabase
     guard !bluetooth.isConnected else { return }
 
-    do {
-      let response: [VehicleRealtime] = try await supabase.client
-        .from("vehicle_realtime")
-        .select()
-        .eq("vehicle_id", value: vehicleId)
-        .execute()
-        .value
-
-      if let data = response.first {
-        buzzerActive = data.buzzerActive ?? false
-        if let typeString = data.buzzerType,
-          let type = BuzzerType(rawValue: typeString)
-        {
-          buzzerType = type
-        }
-      }
-    } catch {
-      errorMessage = "Failed to fetch buzzer state: \(error.localizedDescription)"
+    guard let data = await supabase.fetchVehicleRealtimeRow(vehicleId: vehicleId) else {
+      errorMessage = "Failed to fetch buzzer state. Check cloud configuration."
+      return
+    }
+    buzzerActive = data.buzzerActive ?? false
+    if let typeString = data.buzzerType,
+      let type = BuzzerType(rawValue: typeString)
+    {
+      buzzerType = type
     }
   }
 
@@ -1326,21 +1306,16 @@ struct VehicleAlertControlView: View {
     // Fall back to Supabase RPC
     do {
       if buzzerActive {
-        try await supabase.client.rpc(
-          "deactivate_vehicle_buzzer",
-          params: ["p_vehicle_id": vehicleId]
-        ).execute()
+        try await supabase.setVehicleBuzzerState(vehicleId: vehicleId, active: false)
 
         buzzerActive = false
         Haptics.notification(.success)
       } else {
-        try await supabase.client.rpc(
-          "activate_vehicle_buzzer",
-          params: [
-            "p_vehicle_id": vehicleId,
-            "p_buzzer_type": buzzerType.rawValue,
-          ]
-        ).execute()
+        try await supabase.setVehicleBuzzerState(
+          vehicleId: vehicleId,
+          active: true,
+          type: buzzerType.rawValue
+        )
 
         buzzerActive = true
         Haptics.notification(.warning)

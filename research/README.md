@@ -69,6 +69,15 @@ Environment variables (set before `./run.sh` or in `run.sh`):
 
 Example: `CAPTURE_WIDTH=1280 CAPTURE_HEIGHT=720 ./run.sh`
 
+## BLE Relay Writer Switching
+
+When the iOS app is connected over BLE, it sends relay lease heartbeats on the BLE settings characteristic:
+
+- Active lease: Pi switches cloud telemetry writer mode to `IOS_RELAY`
+- Lease missing/expired: Pi automatically resumes `PI_PRIMARY`
+
+This keeps Supabase writes single-writer without blocking inference loops.
+
 ## Troubleshooting
 
 | Problem | Fix |
