@@ -268,7 +268,7 @@ def _print_cli_stats(
         f"STATE: {alert_state}",
         f"DRIVER: {driver_status}",
         f"LOOK: {head_direction}",
-        f"EAR:{ear:.2f}",
+        f"EYES:{min(100, int(ear / 0.35 * 100))}%",
         f"SPEED: {speed_mph}mph",
         f"HDG: {int(round(heading)) % 360}",
     ]
@@ -330,7 +330,7 @@ def main() -> None:
 
     yolo = YoloDetector()
     face_eye_estimator = FaceEyeEstimator(
-        model_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "face_landmarker.task")
+        model_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "face_landmarker.task")
     )
     side_look_tracker = SideLookTracker(threshold_seconds=2.0)
     buzzer = BuzzerController(pin=18)
