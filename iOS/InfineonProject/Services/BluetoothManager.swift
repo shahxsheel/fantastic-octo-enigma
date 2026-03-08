@@ -320,7 +320,9 @@ final class BluetoothManager: NSObject {
     guard relayTimer == nil else { return }
     relayTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
       guard let self, let vid = self.connectedVehicleId else { return }
-      self.writeRelayLeaseHeartbeat(active: true)
+      let relayActive = supabase.cloudRuntimeState.isOperational
+      self.writeRelayLeaseHeartbeat(active: relayActive)
+      guard relayActive else { return }
       Task {
         await supabase.relayBLEDataToSupabase(vehicleId: vid)
         // Poll buzzer state from Supabase and relay back to Pi
@@ -864,7 +866,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     targetPeripheralId = peripheral.identifier
     UserDefaults.standard.set(peripheral.identifier.uuidString, forKey: DefaultsKey.targetPeripheralId)
     bleLog("connected", details: ["id": peripheral.identifier.uuidString, "name": peripheral.name ?? "Unknown"])
-    writeRelayLeaseHeartbeat(active: true)
+    writeRelayLeaseHeartbeat(active: supabase.cloudRuntimeState.isOperational)
     startDataTimer()
     startRelayTimer()
     peripheral.discoverServices([serviceUUID])

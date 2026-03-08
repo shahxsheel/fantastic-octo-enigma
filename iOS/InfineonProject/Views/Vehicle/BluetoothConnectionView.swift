@@ -190,6 +190,11 @@ struct BluetoothConnectionView: View {
 
         Section {
           let debugStatus = supabase.connectivityDebugStatus(vehicleId: bluetooth.connectedVehicleId)
+          LabeledContent("Relay Vehicle") {
+            Text(bluetooth.connectedVehicleId ?? "None")
+              .font(.caption.monospaced())
+              .foregroundStyle(.secondary)
+          }
           LabeledContent("Cloud") {
             Text(debugStatus.cloudState.statusLabel)
               .foregroundStyle(debugStatus.cloudState.isOperational ? .green : .red)

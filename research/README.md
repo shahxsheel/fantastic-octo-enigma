@@ -78,6 +78,20 @@ When the iOS app is connected over BLE, it sends relay lease heartbeats on the B
 
 This keeps Supabase writes single-writer without blocking inference loops.
 
+## Supabase Upload Checklist
+
+If telemetry is not updating in `vehicle_realtime`, verify:
+
+1. `research/.env` has real values (not placeholders) for:
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY`
+2. `VEHICLE_ID` in `research/.env` matches the row you are viewing in Supabase.
+3. Pi startup logs show:
+   - `[single-usb] SUPABASE: ACTIVE`
+   - `[single-usb] TELEMETRY_WRITER: PI_PRIMARY` (or `IOS_RELAY` only while phone relay is active)
+4. If writes fail, logs now print:
+   - `[single-usb] Supabase write failed ...`
+
 ## Troubleshooting
 
 | Problem | Fix |

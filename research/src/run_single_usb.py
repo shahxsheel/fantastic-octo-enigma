@@ -50,6 +50,38 @@ def _env_bool(name: str, default: bool = False) -> bool:
     return val.lower() in ("1", "true", "yes", "on")
 
 
+def _coerce_bool(value: object, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in ("1", "true", "yes", "on"):
+            return True
+        if lowered in ("0", "false", "no", "off"):
+            return False
+        return default
+    if isinstance(value, (int, float)):
+        return bool(value)
+    return default
+
+
+def _is_placeholder_supabase(url: Optional[str], key: Optional[str]) -> bool:
+    if not url or not key:
+        return True
+
+    url_l = url.lower()
+    key_l = key.lower()
+    placeholder_tokens = (
+        "your-project-id",
+        "your_supabase",
+        "your-supabase",
+        "placeholder",
+    )
+    return any(token in url_l for token in placeholder_tokens) or any(
+        token in key_l for token in placeholder_tokens
+    )
+
+
 def create_gamma_lut(gamma: float = 1.5) -> np.ndarray:
     """Build a 256-entry LUT for fast gamma correction (brightens low-light)."""
     inv_gamma = 1.0 / gamma
@@ -325,6 +357,7 @@ def main() -> None:
     os.environ.setdefault("YOLO_FILTER", "person,cell phone,bottle,cup")
 
     vehicle_id = os.environ.get("VEHICLE_ID", "test-vehicle-1")
+    print(f"[single-usb] VEHICLE_ID={vehicle_id}", flush=True)
 
     headless = _env_bool("HEADLESS", False)
     if not headless and not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
@@ -368,12 +401,8 @@ def main() -> None:
     supabase_client: Optional[Client] = None
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_KEY")
-    supabase_configured = bool(supabase_url and supabase_key)
-    supabase_placeholder = (
-        not supabase_configured
-        or "your-project-id" in (supabase_url or "")
-        or "your-supabase-anon-key" in (supabase_key or "")
-    )
+    supabase_configured = bool((supabase_url or "").strip() and (supabase_key or "").strip())
+    supabase_placeholder = _is_placeholder_supabase(supabase_url, supabase_key)
 
     if supabase_configured and not supabase_placeholder:
         try:
@@ -534,10 +563,7 @@ def main() -> None:
             prev_active = relay_lease_active
             prev_mode = _current_telemetry_writer(now_ts)
 
-            try:
-                requested_active = bool(data.get("relay_active", relay_lease_active))
-            except Exception:
-                requested_active = relay_lease_active
+            requested_active = _coerce_bool(data.get("relay_active"), relay_lease_active)
 
             try:
                 lease_sec = int(data.get("relay_lease_sec", relay_lease_sec or 8))
@@ -733,6 +759,8 @@ def main() -> None:
                     _shared_results["infer_t0"] = now
 
     def telemetry_thread_fn() -> None:
+        write_failures = 0
+        last_write_error_log = 0.0
         while not _telemetry_stop.is_set():
             try:
                 payload = telemetry_queue.get(timeout=0.5)
@@ -751,9 +779,22 @@ def main() -> None:
                     supabase_client.table("vehicle_realtime").upsert(payload).execute()
                 elif payload_type == "vehicle_trips":
                     supabase_client.table("vehicle_trips").upsert(payload).execute()
-            except Exception:
+                write_failures = 0
+            except Exception as e:
                 # Keep loop alive through transient network failures.
-                pass
+                # Log with backoff so connectivity/auth issues are visible.
+                write_failures += 1
+                now_ts = time.time()
+                if write_failures <= 3 or (now_ts - last_write_error_log) >= 10.0:
+                    print(
+                        _colorize(
+                            f"[single-usb] Supabase write failed type={payload_type} "
+                            f"count={write_failures}: {e}",
+                            ANSI_YELLOW,
+                        ),
+                        flush=True,
+                    )
+                    last_write_error_log = now_ts
 
     def speed_limit_thread_fn() -> None:
         while not _speed_stop.is_set():
@@ -805,6 +846,8 @@ def main() -> None:
 
     telemetry_interval_sec = 1.0
     last_telemetry_time = 0.0
+    telemetry_drop_count = 0
+    telemetry_drop_last_log = 0.0
 
     vis_buffer: Optional[np.ndarray] = None if not headless else None
 
@@ -925,7 +968,16 @@ def main() -> None:
                 try:
                     telemetry_queue.put_nowait(payload)
                 except queue.Full:
-                    pass
+                    telemetry_drop_count += 1
+                    if telemetry_drop_count <= 3 or (now - telemetry_drop_last_log) >= 10.0:
+                        print(
+                            _colorize(
+                                f"[single-usb] telemetry queue full; dropped={telemetry_drop_count}",
+                                ANSI_YELLOW,
+                            ),
+                            flush=True,
+                        )
+                        telemetry_drop_last_log = now
 
                 last_telemetry_time = now
 
