@@ -453,6 +453,17 @@ def main() -> None:
 
     if supabase_client is not None:
         print(_colorize("[single-usb] SUPABASE: ACTIVE", ANSI_GREEN), flush=True)
+        # Register this vehicle in the vehicles table so the iOS app can discover it.
+        # Uses upsert so repeated startups are idempotent and don't overwrite existing metadata.
+        try:
+            supabase_client.table("vehicles").upsert(
+                {"id": vehicle_id, "updated_at": "now()"},
+                on_conflict="id",
+                ignore_duplicates=False,
+            ).execute()
+            print(f"[single-usb] Vehicle registered: {vehicle_id}", flush=True)
+        except Exception as e:
+            print(_colorize(f"[single-usb] Vehicle registration failed: {e}", ANSI_YELLOW), flush=True)
 
     if head_direction_estimator.enabled:
         print(
