@@ -4,7 +4,11 @@ YOLO object detector (NCNN) with letterbox preprocessing and full COCO names.
 Goals:
 - Accuracy: correct letterbox + unpad so boxes map cleanly to the original frame.
 - Simplicity: no downstream class filtering surprises; filter is opt-in.
-- Pi-aware defaults: smaller input/threads on Pi4 unless overridden.
+- Pi-aware defaults: tuned for Raspberry Pi CPU inference unless overridden.
+
+Output format auto-detection:
+- E2E/NMS-free models: out0 shape (N, 6) = [x1,y1,x2,y2,conf,cls_id]
+- Classic models (including current YOLO26n NCNN export): out0 shape (N, 84) = [cx,cy,w,h,class0..79]
 """
 
 import os
@@ -81,11 +85,9 @@ class YoloDetector:
 
         self.conf = float(os.environ.get("YOLO_CONF", "0.25"))
         self.nms_thresh = float(os.environ.get("YOLO_NMS", "0.45"))
-        # Force Nano by default: the Small model is too slow for real-time Pi 4 inference.
-        self.model_path = os.environ.get("YOLO_MODEL", "yolov8n_ncnn_model")
+        self.model_path = os.environ.get("YOLO_MODEL", "yolo26n_ncnn_model")
         self.max_person = int(os.environ.get("YOLO_MAX_PERSON", "1"))
         self.max_dets = int(os.environ.get("YOLO_MAX_DETS", "200"))
-        self._is_pi4 = _detect_pi4()
 
         filt = os.environ.get("YOLO_FILTER", "").strip()
         self.filter_names = {
@@ -129,8 +131,7 @@ class YoloDetector:
 
         # Ultra-low resolution for maximum FPS (Nano model, close-up camera).
         # 256x256 is ~1.6x faster than 320x320, sufficient for detecting large objects (person, phone).
-        # Use 256 on any Raspberry Pi (4 or 5); 640 is too heavy for real-time Pi inference.
-        default_input_size = "256" if self._is_pi4 else "256"
+        default_input_size = "256"
         self._input_size = int(os.environ.get("YOLO_INPUT_SIZE", default_input_size))
 
         # Pre-allocate letterbox buffers to avoid per-frame allocations.
@@ -180,14 +181,59 @@ class YoloDetector:
 
         # np.asarray avoids a copy if NCNN exposes the buffer protocol; falls back to copy otherwise.
         out = np.asarray(mat_out)
-        if out.ndim == 1:
-            out = out.reshape(84, -1)
-        if out.shape[0] == 84:
-            out = out.T  # (N, 84)
 
         if out.size == 0:
             return []
 
+        # ── auto-detect output format ────────────────────────────────────────────────
+        # E2E/NMS-free: (N, 6) = [x1, y1, x2, y2, conf, cls_id]
+        # Classic:      (84, N) or (N, 84) = [cx,cy,w,h,cls0..79]
+        if out.ndim == 2 and out.shape[1] == 6:
+            return self._decode_e2e(out, scale, dw, dh, w, h)
+
+        # Classic path: normalise to (N, 84)
+        if out.ndim == 1:
+            out = out.reshape(84, -1)
+        if out.shape[0] == 84:
+            out = out.T  # (N, 84)
+        return self._decode_classic(out, scale, dw, dh, w, h)
+
+    # ── E2E decoder (for models exported with end-to-end head) ──────────────────────
+    def _decode_e2e(
+        self,
+        out: np.ndarray,
+        scale: float,
+        dw: int,
+        dh: int,
+        img_w: int,
+        img_h: int,
+    ) -> List[dict]:
+        """Decode end-to-end NMS-free output: (N, 6) = [x1,y1,x2,y2,conf,cls_id]."""
+        confs = out[:, 4]
+        mask = confs > self.conf
+        if not np.any(mask):
+            return []
+        out = out[mask]
+
+        x1 = np.clip((out[:, 0] - dw) / scale, 0, img_w - 1)
+        y1 = np.clip((out[:, 1] - dh) / scale, 0, img_h - 1)
+        x2 = np.clip((out[:, 2] - dw) / scale, 0, img_w - 1)
+        y2 = np.clip((out[:, 3] - dh) / scale, 0, img_h - 1)
+
+        # No manual NMS — model ensures one prediction per object.
+        return self._build_objects(x1, y1, x2, y2, out[:, 4], out[:, 5].astype(int), img_w, img_h)
+
+    # ── Classic decoder (YOLOv8/11 and current YOLO26n NCNN export) ─────────────────
+    def _decode_classic(
+        self,
+        out: np.ndarray,
+        scale: float,
+        dw: int,
+        dh: int,
+        img_w: int,
+        img_h: int,
+    ) -> List[dict]:
+        """Decode classic anchor-free output: (N, 84) = [cx,cy,w,h,class0..79]."""
         cx = out[:, 0]
         cy = out[:, 1]
         bw = out[:, 2]
@@ -201,12 +247,8 @@ class YoloDetector:
         if not np.any(mask):
             return []
 
-        cx = cx[mask]
-        cy = cy[mask]
-        bw = bw[mask]
-        bh = bh[mask]
-        class_ids = class_ids[mask]
-        max_scores = max_scores[mask]
+        cx, cy, bw, bh = cx[mask], cy[mask], bw[mask], bh[mask]
+        class_ids, max_scores = class_ids[mask], max_scores[mask]
 
         # Undo letterbox
         x1 = (cx - bw / 2 - dw) / scale
@@ -215,32 +257,58 @@ class YoloDetector:
         y2 = (cy + bh / 2 - dh) / scale
 
         boxes_xywh = list(zip(x1.tolist(), y1.tolist(), (x2 - x1).tolist(), (y2 - y1).tolist()))
-        confidences = max_scores.tolist()
+        indices = cv2.dnn.NMSBoxes(boxes_xywh, max_scores.tolist(), self.conf, self.nms_thresh)
 
-        indices = cv2.dnn.NMSBoxes(boxes_xywh, confidences, self.conf, self.nms_thresh)
+        if indices is None or len(indices) == 0:
+            return []
 
+        idx_list = [int(i) if isinstance(i, (int, np.integer)) else int(i[0]) for i in indices]
+        return self._build_objects(
+            x1[idx_list], y1[idx_list], x2[idx_list], y2[idx_list],
+            max_scores[idx_list], class_ids[idx_list],
+            img_w, img_h,
+        )
+
+    # ── shared post-processing ───────────────────────────────────────────────────────
+    def _build_objects(
+        self,
+        x1: np.ndarray,
+        y1: np.ndarray,
+        x2: np.ndarray,
+        y2: np.ndarray,
+        confs: np.ndarray,
+        cls_ids: np.ndarray,
+        img_w: int,
+        img_h: int,
+    ) -> List[dict]:
+        """Clip boxes, apply filter, sort, prune by max_person / max_dets."""
+        max_x = max(img_w - 1, 0)
+        max_y = max(img_h - 1, 0)
         objects: List[dict] = []
-        for i in indices:
-            idx = int(i) if isinstance(i, (int, np.integer)) else int(i[0])
-            cls = int(class_ids[idx])
+        for i in range(len(confs)):
+            cls = int(cls_ids[i])
             name = self.names.get(cls, str(cls))
             if self.filter_names and self._norm_name(name) not in self.filter_names:
                 continue
-            bx, by, bwb, bhb = boxes_xywh[idx]
-            x1i = max(0, min(int(bx), w - 1))
-            y1i = max(0, min(int(by), h - 1))
-            x2i = max(0, min(int(bx + bwb), w - 1))
-            y2i = max(0, min(int(by + bhb), h - 1))
+            x1i = max(0, min(int(x1[i]), max_x))
+            y1i = max(0, min(int(y1[i]), max_y))
+            x2i = max(0, min(int(x2[i]), max_x))
+            y2i = max(0, min(int(y2[i]), max_y))
+            if x2i < x1i:
+                x1i, x2i = x2i, x1i
+            if y2i < y1i:
+                y1i, y2i = y2i, y1i
             objects.append(
                 {
                     "cls": cls,
                     "name": name,
-                    "conf": float(max_scores[idx]),
+                    "conf": float(confs[i]),
                     "bbox": [x1i, y1i, x2i, y2i],
                 }
             )
 
         objects.sort(key=lambda o: o["conf"], reverse=True)
+
         if self.max_person > 0:
             pruned: List[dict] = []
             person_seen = 0
@@ -254,6 +322,7 @@ class YoloDetector:
 
         if self.max_dets > 0 and len(objects) > self.max_dets:
             objects = objects[: self.max_dets]
+
         return objects
 
     @staticmethod

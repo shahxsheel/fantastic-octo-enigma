@@ -53,7 +53,7 @@ Four concurrent threads communicate via shared state protected by a single lock:
 ### Key Design Decisions
 
 - **YOLO interleaving:** YOLO runs every 10 frames to save ~90% of its compute cost
-- **256×256 inference:** YOLO Nano at 256 input is ~1.6× faster than 320; Pi4 defaults differ from Pi5
+- **256×256 inference:** YOLO Nano at 256 input is ~1.6× faster than 320 and is the default on Pi4/Pi5
 - **Hardware fallback:** `buzzer.py` and `gps.py` both fall back to simulated/mock mode when GPIO/serial is unavailable (safe for non-Pi dev)
 - **Risk engine** (`src/infer/risk_engine.py`): State machine (FOCUSED → WARN → ALERT) using PERCLOS over a 20s sliding window, head pose thresholds, phone detection, and face visibility
 
@@ -70,6 +70,6 @@ USBCameraSource → FrameBundle → inference_thread_fn
 ### Model Files
 
 - `face_landmarker.task` — MediaPipe face model (downloaded by `setup.sh`)
-- `yolov8n_ncnn_model/` — YOLO Nano NCNN weights (downloaded by `setup.sh`)
+- `yolo26n_ncnn_model/` — YOLO Nano NCNN weights (downloaded by `setup.sh`)
 
 These are runtime-required; the app will not start without them.

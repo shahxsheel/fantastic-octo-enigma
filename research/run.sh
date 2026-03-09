@@ -50,8 +50,8 @@ fi
 
 export PYTHONPATH=.
 export CAMERA_USE_GSTREAMER="${CAMERA_USE_GSTREAMER:-1}"
-export YOLO_MODEL="${YOLO_MODEL:-yolov8n_ncnn_model}"
-# 256×256 is the real-time sweet spot for YOLOv8 Nano on any Raspberry Pi.
+export YOLO_MODEL="${YOLO_MODEL:-yolo26n_ncnn_model}"
+# 256×256 is the real-time sweet spot for YOLO26n Nano on Raspberry Pi.
 export YOLO_INPUT_SIZE="${YOLO_INPUT_SIZE:-256}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-4}"
 export NCNN_THREADS="${NCNN_THREADS:-4}"

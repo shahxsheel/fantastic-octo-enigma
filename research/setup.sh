@@ -12,7 +12,7 @@ REQUIRED_PYTHON_VERSION="3.12.8"
 
 # Default URL for YOLO Nano NCNN model (override with YOLO_NCNN_MODEL_URL).
 # Use Nano only — Small model is too slow for real-time Pi inference.
-YOLO_NCNN_URL="${YOLO_NCNN_MODEL_URL:-https://github.com/shahxsheel/fantastic-octo-enigma/releases/download/v1.1.0/yolov8n_ncnn_model.tar.gz}"
+YOLO_NCNN_URL="${YOLO_NCNN_MODEL_URL:-https://github.com/shahxsheel/fantastic-octo-enigma/releases/download/v2.0.0/yolo26n_ncnn_model.tar.gz}"
 
 TOTAL_STEPS=5
 step=0
@@ -133,11 +133,11 @@ pip install -r requirements.txt -q
 echo "  → requirements.txt installed"
 
 # ── 3. YOLO Nano NCNN model ────────────────────────────────────────
-banner "Installing yolov8n_ncnn_model (Nano only — not Small)"
-if [[ -f yolov8n_ncnn_model/model.ncnn.param ]] && [[ -f yolov8n_ncnn_model/model.ncnn.bin ]]; then
+banner "Installing yolo26n_ncnn_model (Nano, YOLO26 — 2x faster than v8n)"
+if [[ -f yolo26n_ncnn_model/model.ncnn.param ]] && [[ -f yolo26n_ncnn_model/model.ncnn.bin ]]; then
   echo "  → Already exists, skipping"
 else
-  TARBALL="yolov8n_ncnn_model.tar.gz"
+  TARBALL="yolo26n_ncnn_model.tar.gz"
   USE_LOCAL=false
   if [[ -f "$TARBALL" ]]; then
     if gzip -t "$TARBALL" 2>/dev/null; then
@@ -160,13 +160,13 @@ else
     if [[ ! -s "$TARBALL" ]] || ! gzip -t "$TARBALL" 2>/dev/null; then
       rm -f "$TARBALL"
       echo ""
-      echo "  ✗ Download failed (404 or invalid). The v1.1.0 release may not exist yet."
+      echo "  ✗ Download failed (404 or invalid)."
       echo ""
       echo "  To get the YOLO Nano model:"
-      echo "  1. On a machine with Python and internet, run: ./scripts/build_yolov8n_ncnn_archive.sh"
-      echo "     Then copy yolov8n_ncnn_model.tar.gz to this Pi and run ./setup.sh again."
-      echo "  2. Or create a GitHub release with yolov8n_ncnn_model.tar.gz and set:"
-      echo "     YOLO_NCNN_MODEL_URL=https://github.com/OWNER/REPO/releases/download/TAG/yolov8n_ncnn_model.tar.gz"
+      echo "  1. On a machine with Python and internet, run: ./scripts/build_yolo26n_ncnn_archive.sh"
+      echo "     Then copy yolo26n_ncnn_model.tar.gz to this Pi and run ./setup.sh again."
+      echo "  2. Or create a GitHub release with yolo26n_ncnn_model.tar.gz and set:"
+      echo "     YOLO_NCNN_MODEL_URL=https://github.com/OWNER/REPO/releases/download/TAG/yolo26n_ncnn_model.tar.gz"
       echo ""
       exit 1
     fi
@@ -199,12 +199,12 @@ fi
 
 # ── 5. Verify ─────────────────────────────────────────────────────
 banner "Verifying installation"
-if [[ ! -f yolov8n_ncnn_model/model.ncnn.param ]] || [[ ! -f yolov8n_ncnn_model/model.ncnn.bin ]]; then
-  echo "  ✗ yolov8n_ncnn_model missing (model.ncnn.param / model.ncnn.bin)."
+if [[ ! -f yolo26n_ncnn_model/model.ncnn.param ]] || [[ ! -f yolo26n_ncnn_model/model.ncnn.bin ]]; then
+  echo "  ✗ yolo26n_ncnn_model missing (model.ncnn.param / model.ncnn.bin)."
   echo "    Set YOLO_NCNN_MODEL_URL to a valid tar.gz URL or add the release asset to the repo."
   exit 1
 fi
-echo "  → yolov8n_ncnn_model OK"
+echo "  → yolo26n_ncnn_model OK"
 if ! .venv/bin/python -c "import ncnn; import cv2" 2>/dev/null; then
   echo "  ✗ Python imports failed (ncnn, cv2)"
   exit 1

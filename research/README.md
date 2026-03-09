@@ -21,7 +21,7 @@ cd fantastic-octo-enigma
 ```
 
 This installs system libraries (OpenCV/GStreamer), creates a `.venv`, installs Python dependencies, and installs:
-- **yolov8n_ncnn_model** (YOLO Nano NCNN): if **yolov8n_ncnn_model.tar.gz** is present in the repo root, setup extracts it; otherwise it downloads from `YOLO_NCNN_MODEL_URL`. To bundle the tarball for offline setup, run `./scripts/build_yolov8n_ncnn_archive.sh` once (requires `ultralytics`), then commit `yolov8n_ncnn_model.tar.gz`.
+- **yolo26n_ncnn_model** (YOLO Nano NCNN): if **yolo26n_ncnn_model.tar.gz** is present in the repo root, setup extracts it; otherwise it downloads from `YOLO_NCNN_MODEL_URL`. To bundle the tarball for offline setup, run `./scripts/build_yolo26n_ncnn_archive.sh` once (requires `ultralytics`), then commit `yolo26n_ncnn_model.tar.gz`.
 
 ## Run
 
@@ -60,7 +60,7 @@ Environment variables (set before `./run.sh` or in `run.sh`):
 | `INFER_WIDTH` | `640` | Inference frame width |
 | `INFER_HEIGHT` | `480` | Inference frame height |
 | `CAMERA_USE_GSTREAMER` | `1` | Use GStreamer for USB (set by run.sh) |
-| `YOLO_MODEL` | `yolov8n_ncnn_model` | NCNN model directory (set by run.sh) |
+| `YOLO_MODEL` | `yolo26n_ncnn_model` | NCNN model directory (set by run.sh) |
 | `NCNN_THREADS` | `4` | CPU threads for NCNN (set by run.sh) |
 | `OMP_NUM_THREADS` | `4` | OpenMP threads (set by run.sh) |
 | `SWAP_RB` | `0` | Set to `1` if colors look wrong (e.g. blue tint) |
@@ -100,7 +100,7 @@ If telemetry is not updating in `vehicle_realtime`, verify:
 | No USB camera found | Ensure a webcam is connected; check `ls /dev/video*`. Set `CAMERA_INDEX` if needed |
 | Colors look blue/wrong | Set `SWAP_RB=1` before `./run.sh` |
 | No display / SSH | Use `HEADLESS=1 ./run.sh` |
-| `yolov8n_ncnn_model` missing after setup | Put **yolov8n_ncnn_model.tar.gz** in the repo root (run `./scripts/build_yolov8n_ncnn_archive.sh` to create it), or set `YOLO_NCNN_MODEL_URL` to a valid tar.gz URL |
+| `yolo26n_ncnn_model` missing after setup | Put **yolo26n_ncnn_model.tar.gz** in the repo root (run `./scripts/build_yolo26n_ncnn_archive.sh` to create it), or set `YOLO_NCNN_MODEL_URL` to a valid tar.gz URL |
 | GStreamer errors | `./setup.sh` installs GStreamer deps; on non-Debian systems install equivalent libs for OpenCV |
 
 ## Repo Layout
@@ -109,8 +109,8 @@ If telemetry is not updating in `vehicle_realtime`, verify:
 setup.sh                 One-time setup (apt, .venv, models)
 run.sh                   Run app (activates .venv, runs single-USB pipeline)
 requirements.txt         Python dependencies
-yolov8n_ncnn_model.tar.gz  Optional: include in repo for offline setup (see Setup)
-yolov8n_ncnn_model/      YOLO Nano NCNN model (from tarball or download)
+yolo26n_ncnn_model.tar.gz  Optional: include in repo for offline setup (see Setup)
+yolo26n_ncnn_model/      YOLO Nano NCNN model (from tarball or download)
 src/
   run_single_usb.py      App entry (threaded camera + inference + display)
   camera/
@@ -118,5 +118,5 @@ src/
   infer/
     yolo_detector.py       YOLO NCNN detector
 scripts/
-  build_yolov8n_ncnn_archive.sh  Build yolov8n_ncnn_model.tar.gz for inclusion in repo
+  build_yolo26n_ncnn_archive.sh  Build yolo26n_ncnn_model.tar.gz for inclusion in repo
 ```
