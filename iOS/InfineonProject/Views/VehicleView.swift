@@ -19,7 +19,6 @@ struct VehicleView: View {
   @Namespace private var namespace
 
   @State private var showingAlertSheet = false
-  @State private var showingTripsSheet = false
   @State private var showingLiveLocationSheet = false
   @State private var showingVehicleSettingsSheet = false
   @State private var showingBluetoothSheet = false
@@ -94,30 +93,14 @@ struct VehicleView: View {
                 subtitle: piBannerSubtitle(for: piState)
               )
 
+              if supabase.needsBLEConnectionSuggestion(vehicleId: vehicle.vehicle.id) {
+                BLESuggestionBannerView(vehicleId: vehicle.vehicle.id)
+              }
+
               // Driver alert
               if let data = vehicle.realtimeData {
                 driverAlertSection(data: data)
               }
-
-              Button {
-                showingTripsSheet.toggle()
-              } label: {
-                Label {
-                  VStack(alignment: .leading) {
-                    Text("Trips")
-                  }
-                } icon: {
-                  SettingsBoxView(
-                    icon: "airplane.up.right",
-                    color: .indigo
-                  )
-                }
-              }
-              .tint(.primary)
-              .contentShape(.rect)
-              .buttonStyle(
-                FluidZoomTransitionStyle(
-                  id: "tripsSheet", namespace: namespace, shape: .rect, applyGlass: false))
 
               // Live Data Section
               if let data = vehicle.realtimeData {
@@ -404,10 +387,6 @@ struct VehicleView: View {
             FluidZoomTransitionStyle(id: "settingsSheet", namespace: namespace, shape: .circle))
         }
       }
-    }
-    .sheet(isPresented: $showingTripsSheet) {
-      HomeView(vehicle: vehicle)
-        .navigationTransition(.zoom(sourceID: "tripsSheet", in: namespace))
     }
     .sheet(isPresented: $showingLiveLocationSheet) {
       Group {
@@ -714,6 +693,26 @@ struct VehicleView: View {
 }
 
 // MARK: - Pi Status Banner
+
+struct BLESuggestionBannerView: View {
+  let vehicleId: String
+
+  var body: some View {
+    Label {
+      VStack(alignment: .leading) {
+        Text("Cloud data is stale")
+          .bold()
+        Text("Connect via Bluetooth for live data")
+          .font(.caption)
+      }
+    } icon: {
+      SettingsBoxView(icon: "antenna.radiowaves.left.and.right", color: .orange)
+    }
+    .padding()
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color.orange.opacity(0.15), in: .rect(cornerRadius: 10))
+  }
+}
 
 struct PiBannerView: View {
   let icon: String

@@ -8,14 +8,13 @@
 import CoreBluetooth
 import Foundation
 
-// MARK: - UUIDs (must match RPi bluetooth.py)
+// MARK: - UUIDs (must match RPi bluetooth_peripheral.py)
 
 private let serviceUUID = CBUUID(string: "A1B2C3D4-E5F6-7890-ABCD-1234567890AB")
 private let realtimeCharUUID = CBUUID(string: "A1B2C3D4-E5F6-7890-ABCD-123456780001")
 private let settingsCharUUID = CBUUID(string: "A1B2C3D4-E5F6-7890-ABCD-123456780002")
 private let buzzerCharUUID = CBUUID(string: "A1B2C3D4-E5F6-7890-ABCD-123456780003")
-private let tripCharUUID = CBUUID(string: "A1B2C3D4-E5F6-7890-ABCD-123456780004")
-private let relayCharUUID = CBUUID(string: "A1B2C3D4-E5F6-7890-ABCD-123456780005")
+
 // MARK: - Compact BLE payload models
 
 struct BLERealtimeData: Codable {
@@ -58,19 +57,6 @@ struct BLESettingsData: Codable {
   var mic: Bool
   var cam: Bool
   var dash: Bool
-  var relayActive: Bool?
-  var relayLeaseSec: Int?
-  var relayEpoch: Int?
-
-  enum CodingKeys: String, CodingKey {
-    case yolo
-    case mic
-    case cam
-    case dash
-    case relayActive = "relay_active"
-    case relayLeaseSec = "relay_lease_sec"
-    case relayEpoch = "relay_epoch"
-  }
 
   /// Build from existing Vehicle toggle values.
   init(from vehicle: Vehicle) {
@@ -78,65 +64,7 @@ struct BLESettingsData: Codable {
     mic = vehicle.enableMicrophone
     cam = vehicle.enableCamera
     dash = vehicle.enableDashcam
-    relayActive = nil
-    relayLeaseSec = nil
-    relayEpoch = nil
   }
-}
-
-struct BLETripData: Codable {
-  let tid: String
-  let dur: Int
-  let mx_spd: Int
-  let avg_spd: Double
-  let spd_ev: Int
-  let drw_ev: Int
-  let ph_ev: Int
-  let ix_max: Int
-}
-
-/// Relay data: full Supabase-format records for iOS to upload on Pi's behalf.
-struct BLERelayData: Codable {
-  let rt: [String: AnyCodable]?
-  let trip: [String: AnyCodable]?
-}
-
-/// Type-erased Codable wrapper for relay JSON values.
-enum AnyCodable: Codable {
-  case string(String)
-  case int(Int)
-  case double(Double)
-  case bool(Bool)
-  case null
-
-  init(from decoder: Decoder) throws {
-    let container = try decoder.singleValueContainer()
-    if let v = try? container.decode(Bool.self) {
-      self = .bool(v)
-    } else if let v = try? container.decode(Int.self) {
-      self = .int(v)
-    } else if let v = try? container.decode(Double.self) {
-      self = .double(v)
-    } else if let v = try? container.decode(String.self) {
-      self = .string(v)
-    } else if container.decodeNil() {
-      self = .null
-    } else {
-      self = .null
-    }
-  }
-
-  func encode(to encoder: Encoder) throws {
-    var container = encoder.singleValueContainer()
-    switch self {
-    case .string(let v): try container.encode(v)
-    case .int(let v): try container.encode(v)
-    case .double(let v): try container.encode(v)
-    case .bool(let v): try container.encode(v)
-    case .null: try container.encodeNil()
-    }
-  }
-
 }
 
 // MARK: - Discovered BLE device
@@ -163,25 +91,6 @@ struct DiscoveredBLEDevice: Identifiable {
 
 @Observable
 final class BluetoothManager: NSObject {
-  private struct ActiveLocalTrip {
-    let id: UUID
-    let sessionId: UUID
-    let vehicleId: String
-    let startedAt: Date
-    var lastSampleAt: Date
-    var maxSpeedMph: Int
-    var speedSampleSum: Int
-    var speedSampleCount: Int
-    var maxRiskScore: Int
-    var speedingEventCount: Int
-    var phoneDistractionEventCount: Int
-    var drinkingEventCount: Int
-    var routeWaypoints: [RouteWaypoint]
-    var lastSpeedingActive: Bool
-    var lastPhoneActive: Bool
-    var lastDrinkingActive: Bool
-  }
-
   enum PiConnectionState {
     case online
     case inactive
@@ -224,8 +133,6 @@ final class BluetoothManager: NSObject {
   private(set) var isScanning = false
   private(set) var statusMessage = "Off"
   private(set) var latestRealtime: BLERealtimeData?
-  private(set) var latestTrip: BLETripData?
-  private(set) var latestRelay: BLERelayData?
   private(set) var discoveredDevices: [DiscoveredBLEDevice] = []
   private(set) var connectedDeviceName: String?
   private(set) var connectionPhase: ConnectionPhase = .idle
@@ -240,7 +147,6 @@ final class BluetoothManager: NSObject {
   private static let dataInactiveThreshold: TimeInterval = 10
 
   /// Set by the UI when a vehicle profile is selected while BLE is connected.
-  /// The data polling timer uses this to feed BLE data into `vehicleRealtimeData`.
   var connectedVehicleId: String? {
     didSet {
       if let connectedVehicleId {
@@ -260,7 +166,6 @@ final class BluetoothManager: NSObject {
   // Reconnect / timeout
   private var scanTimer: Timer?
   private var reconnectWorkItem: DispatchWorkItem?
-  private var localTripFinalizeWorkItem: DispatchWorkItem?
   private var reconnectAttempt = 0
   private var reconnectScheduled = false
   private var consecutiveConnectFailures = 0
@@ -273,17 +178,12 @@ final class BluetoothManager: NSObject {
 
   // BLE → vehicleRealtimeData polling
   private var dataTimer: Timer?
-  // BLE relay → Supabase (upload Pi data on its behalf)
-  private var relayTimer: Timer?
-  private var activeLocalTrip: ActiveLocalTrip?
-  private var lastAppendedRealtimeAt: Date?
 
   private static let scanTimeout: TimeInterval = 15
   private static let reconnectBaseDelay: TimeInterval = 1
   private static let reconnectMaxDelay: TimeInterval = 12
   private static let reconnectFailureLimit = 6
   private static let staleTargetMissLimit = 3
-  private static let relayLeaseSeconds = 8
 
   var hasSavedPeripheral: Bool { targetPeripheralId != nil }
   var savedPeripheralId: String? { targetPeripheralId?.uuidString }
@@ -308,52 +208,12 @@ final class BluetoothManager: NSObject {
       guard let self, let vid = self.connectedVehicleId else { return }
       supabase.updateFromBLE(vehicleId: vid)
       self.updatePiConnectionState()
-      self.captureLocalTripSampleIfNeeded(vehicleId: vid)
-      self.maybeFinalizeLocalTripOnOffline(vehicleId: vid)
     }
   }
 
   private func stopDataTimer() {
     dataTimer?.invalidate()
     dataTimer = nil
-  }
-
-  // MARK: - Relay Timer (upload Pi data to Supabase + poll buzzer)
-
-  private func startRelayTimer() {
-    guard relayTimer == nil else { return }
-    relayTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-      guard let self, let vid = self.connectedVehicleId else { return }
-      let relayActive = supabase.cloudRuntimeState.isOperational
-      self.writeRelayLeaseHeartbeat(active: relayActive)
-      guard relayActive else { return }
-      Task {
-        await supabase.relayBLEDataToSupabase(vehicleId: vid)
-        // Poll buzzer state from Supabase and relay back to Pi
-        let buzzerState = await supabase.fetchBuzzerStateForRelay(vehicleId: vid)
-        if let buzzerState {
-          await MainActor.run {
-            self.writeBuzzerCommand(active: buzzerState.active, type: buzzerState.type)
-          }
-        }
-      }
-    }
-  }
-
-  private func stopRelayTimer() {
-    relayTimer?.invalidate()
-    relayTimer = nil
-  }
-
-  private func writeRelayLeaseHeartbeat(active: Bool) {
-    guard let char = settingsCharacteristic, let peripheral = connectedPeripheral else { return }
-    let payload: [String: Any] = [
-      "relay_active": active,
-      "relay_lease_sec": Self.relayLeaseSeconds,
-      "relay_epoch": Int(Date.now.timeIntervalSince1970),
-    ]
-    guard let data = try? JSONSerialization.data(withJSONObject: payload) else { return }
-    peripheral.writeValue(data, for: char, type: .withResponse)
   }
 
   private func updatePiConnectionState() {
@@ -373,120 +233,6 @@ final class BluetoothManager: NSObject {
       isPiDataActive = false
       piConnectionState = .offline
     }
-  }
-
-  private func captureLocalTripSampleIfNeeded(vehicleId: String) {
-    guard
-      let bleData = latestRealtime,
-      let packetAt = lastDataReceivedAt
-    else { return }
-
-    if let lastAppendedRealtimeAt {
-      let delta = packetAt.timeIntervalSince(lastAppendedRealtimeAt)
-      if delta <= 0.001 { return }
-    }
-    lastAppendedRealtimeAt = packetAt
-
-    if activeLocalTrip == nil {
-      activeLocalTrip = ActiveLocalTrip(
-        id: UUID(),
-        sessionId: UUID(),
-        vehicleId: vehicleId,
-        startedAt: packetAt,
-        lastSampleAt: packetAt,
-        maxSpeedMph: 0,
-        speedSampleSum: 0,
-        speedSampleCount: 0,
-        maxRiskScore: 0,
-        speedingEventCount: 0,
-        phoneDistractionEventCount: 0,
-        drinkingEventCount: 0,
-        routeWaypoints: [],
-        lastSpeedingActive: false,
-        lastPhoneActive: false,
-        lastDrinkingActive: false
-      )
-    }
-
-    guard var trip = activeLocalTrip else { return }
-    trip.lastSampleAt = packetAt
-    trip.maxSpeedMph = max(trip.maxSpeedMph, bleData.spd)
-    trip.speedSampleSum += bleData.spd
-    trip.speedSampleCount += 1
-    trip.maxRiskScore = max(trip.maxRiskScore, bleData.ix)
-
-    let speedingActive = bleData.sp
-    if speedingActive && !trip.lastSpeedingActive { trip.speedingEventCount += 1 }
-    trip.lastSpeedingActive = speedingActive
-
-    let phoneActive = bleData.ph || bleData.ds.lowercased() == "distracted_phone"
-    if phoneActive && !trip.lastPhoneActive { trip.phoneDistractionEventCount += 1 }
-    trip.lastPhoneActive = phoneActive
-
-    let drinkingActive = bleData.dr || bleData.ds.lowercased() == "distracted_drinking"
-    if drinkingActive && !trip.lastDrinkingActive { trip.drinkingEventCount += 1 }
-    trip.lastDrinkingActive = drinkingActive
-
-    let waypoint = RouteWaypoint(
-      lat: bleData.lat,
-      lng: bleData.lng,
-      spd: bleData.spd,
-      ts: Int(packetAt.timeIntervalSince1970),
-      ix: bleData.ix
-    )
-    trip.routeWaypoints.append(waypoint)
-    activeLocalTrip = trip
-  }
-
-  private func maybeFinalizeLocalTripOnOffline(vehicleId: String) {
-    guard let trip = activeLocalTrip, trip.vehicleId == vehicleId else { return }
-    let age = Date.now.timeIntervalSince(trip.lastSampleAt)
-    if age >= Self.dataInactiveThreshold {
-      persistAndClearLocalTrip(endedAt: Date.now)
-    }
-  }
-
-  private func persistAndClearLocalTrip(endedAt: Date) {
-    localTripFinalizeWorkItem?.cancel()
-    localTripFinalizeWorkItem = nil
-    guard let trip = activeLocalTrip else { return }
-
-    let avgSpeed = trip.speedSampleCount > 0
-      ? Double(trip.speedSampleSum) / Double(trip.speedSampleCount)
-      : 0
-
-    let status: String
-    if trip.maxRiskScore >= 4 {
-      status = "danger"
-    } else if trip.maxRiskScore >= 2 || trip.speedingEventCount > 0
-      || trip.phoneDistractionEventCount > 0 || trip.drinkingEventCount > 0
-    {
-      status = "warning"
-    } else {
-      status = "ok"
-    }
-
-    let payload = LocalTripPersistPayload(
-      id: trip.id,
-      createdAt: trip.startedAt,
-      vehicleId: trip.vehicleId,
-      sessionId: trip.sessionId,
-      startedAt: trip.startedAt,
-      endedAt: endedAt,
-      status: status,
-      maxSpeedMph: trip.maxSpeedMph,
-      avgSpeedMph: avgSpeed,
-      maxIntoxicationScore: trip.maxRiskScore,
-      speedingEventCount: trip.speedingEventCount,
-      speedSampleCount: trip.speedSampleCount,
-      speedSampleSum: trip.speedSampleSum,
-      phoneDistractionEventCount: trip.phoneDistractionEventCount,
-      drinkingEventCount: trip.drinkingEventCount,
-      routeWaypoints: trip.routeWaypoints
-    )
-    supabase.saveLocalTrip(payload)
-    activeLocalTrip = nil
-    lastAppendedRealtimeAt = nil
   }
 
   // MARK: - Public Write Methods
@@ -545,13 +291,10 @@ final class BluetoothManager: NSObject {
     bypassCachedTargetReconnectOnce = false
     reconnectWorkItem?.cancel()
     reconnectScheduled = false
-    localTripFinalizeWorkItem?.cancel()
-    localTripFinalizeWorkItem = nil
     cm.stopScan()
     connectionPhase = .idle
     isScanning = false
     scanTimer?.invalidate()
-    // Promote the user-selected peripheral to sticky target immediately.
     targetPeripheralId = device.peripheral.identifier
     UserDefaults.standard.set(device.peripheral.identifier.uuidString, forKey: DefaultsKey.targetPeripheralId)
     bleLog(
@@ -594,7 +337,6 @@ final class BluetoothManager: NSObject {
     if centralManager == nil {
       centralManager = CBCentralManager(delegate: self, queue: .main)
       bleLog("central_start")
-      // Scanning starts in centralManagerDidUpdateState once powered on
     } else if centralManager?.state == .poweredOn {
       attemptReconnectOrScan()
     }
@@ -685,7 +427,6 @@ final class BluetoothManager: NSObject {
     cm.scanForPeripherals(
       withServices: [serviceUUID], options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
 
-    // Scan timeout
     scanTimer?.invalidate()
     scanTimer = Timer.scheduledTimer(withTimeInterval: Self.scanTimeout, repeats: false) {
       [weak self] _ in
@@ -709,8 +450,6 @@ final class BluetoothManager: NSObject {
     scanTimer?.invalidate()
     reconnectWorkItem?.cancel()
     reconnectScheduled = false
-    localTripFinalizeWorkItem?.cancel()
-    localTripFinalizeWorkItem = nil
     if manual {
       userInitiatedDisconnect = true
       allowAutoReconnect = false
@@ -719,14 +458,10 @@ final class BluetoothManager: NSObject {
       staleTargetRetrievalMisses = 0
       bypassCachedTargetReconnectOnce = false
     }
-    writeRelayLeaseHeartbeat(active: false)
     if let peripheral = connectedPeripheral {
       centralManager?.cancelPeripheralConnection(peripheral)
     }
     centralManager?.stopScan()
-    if let trip = activeLocalTrip {
-      persistAndClearLocalTrip(endedAt: max(Date.now, trip.lastSampleAt))
-    }
     clearSessionState(clearSelectedContext: !bleEnabled)
     bleLog("disconnect", details: ["manual": "\(manual)"])
     statusMessage = bleEnabled ? "Disconnected" : "Off"
@@ -739,7 +474,6 @@ final class BluetoothManager: NSObject {
     reconnectWorkItem = nil
     reconnectScheduled = false
     stopDataTimer()
-    stopRelayTimer()
     centralManager?.stopScan()
     isConnected = false
     isScanning = false
@@ -754,13 +488,10 @@ final class BluetoothManager: NSObject {
   private func clearSessionState(clearSelectedContext: Bool) {
     clearTransientConnectionState()
     latestRealtime = nil
-    latestTrip = nil
-    latestRelay = nil
     discoveredDevices = []
     lastDataReceivedAt = nil
     isPiDataActive = false
     piConnectionState = .offline
-    lastAppendedRealtimeAt = nil
     if clearSelectedContext {
       connectedVehicleId = nil
     }
@@ -818,7 +549,7 @@ final class BluetoothManager: NSObject {
 
   private func describe(error: Error?) -> String {
     guard let ns = error as NSError? else { return "none" }
-    let message = ns.localizedDescription.replacingOccurrences(of: "\n", with: " ")
+    let message = ns.localizedDescription.replacing("\n", with: " ")
     return "\(ns.domain)(\(ns.code)) \(message)"
   }
 
@@ -864,7 +595,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     rssi RSSI: NSNumber
   ) {
     let rssi = RSSI.intValue
-    guard rssi != 127 else { return }  // Invalid RSSI
+    guard rssi != 127 else { return }
     guard connectionPhase != .connecting, connectionPhase != .connected else { return }
     let advertisedServices =
       advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? []
@@ -879,7 +610,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
       return nil
     }()
 
-    // Update existing or add new
     if let idx = discoveredDevices.firstIndex(where: {
       $0.peripheral.identifier == peripheral.identifier
     }) {
@@ -892,7 +622,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
         isVehicle: isVehicle,
         isConnectable: isConnectable
       )
-      // Insert vehicles at the top, others at the bottom
       if isVehicle {
         discoveredDevices.insert(device, at: 0)
       } else {
@@ -908,8 +637,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
           "vehicle": "\(isVehicle)",
         ])
 
-      // Sticky reconnect only: never auto-connect to non-target peripherals.
-      // Respect `allowAutoReconnect` so manual disconnect does not auto-reconnect.
       let isTarget = targetPeripheralId == peripheral.identifier
       if allowAutoReconnect, isTarget {
         if isConnectable == false {
@@ -946,9 +673,7 @@ extension BluetoothManager: CBCentralManagerDelegate {
     targetPeripheralId = peripheral.identifier
     UserDefaults.standard.set(peripheral.identifier.uuidString, forKey: DefaultsKey.targetPeripheralId)
     bleLog("connected", details: ["id": peripheral.identifier.uuidString, "name": peripheral.name ?? "Unknown"])
-    writeRelayLeaseHeartbeat(active: supabase.cloudRuntimeState.isOperational)
     startDataTimer()
-    startRelayTimer()
     peripheral.discoverServices([serviceUUID])
   }
 
@@ -979,7 +704,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
     }
     clearTransientConnectionState()
     if consecutiveConnectFailures >= Self.reconnectFailureLimit {
-      // The sticky target is likely stale. Clear it and force manual re-selection.
       clearTargetPeripheral(reason: "consecutive_failures")
       consecutiveConnectFailures = 0
       staleTargetRetrievalMisses = 0
@@ -1006,23 +730,6 @@ extension BluetoothManager: CBCentralManagerDelegate {
       ])
     let wasManual = userInitiatedDisconnect
     userInitiatedDisconnect = false
-
-    if let trip = activeLocalTrip {
-      let age = Date.now.timeIntervalSince(trip.lastSampleAt)
-      if age >= Self.dataInactiveThreshold {
-        persistAndClearLocalTrip(endedAt: Date.now)
-      } else {
-        localTripFinalizeWorkItem?.cancel()
-        let wait = max(0, Self.dataInactiveThreshold - age)
-        let work = DispatchWorkItem { [weak self] in
-          guard let self else { return }
-          self.persistAndClearLocalTrip(endedAt: Date.now)
-        }
-        localTripFinalizeWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + wait, execute: work)
-      }
-    }
-
     clearTransientConnectionState()
     if !wasManual {
       scheduleReconnect()
@@ -1038,7 +745,7 @@ extension BluetoothManager: CBPeripheralDelegate {
       return
     }
     peripheral.discoverCharacteristics(
-      [realtimeCharUUID, settingsCharUUID, buzzerCharUUID, tripCharUUID, relayCharUUID],
+      [realtimeCharUUID, settingsCharUUID, buzzerCharUUID],
       for: service
     )
   }
@@ -1058,12 +765,6 @@ extension BluetoothManager: CBPeripheralDelegate {
         settingsCharacteristic = char
       case buzzerCharUUID:
         buzzerCharacteristic = char
-      case tripCharUUID:
-        peripheral.setNotifyValue(true, for: char)
-        peripheral.readValue(for: char)
-      case relayCharUUID:
-        // Deprecated no-op path kept only for wire compatibility.
-        peripheral.setNotifyValue(false, for: char)
       default:
         break
       }
@@ -1076,31 +777,15 @@ extension BluetoothManager: CBPeripheralDelegate {
     error: Error?
   ) {
     guard let data = characteristic.value else { return }
+    guard characteristic.uuid == realtimeCharUUID else { return }
     let decoder = JSONDecoder()
-
-    switch characteristic.uuid {
-    case realtimeCharUUID:
-      if let parsed = try? decoder.decode(BLERealtimeData.self, from: data) {
-        latestRealtime = parsed
-        lastDataReceivedAt = .now
-        isPiDataActive = true
-        piConnectionState = .online
-        localTripFinalizeWorkItem?.cancel()
-        localTripFinalizeWorkItem = nil
-      }
-    case tripCharUUID:
-      if let parsed = try? decoder.decode(BLETripData.self, from: data) {
-        latestTrip = parsed
-      }
-    case relayCharUUID:
-      if let parsed = try? decoder.decode(BLERelayData.self, from: data) {
-        latestRelay = parsed
-      }
-    default:
-      break
+    if let parsed = try? decoder.decode(BLERealtimeData.self, from: data) {
+      latestRealtime = parsed
+      lastDataReceivedAt = .now
+      isPiDataActive = true
+      piConnectionState = .online
     }
   }
-
 }
 
 // MARK: - Global singleton

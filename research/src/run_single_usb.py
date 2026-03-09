@@ -557,85 +557,21 @@ def main() -> None:
         "longitude": 0.0,
         "satellites": 0,
         "is_speeding": False,
-        "telemetry_writer_mode": "PI_PRIMARY",
     }
 
-    relay_lease_active = False
-    relay_lease_expires_at = 0.0
-    relay_lease_epoch = 0
-    relay_lease_sec = 0
-    telemetry_writer_mode = "PI_PRIMARY"
-    relay_last_log_ts = 0.0
-    print("[single-usb] TELEMETRY_WRITER: PI_PRIMARY", flush=True)
-
-    def _current_telemetry_writer(now_ts: float) -> str:
-        if relay_lease_active and now_ts < relay_lease_expires_at:
-            return "IOS_RELAY"
-        return "PI_PRIMARY"
-
-    def _log_writer_mode_if_changed(now_ts: float) -> str:
-        nonlocal telemetry_writer_mode
-        mode = _current_telemetry_writer(now_ts)
-        if mode != telemetry_writer_mode:
-            telemetry_writer_mode = mode
-            with _lock:
-                _shared_results["telemetry_writer_mode"] = mode
-            print(f"[single-usb] TELEMETRY_WRITER: {mode}", flush=True)
-        return mode
+    # ── Supabase health → BLE fallback ──────────────────────────────────────
+    # If Supabase has been unreachable for this many seconds, activate BLE.
+    BLE_FALLBACK_THRESHOLD_SEC = float(os.environ.get("BLE_FALLBACK_SEC", "30"))
+    # Timestamp of last successful Supabase upload.  Written by telemetry
+    # thread (GIL makes float assignment atomic in CPython), read by main loop.
+    _supabase_last_ok_ts: float = time.time() if supabase_client else 0.0
+    _ble_fallback_active = False
 
     # ── BLE peripheral ──────────────────────────────────────────────────────
     def _on_ble_settings(data: dict) -> None:
-        """iOS wrote new feature-toggle settings; apply them to the runtime."""
-        nonlocal relay_lease_active
-        nonlocal relay_lease_expires_at
-        nonlocal relay_lease_epoch
-        nonlocal relay_lease_sec
-        nonlocal relay_last_log_ts
-
-        now_ts = time.time()
-        relay_keys = ("relay_active", "relay_lease_sec", "relay_epoch")
-        has_relay_update = any(k in data for k in relay_keys)
-
-        if has_relay_update:
-            prev_active = relay_lease_active
-            prev_mode = _current_telemetry_writer(now_ts)
-
-            requested_active = _coerce_bool(data.get("relay_active"), relay_lease_active)
-
-            try:
-                lease_sec = int(data.get("relay_lease_sec", relay_lease_sec or 8))
-            except Exception:
-                lease_sec = relay_lease_sec or 8
-            lease_sec = max(2, min(60, lease_sec))
-
-            try:
-                relay_epoch = int(data.get("relay_epoch", relay_lease_epoch))
-            except Exception:
-                relay_epoch = relay_lease_epoch
-
-            relay_lease_sec = lease_sec
-            relay_lease_active = requested_active
-            relay_lease_expires_at = (now_ts + lease_sec) if requested_active else 0.0
-
-            mode = _log_writer_mode_if_changed(now_ts)
-            should_log = (
-                requested_active != prev_active
-                or mode != prev_mode
-                or (now_ts - relay_last_log_ts) >= 15.0
-            )
-            if should_log:
-                expires_in = max(0.0, relay_lease_expires_at - now_ts)
-                print(
-                    f"[BLE] Relay lease active={requested_active} lease_sec={lease_sec} "
-                    f"epoch={relay_epoch} expires_in={expires_in:.1f}s mode={mode}",
-                    flush=True,
-                )
-                relay_last_log_ts = now_ts
-
-        # These are advisory toggles — the Pi honours them on a best-effort basis.
-        settings_only = {k: v for k, v in data.items() if k not in relay_keys}
-        if settings_only:
-            print(f"[BLE] Settings update from app: {settings_only}", flush=True)
+        """iOS wrote feature-toggle settings; apply advisory toggles."""
+        if data:
+            print(f"[BLE] Settings update from app: {data}", flush=True)
 
     def _on_ble_buzzer(data: dict) -> None:
         """iOS wrote a buzzer command; fire the local buzzer immediately."""
@@ -651,11 +587,20 @@ def main() -> None:
         on_settings=_on_ble_settings,
         on_buzzer=_on_ble_buzzer,
     )
-    ble.start()
-    if ble.enabled:
-        print(_colorize("[single-usb] BLE: ACTIVE", ANSI_GREEN), flush=True)
+    # BLE starts only as a fallback when Supabase goes down.
+    # If Supabase is not configured at all, start BLE immediately.
+    if not supabase_client:
+        ble.start()
+        _ble_fallback_active = True
+        if ble.enabled:
+            print(_colorize("[single-usb] BLE: ACTIVE (no Supabase configured)", ANSI_GREEN), flush=True)
+        else:
+            print(_colorize(f"[single-usb] BLE: INACTIVE ({ble.reason})", ANSI_YELLOW), flush=True)
     else:
-        print(_colorize(f"[single-usb] BLE: INACTIVE ({ble.reason})", ANSI_YELLOW), flush=True)
+        print(_colorize(
+            f"[single-usb] BLE: STANDBY (starts after Supabase unreachable >{BLE_FALLBACK_THRESHOLD_SEC:.0f}s)",
+            ANSI_YELLOW,
+        ), flush=True)
 
     _camera_stop = threading.Event()
     _inference_stop = threading.Event()
@@ -800,6 +745,7 @@ def main() -> None:
                     _shared_results["infer_t0"] = now
 
     def telemetry_thread_fn() -> None:
+        nonlocal _supabase_last_ok_ts
         write_failures = 0
         last_write_error_log = 0.0
         blocked_realtime_fields: set[str] = set()
@@ -844,8 +790,7 @@ def main() -> None:
                             supabase_client.table("vehicle_realtime").upsert(retry_payload).execute()
                         else:
                             raise write_error
-                elif payload_type == "vehicle_trips":
-                    supabase_client.table("vehicle_trips").upsert(payload).execute()
+                _supabase_last_ok_ts = time.time()
                 write_failures = 0
             except Exception as e:
                 # Keep loop alive through transient network failures.
@@ -1002,12 +947,32 @@ def main() -> None:
                 buzzer.play_speeding_alert()
                 last_speed_buzzer_time = now
 
-            writer_mode = _log_writer_mode_if_changed(now)
+            # ── BLE fallback management ──────────────────────────────────────
+            if supabase_client:
+                supabase_down_sec = now - _supabase_last_ok_ts
+                if supabase_down_sec > BLE_FALLBACK_THRESHOLD_SEC and not _ble_fallback_active:
+                    _ble_fallback_active = True
+                    ble.start()
+                    print(
+                        _colorize(
+                            f"[single-usb] SUPABASE unreachable {supabase_down_sec:.0f}s "
+                            "→ BLE FALLBACK ACTIVE",
+                            ANSI_YELLOW,
+                        ),
+                        flush=True,
+                    )
+                elif supabase_down_sec <= BLE_FALLBACK_THRESHOLD_SEC and _ble_fallback_active:
+                    _ble_fallback_active = False
+                    ble.stop()
+                    print(
+                        _colorize("[single-usb] SUPABASE recovered → BLE FALLBACK STOPPED", ANSI_GREEN),
+                        flush=True,
+                    )
 
             # Heartbeat telemetry to keep app realtime view fresh.
             if (
                 supabase_client
-                and writer_mode == "PI_PRIMARY"
+                and not _ble_fallback_active
                 and (now - last_telemetry_time) >= telemetry_interval_sec
             ):
                 payload = {

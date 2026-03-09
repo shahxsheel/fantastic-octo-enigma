@@ -6,7 +6,6 @@
 //
 
 import CoreLocation
-import CryptoKit
 import Supabase
 import SwiftData
 import SwiftUI
@@ -163,177 +162,6 @@ struct VehicleRealtime: Codable, Identifiable {
   }
 }
 
-struct RouteWaypoint: Codable {
-  let lat: Double
-  let lng: Double
-  let spd: Int
-  let ts: Int
-  let ix: Int?
-
-  var coordinate: CLLocationCoordinate2D {
-    CLLocationCoordinate2D(latitude: lat, longitude: lng)
-  }
-
-  var date: Date {
-    Date(timeIntervalSince1970: TimeInterval(ts))
-  }
-}
-
-struct VehicleTrip: Codable, Identifiable {
-  let id: UUID
-  let createdAt: Date
-  let vehicleId: String
-  let sessionId: UUID
-  let startedAt: Date
-  let endedAt: Date?
-  let status: String
-  let maxSpeedMph: Int
-  let avgSpeedMph: Double
-  let maxIntoxicationScore: Int
-  let speedingEventCount: Int
-  let speedSampleCount: Int
-  let speedSampleSum: Int
-  // Distraction event counts
-  let phoneDistractionEventCount: Int?
-  let drinkingEventCount: Int?
-
-  // GPS route waypoints
-  let routeWaypoints: [RouteWaypoint]?
-
-  // Crash detection
-  let crashDetected: Bool?
-  let crashSeverity: String?
-
-  enum CodingKeys: String, CodingKey {
-    case id
-    case createdAt = "created_at"
-    case vehicleId = "vehicle_id"
-    case sessionId = "session_id"
-    case startedAt = "started_at"
-    case endedAt = "ended_at"
-    case status
-    case maxSpeedMph = "max_speed_mph"
-    case avgSpeedMph = "avg_speed_mph"
-    case maxIntoxicationScore = "max_intoxication_score"
-    case speedingEventCount = "speeding_event_count"
-    case speedSampleCount = "speed_sample_count"
-    case speedSampleSum = "speed_sample_sum"
-    case phoneDistractionEventCount = "phone_distraction_event_count"
-    case drinkingEventCount = "drinking_event_count"
-    case routeWaypoints = "route_waypoints"
-    case crashDetected = "crash_detected"
-    case crashSeverity = "crash_severity"
-  }
-
-  init(
-    id: UUID,
-    createdAt: Date,
-    vehicleId: String,
-    sessionId: UUID,
-    startedAt: Date,
-    endedAt: Date?,
-    status: String,
-    maxSpeedMph: Int,
-    avgSpeedMph: Double,
-    maxIntoxicationScore: Int,
-    speedingEventCount: Int,
-    speedSampleCount: Int,
-    speedSampleSum: Int,
-    phoneDistractionEventCount: Int?,
-    drinkingEventCount: Int?,
-    routeWaypoints: [RouteWaypoint]?,
-    crashDetected: Bool?,
-    crashSeverity: String?
-  ) {
-    self.id = id
-    self.createdAt = createdAt
-    self.vehicleId = vehicleId
-    self.sessionId = sessionId
-    self.startedAt = startedAt
-    self.endedAt = endedAt
-    self.status = status
-    self.maxSpeedMph = maxSpeedMph
-    self.avgSpeedMph = avgSpeedMph
-    self.maxIntoxicationScore = maxIntoxicationScore
-    self.speedingEventCount = speedingEventCount
-    self.speedSampleCount = speedSampleCount
-    self.speedSampleSum = speedSampleSum
-    self.phoneDistractionEventCount = phoneDistractionEventCount
-    self.drinkingEventCount = drinkingEventCount
-    self.routeWaypoints = routeWaypoints
-    self.crashDetected = crashDetected
-    self.crashSeverity = crashSeverity
-  }
-
-  init(from decoder: Decoder) throws {
-    let c = try decoder.container(keyedBy: CodingKeys.self)
-    id = try c.decode(UUID.self, forKey: .id)
-    createdAt = try c.decode(Date.self, forKey: .createdAt)
-    vehicleId = try c.decode(String.self, forKey: .vehicleId)
-    sessionId = try c.decode(UUID.self, forKey: .sessionId)
-    startedAt = try c.decode(Date.self, forKey: .startedAt)
-    endedAt = try c.decodeIfPresent(Date.self, forKey: .endedAt)
-    status = try c.decode(String.self, forKey: .status)
-    maxSpeedMph = try c.decode(Int.self, forKey: .maxSpeedMph)
-    avgSpeedMph = try c.decode(Double.self, forKey: .avgSpeedMph)
-    maxIntoxicationScore = try c.decode(Int.self, forKey: .maxIntoxicationScore)
-    speedingEventCount = try c.decode(Int.self, forKey: .speedingEventCount)
-    speedSampleCount = try c.decode(Int.self, forKey: .speedSampleCount)
-    speedSampleSum = try c.decode(Int.self, forKey: .speedSampleSum)
-    phoneDistractionEventCount = try c.decodeIfPresent(Int.self, forKey: .phoneDistractionEventCount)
-    drinkingEventCount = try c.decodeIfPresent(Int.self, forKey: .drinkingEventCount)
-
-    // Handle route_waypoints: may be a JSON array or a double-encoded JSON string
-    if let waypoints = try? c.decodeIfPresent([RouteWaypoint].self, forKey: .routeWaypoints) {
-      routeWaypoints = waypoints
-    } else if let waypointsString = try? c.decodeIfPresent(String.self, forKey: .routeWaypoints),
-      let data = waypointsString.data(using: .utf8),
-      let decoded = try? JSONDecoder().decode([RouteWaypoint].self, from: data)
-    {
-      routeWaypoints = decoded
-    } else {
-      routeWaypoints = nil
-    }
-
-    crashDetected = try c.decodeIfPresent(Bool.self, forKey: .crashDetected)
-    crashSeverity = try c.decodeIfPresent(String.self, forKey: .crashSeverity)
-  }
-
-  /// Returns the trip status as an enum for easier handling
-  var tripStatus: TripStatus {
-    TripStatus(rawValue: status) ?? .ok
-  }
-
-  enum TripStatus: String, Codable, CaseIterable {
-    case ok
-    case warning
-    case danger
-
-    var displayName: String {
-      switch self {
-      case .ok: "OK"
-      case .warning: "Warning"
-      case .danger: "Danger"
-      }
-    }
-
-    var color: Color {
-      switch self {
-      case .ok: .green
-      case .warning: .yellow
-      case .danger: .red
-      }
-    }
-
-    var icon: String {
-      switch self {
-      case .ok: "checkmark"
-      case .warning: "exclamationmark.triangle.fill"
-      case .danger: "xmark"
-      }
-    }
-  }
-}
 
 struct NotificationPreferences: Codable, Equatable {
   var collision: Bool
@@ -446,25 +274,6 @@ struct ConnectivityDebugStatus {
   let fallbackReason: String?
 }
 
-struct LocalTripPersistPayload {
-  let id: UUID
-  let createdAt: Date
-  let vehicleId: String
-  let sessionId: UUID
-  let startedAt: Date
-  let endedAt: Date
-  let status: String
-  let maxSpeedMph: Int
-  let avgSpeedMph: Double
-  let maxIntoxicationScore: Int
-  let speedingEventCount: Int
-  let speedSampleCount: Int
-  let speedSampleSum: Int
-  let phoneDistractionEventCount: Int
-  let drinkingEventCount: Int
-  let routeWaypoints: [RouteWaypoint]
-}
-
 // MARK: - SupabaseService
 
 @Observable
@@ -508,10 +317,6 @@ class SupabaseService {
   private var lastLoggedPiConnectivityAtByVehicle: [String: Date] = [:]
   private var lastCloudStaleRecoveryAttemptByVehicle: [String: Date] = [:]
   private var cloudStaleRecoveryInFlightVehicleIds: Set<String> = []
-
-  // BLE relay dedup state
-  private var lastRelayedRealtimePacketAt: [String: Date] = [:]
-  private var lastRelayedTripSignature: [String: String] = [:]
 
   // Cache
   private var modelContext: ModelContext?
@@ -1184,157 +989,6 @@ class SupabaseService {
     }
   }
 
-  // MARK: - BLE Relay (upload Pi data to Supabase on its behalf)
-
-  /// Relay BLE data to Supabase. Called by the relay timer when BLE is connected.
-  /// The iOS app builds deterministic relay records from compact BLE caches.
-  func relayBLEDataToSupabase(vehicleId: String) async {
-    guard bluetooth.isConnected else { return }
-    guard cloudAvailable(for: "relayBLEDataToSupabase") else { return }
-
-    // Realtime upsert from compact BLE packet.
-    if let realtime = bluetooth.latestRealtime,
-      let packetAt = bluetooth.lastDataReceivedAt
-    {
-      if lastRelayedRealtimePacketAt[vehicleId] != packetAt {
-        let record = Self.realtimeRelayRecord(
-          vehicleId: vehicleId,
-          data: realtime,
-          updatedAt: packetAt
-        )
-        do {
-          try await client
-            .from("vehicle_realtime")
-            .upsert(record)
-            .execute()
-          lastRelayedRealtimePacketAt[vehicleId] = packetAt
-          markCloudHealthy()
-        } catch {
-          markCloudError(context: "relayBLEDataToSupabase.realtime", error: error)
-        }
-      }
-    }
-
-    // Trip upsert from compact BLE trip summary (dedup by payload signature).
-    if let trip = bluetooth.latestTrip {
-      let signature = Self.tripSignature(vehicleId: vehicleId, data: trip)
-      if lastRelayedTripSignature[vehicleId] != signature {
-        let record = Self.tripRelayRecord(vehicleId: vehicleId, data: trip)
-        do {
-          try await client
-            .from("vehicle_trips")
-            .upsert(record)
-            .execute()
-          lastRelayedTripSignature[vehicleId] = signature
-          markCloudHealthy()
-        } catch {
-          markCloudError(context: "relayBLEDataToSupabase.trip", error: error)
-        }
-      }
-    }
-  }
-
-  private static let relayTimeFormatter: ISO8601DateFormatter = {
-    let f = ISO8601DateFormatter()
-    f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    return f
-  }()
-
-  private static func realtimeRelayRecord(
-    vehicleId: String,
-    data: BLERealtimeData,
-    updatedAt: Date
-  ) -> [String: AnyJSON] {
-    [
-      "vehicle_id": .string(vehicleId),
-      "updated_at": .string(relayTimeFormatter.string(from: updatedAt)),
-      "latitude": .double(data.lat),
-      "longitude": .double(data.lng),
-      "speed_mph": .double(Double(data.spd)),
-      "speed_limit_mph": .double(0),
-      "heading_degrees": .double(Double(data.hdg)),
-      "compass_direction": .string(data.dir),
-      "is_speeding": .bool(data.sp),
-      "is_moving": .bool(data.spd > 0),
-      "driver_status": .string(data.ds),
-      "intoxication_score": .double(Double(data.ix)),
-      "satellites": .double(Double(data.sat)),
-      "is_phone_detected": .bool(data.ph),
-      "is_drinking_detected": .bool(data.dr),
-    ]
-  }
-
-  private static func tripRelayRecord(vehicleId: String, data: BLETripData) -> [String: AnyJSON] {
-    let now = Date.now
-    let startedAt = estimatedTripStart(from: data.tid, durationSeconds: data.dur, now: now)
-    let tripId = stableUUID(seed: "ble-trip:\(vehicleId):\(data.tid)")
-    let sessionId = stableUUID(seed: "ble-session:\(vehicleId):\(data.tid)")
-    let sampleCount = max(1, data.dur * 2)
-    let sampleSum = Int((data.avg_spd * Double(sampleCount)).rounded())
-
-    return [
-      "id": .string(tripId.uuidString.lowercased()),
-      "vehicle_id": .string(vehicleId),
-      "session_id": .string(sessionId.uuidString.lowercased()),
-      "started_at": .string(relayTimeFormatter.string(from: startedAt)),
-      "status": .string(tripStatus(from: data)),
-      "max_speed_mph": .double(Double(data.mx_spd)),
-      "avg_speed_mph": .double(data.avg_spd),
-      "max_intoxication_score": .double(Double(data.ix_max)),
-      "speeding_event_count": .double(Double(data.spd_ev)),
-      "speed_sample_count": .double(Double(sampleCount)),
-      "speed_sample_sum": .double(Double(sampleSum)),
-      "phone_distraction_event_count": .double(Double(data.ph_ev)),
-      "drinking_event_count": .double(Double(data.drw_ev)),
-      "ended_at": .null,
-    ]
-  }
-
-  private static func tripStatus(from data: BLETripData) -> String {
-    if data.ix_max >= 4 {
-      return "danger"
-    }
-    if data.ix_max >= 2 || data.spd_ev > 0 || data.ph_ev > 0 || data.drw_ev > 0 {
-      return "warning"
-    }
-    return "ok"
-  }
-
-  private static func estimatedTripStart(
-    from tripId: String,
-    durationSeconds: Int,
-    now: Date
-  ) -> Date {
-    if let unixString = tripId.split(separator: "-").last,
-      let unixSeconds = Double(unixString)
-    {
-      let parsed = Date(timeIntervalSince1970: unixSeconds)
-      return parsed > now ? now : parsed
-    }
-    return now.addingTimeInterval(-Double(max(0, durationSeconds)))
-  }
-
-  private static func tripSignature(vehicleId: String, data: BLETripData) -> String {
-    "\(vehicleId)|\(data.tid)|\(data.dur)|\(data.mx_spd)|\(data.avg_spd)|\(data.spd_ev)|\(data.drw_ev)|\(data.ph_ev)|\(data.ix_max)"
-  }
-
-  private static func stableUUID(seed: String) -> UUID {
-    let digest = SHA256.hash(data: Data(seed.utf8))
-    let bytes = Array(digest)
-    let uuidBytes: uuid_t = (
-      bytes[0], bytes[1], bytes[2], bytes[3],
-      bytes[4], bytes[5], (bytes[6] & 0x0F) | 0x50, bytes[7],
-      (bytes[8] & 0x3F) | 0x80, bytes[9], bytes[10], bytes[11],
-      bytes[12], bytes[13], bytes[14], bytes[15]
-    )
-    return UUID(uuid: uuidBytes)
-  }
-
-  struct BuzzerRelayState {
-    let active: Bool
-    let type: String
-  }
-
   func fetchVehicleRealtimeRow(vehicleId: String) async -> VehicleRealtime? {
     guard cloudAvailable(for: "fetchVehicleRealtimeRow") else { return nil }
     do {
@@ -1381,48 +1035,6 @@ class SupabaseService {
     } catch {
       markCloudError(context: "setVehicleBuzzerState", error: error)
       throw error
-    }
-  }
-
-  /// Fetch buzzer state from Supabase to relay back to Pi via BLE.
-  /// Returns non-nil only when the buzzer state has changed.
-  func fetchBuzzerStateForRelay(vehicleId: String) async -> BuzzerRelayState? {
-    guard cloudAvailable(for: "fetchBuzzerStateForRelay") else { return nil }
-    do {
-      struct BuzzerRow: Decodable {
-        let buzzerActive: Bool?
-        let buzzerType: String?
-
-        enum CodingKeys: String, CodingKey {
-          case buzzerActive = "buzzer_active"
-          case buzzerType = "buzzer_type"
-        }
-      }
-
-      let rows: [BuzzerRow] =
-        try await client
-        .from("vehicle_realtime")
-        .select("buzzer_active, buzzer_type")
-        .eq("vehicle_id", value: vehicleId)
-        .execute()
-        .value
-
-      guard let row = rows.first, let active = row.buzzerActive else { return nil }
-      let type = row.buzzerType ?? "alert"
-
-      // Only relay if state changed from what we last relayed
-      let key = "lastRelayedBuzzer_\(vehicleId)"
-      let lastState = UserDefaults.standard.bool(forKey: key)
-      if active != lastState {
-        UserDefaults.standard.set(active, forKey: key)
-        markCloudHealthy()
-        return BuzzerRelayState(active: active, type: type)
-      }
-      markCloudHealthy()
-      return nil
-    } catch {
-      markCloudError(context: "fetchBuzzerStateForRelay", error: error)
-      return nil
     }
   }
 
@@ -1484,121 +1096,15 @@ class SupabaseService {
     markCloudHealthy()
   }
 
-  // MARK: - Vehicle Trip Methods
-
-  func fetchTrips(for vehicleId: String, limit: Int = 50) async throws -> [VehicleTrip] {
-    guard cloudAvailable(for: "fetchTrips") else {
-      return fetchLocalTrips(for: vehicleId, limit: limit)
-    }
-    let trips: [VehicleTrip] =
-      try await client
-      .from("vehicle_trips")
-      .select()
-      .eq("vehicle_id", value: vehicleId)
-      .order("started_at", ascending: false)
-      .limit(limit)
-      .execute()
-      .value
-
-    markCloudHealthy()
-    return trips
-  }
-
-  func fetchTripsForToday(for vehicleId: String) async throws -> [VehicleTrip] {
-    guard cloudAvailable(for: "fetchTripsForToday") else {
-      return fetchLocalTripsForToday(for: vehicleId)
-    }
-    let calendar = Calendar.current
-    let startOfDay = calendar.startOfDay(for: Date())
-
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = [.withInternetDateTime]
-    let startOfDayString = formatter.string(from: startOfDay)
-
-    let trips: [VehicleTrip] =
-      try await client
-      .from("vehicle_trips")
-      .select()
-      .eq("vehicle_id", value: vehicleId)
-      .gte("started_at", value: startOfDayString)
-      .order("started_at", ascending: false)
-      .execute()
-      .value
-
-    markCloudHealthy()
-    return trips
-  }
-
-  func saveLocalTrip(_ payload: LocalTripPersistPayload) {
-    guard let modelContext else { return }
-    do {
-      modelContext.insert(CachedLocalTrip(from: payload))
-      try modelContext.save()
-    } catch {
-      print("Error saving local trip: \(error)")
-    }
-  }
-
-  func fetchLocalTrips(for vehicleId: String, limit: Int = 50) -> [VehicleTrip] {
-    guard let modelContext else { return [] }
-    do {
-      var descriptor = FetchDescriptor<CachedLocalTrip>(
-        predicate: #Predicate { $0.vehicleId == vehicleId },
-        sortBy: [SortDescriptor(\.startedAt, order: .reverse)]
-      )
-      descriptor.fetchLimit = limit
-      return try modelContext.fetch(descriptor).map { $0.toVehicleTrip() }
-    } catch {
-      print("Error loading local trips: \(error)")
-      return []
-    }
-  }
-
-  func fetchLocalTripsForToday(for vehicleId: String) -> [VehicleTrip] {
-    guard let modelContext else { return [] }
-    let startOfDay = Calendar.current.startOfDay(for: Date())
-    do {
-      let descriptor = FetchDescriptor<CachedLocalTrip>(
-        predicate: #Predicate {
-          $0.vehicleId == vehicleId && $0.startedAt >= startOfDay
-        },
-        sortBy: [SortDescriptor(\.startedAt, order: .reverse)]
-      )
-      return try modelContext.fetch(descriptor).map { $0.toVehicleTrip() }
-    } catch {
-      print("Error loading today's local trips: \(error)")
-      return []
-    }
-  }
-
-  func fetchCombinedTrips(for vehicleId: String, limit: Int = 50) async throws -> [VehicleTrip] {
-    let remote: [VehicleTrip]
-    do {
-      remote = try await fetchTrips(for: vehicleId, limit: limit)
-    } catch {
-      markCloudError(context: "fetchCombinedTrips.remote", error: error)
-      remote = []
-    }
-    let local = fetchLocalTrips(for: vehicleId, limit: limit)
-    var mergedById: [UUID: VehicleTrip] = [:]
-    for trip in remote { mergedById[trip.id] = trip }
-    for trip in local { mergedById[trip.id] = trip }
-    return mergedById.values.sorted { $0.startedAt > $1.startedAt }
-  }
-
-  func fetchCombinedTripsForToday(for vehicleId: String) async throws -> [VehicleTrip] {
-    let remote: [VehicleTrip]
-    do {
-      remote = try await fetchTripsForToday(for: vehicleId)
-    } catch {
-      markCloudError(context: "fetchCombinedTripsForToday.remote", error: error)
-      remote = []
-    }
-    let local = fetchLocalTripsForToday(for: vehicleId)
-    var mergedById: [UUID: VehicleTrip] = [:]
-    for trip in remote { mergedById[trip.id] = trip }
-    for trip in local { mergedById[trip.id] = trip }
-    return mergedById.values.sorted { $0.startedAt > $1.startedAt }
+  /// Returns true when the app should suggest the user switch to BLE.
+  /// Triggered when Supabase data for the vehicle is stale (> cloudFirstFreshnessWindow)
+  /// and a BLE connection is not already active.
+  func needsBLEConnectionSuggestion(vehicleId: String) -> Bool {
+    guard !bluetooth.isConnected else { return false }
+    let supabaseRealtime = latestSupabaseRealtimeByVehicle[vehicleId]
+    guard let supabaseRealtime else { return false }
+    let age = Date.now.timeIntervalSince(supabaseRealtime.updatedAt)
+    return age > Self.cloudFirstFreshnessWindow
   }
 
   // MARK: - Realtime Subscription

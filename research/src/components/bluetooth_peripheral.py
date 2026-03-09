@@ -2,13 +2,15 @@
 BLE GATT peripheral for the ADA driver monitoring system.
 
 Advertises service A1B2C3D4-E5F6-7890-ABCD-1234567890AB and exposes
-five characteristics that match BluetoothManager.swift on the iOS side:
+three characteristics that match BluetoothManager.swift on the iOS side:
 
   0001  realtime   read + notify   BLERealtimeData  (compact telemetry)
-  0002  settings   write           BLESettingsData  (feature toggles + optional relay lease)
+  0002  settings   write           BLESettingsData  (feature toggles)
   0003  buzzer     write           buzzer command
-  0004  trip       read + notify   BLETripData      (session stats)
-  0005  relay      deprecated      reserved for compatibility (no periodic notify)
+
+BLE is the offline fallback transport. The Pi starts advertising only
+after Supabase has been unreachable for BLE_FALLBACK_SEC seconds
+(default 30). When Supabase recovers the Pi stops advertising.
 
 Requires: bless  (pip install bless)
 BlueZ must be running on the Pi: sudo systemctl enable --now bluetooth
@@ -41,10 +43,6 @@ SERVICE_UUID  = "A1B2C3D4-E5F6-7890-ABCD-1234567890AB"
 REALTIME_UUID = "A1B2C3D4-E5F6-7890-ABCD-123456780001"
 SETTINGS_UUID = "A1B2C3D4-E5F6-7890-ABCD-123456780002"
 BUZZER_UUID   = "A1B2C3D4-E5F6-7890-ABCD-123456780003"
-TRIP_UUID     = "A1B2C3D4-E5F6-7890-ABCD-123456780004"
-RELAY_UUID    = "A1B2C3D4-E5F6-7890-ABCD-123456780005"
-
-_READ_NOTIFY = None  # filled in _serve() once bless is confirmed available
 
 
 def _enc(obj: dict) -> bytearray:
@@ -92,22 +90,16 @@ class BluetoothPeripheral:
             "on",
         )
 
-        # Trip-level accumulators (reset on each start())
-        self._trip_start = time.time()
-        self._trip_id = f"{vehicle_id}-{int(self._trip_start)}"
-        self._max_spd = 0
-        self._spd_sum = 0
-        self._spd_samples = 0
-        self._spd_events = 0
-        self._ph_events = 0
-        self._drw_events = 0
-        self._ix_max = 0
-
     # ── Lifecycle ──────────────────────────────────────────────────────────
 
     def start(self) -> None:
         if not self.enabled:
             return
+        if self._thread is not None and self._thread.is_alive():
+            return  # Already running
+        # Reset async state for potential re-start after stop()
+        self._loop = None
+        self._stop_event = None
         self._thread = threading.Thread(
             target=self._run, daemon=True, name="ble-peripheral"
         )
@@ -118,6 +110,7 @@ class BluetoothPeripheral:
             self._loop.call_soon_threadsafe(self._stop_event.set)
         if self._thread:
             self._thread.join(timeout=3.0)
+        self._thread = None
 
     # ── Thread entry ────────────────────────────────────────────────────────
 
@@ -163,26 +156,16 @@ class BluetoothPeripheral:
             SERVICE_UUID, BUZZER_UUID,
             GATTCharacteristicProperties.write, None, wr
         )
-        await server.add_new_characteristic(
-            SERVICE_UUID, TRIP_UUID, rn, _enc(self._trip_payload()), rd
-        )
-        await server.add_new_characteristic(
-            SERVICE_UUID, RELAY_UUID,
-            GATTCharacteristicProperties.notify,
-            _enc({"deprecated": True}), rd
-        )
 
         await server.start()
         print(
             f"[BLE] Advertising as ADA-{self.vehicle_id} "
-            f"(relay=deprecated, notify_max={self._notify_max_bytes}B, mode=connectable)",
+            f"(notify_max={self._notify_max_bytes}B, mode=connectable)",
             flush=True,
         )
 
-        tick = 0
         while not self._stop_event.is_set():
             await asyncio.sleep(0.5)
-            self._update_trip_stats()
 
             # Push realtime every 0.5 s
             self._safe_notify(
@@ -191,17 +174,6 @@ class BluetoothPeripheral:
                 self._realtime_payload(),
                 "realtime",
             )
-
-            # Push trip every 2 s
-            if tick % 4 == 0:
-                self._safe_notify(
-                    server,
-                    TRIP_UUID,
-                    self._trip_payload(),
-                    "trip",
-                )
-
-            tick += 1
 
         await server.stop()
         print("[BLE] Stopped.", flush=True)
@@ -239,20 +211,6 @@ class BluetoothPeripheral:
                 "sp":  bool(self._shared.get("is_speeding", False)),
                 "sat": int(self._shared.get("satellites", 0) or 0),
             }
-
-    def _trip_payload(self) -> dict:
-        elapsed = int(time.time() - self._trip_start)
-        avg = (self._spd_sum / self._spd_samples) if self._spd_samples else 0.0
-        return {
-            "tid":    self._trip_id,
-            "dur":    elapsed,
-            "mx_spd": self._max_spd,
-            "avg_spd": round(avg, 1),
-            "spd_ev": self._spd_events,
-            "drw_ev": self._drw_events,
-            "ph_ev":  self._ph_events,
-            "ix_max": self._ix_max,
-        }
 
     def _safe_notify(self, server: "BlessServer", uuid: str, payload: dict, label: str) -> None:
         """Best-effort notify with guardrails so a bad packet never destabilizes BLE."""
@@ -348,19 +306,3 @@ class BluetoothPeripheral:
             if text.startswith(prefix):
                 return text[len(prefix) :].strip()
         return None
-
-    def _update_trip_stats(self) -> None:
-        with self._lock:
-            spd  = int(self._shared.get("speed_mph", 0))
-            ph   = bool(self._shared.get("is_phone_detected", False))
-            dr   = bool(self._shared.get("is_drinking_detected", False))
-            ix   = int(self._shared.get("intoxication_score", 0))
-            sp   = bool(self._shared.get("is_speeding", False))
-
-        self._max_spd = max(self._max_spd, spd)
-        self._spd_sum += spd
-        self._spd_samples += 1
-        self._ix_max = max(self._ix_max, ix)
-        if sp:  self._spd_events += 1
-        if ph:  self._ph_events  += 1
-        if dr:  self._drw_events += 1
