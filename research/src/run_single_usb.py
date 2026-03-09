@@ -347,6 +347,8 @@ def _draw_minimal_graphics(
 def _print_cli_stats(
     infer_fps: float,
     latency_ms: float,
+    yolo_fps: float,
+    yolo_latency_ms: float,
     alert_state: str,
     driver_status: str,
     head_direction: str,
@@ -363,6 +365,7 @@ def _print_cli_stats(
     """Print single-line dashboard (overwrite with \r)."""
     parts = [
         f"[INFER: {infer_fps:.1f}fps ({latency_ms:.0f}ms)]",
+        f"[YOLO: {yolo_fps:.1f}fps ({yolo_latency_ms:.0f}ms)]",
         f"STATE: {alert_state}",
         f"DRIVER: {driver_status}",
         f"LOOK: {head_direction}",
@@ -556,6 +559,10 @@ def main() -> None:
         "infer_fps": 0.0,
         "infer_count": 0,
         "infer_t0": time.time(),
+        "yolo_fps": 0.0,
+        "yolo_latency_ms": 0.0,
+        "yolo_count": 0,
+        "yolo_t0": time.time(),
         "gyro": None,
         # Gyro fields — updated by inference thread, sent to Supabase + BLE
         "gyrox": 0.0,
@@ -703,9 +710,14 @@ def main() -> None:
 
             # Run full YOLO every 3 loops; reuse last objects between loops.
             if inf_frame_idx % 3 == 0:
+                did_run_yolo = True
+                yolo_start = time.time()
                 objects = yolo.detect(infer_prealloc)
+                yolo_latency_ms = (time.time() - yolo_start) * 1000.0
                 last_objects = objects
             else:
+                did_run_yolo = False
+                yolo_latency_ms = 0.0
                 objects = last_objects
 
             # Pass the lower-res inference frame (256×256) to MediaPipe — it internally resizes
@@ -746,6 +758,16 @@ def main() -> None:
                 _shared_results["right_ear"] = right_ear
                 _shared_results["is_drowsy"] = is_drowsy
                 _shared_results["latency_ms"] = latency_ms
+                if did_run_yolo:
+                    _shared_results["yolo_latency_ms"] = yolo_latency_ms
+                    _shared_results["yolo_count"] += 1
+                    now_yolo = time.time()
+                    if now_yolo - _shared_results["yolo_t0"] >= 1.0:
+                        _shared_results["yolo_fps"] = (
+                            _shared_results["yolo_count"] / (now_yolo - _shared_results["yolo_t0"])
+                        )
+                        _shared_results["yolo_count"] = 0
+                        _shared_results["yolo_t0"] = now_yolo
                 _shared_results["gyro"] = gyro_reading
                 if gyro_reading:
                     _shared_results["gyrox"] = gyro_reading["gyrox"]
@@ -920,6 +942,8 @@ def main() -> None:
                 speed_limit = _shared_results.get("speed_limit")
                 latency_ms = float(_shared_results.get("latency_ms", 0.0))
                 infer_fps = float(_shared_results.get("infer_fps", 0.0))
+                yolo_fps = float(_shared_results.get("yolo_fps", 0.0))
+                yolo_latency_ms = float(_shared_results.get("yolo_latency_ms", 0.0))
                 gyro_snap = _shared_results.get("gyro")
 
             if ref is None:
@@ -1063,6 +1087,8 @@ def main() -> None:
                 _print_cli_stats(
                     infer_fps=infer_fps,
                     latency_ms=latency_ms,
+                    yolo_fps=yolo_fps,
+                    yolo_latency_ms=yolo_latency_ms,
                     alert_state=alert_state,
                     driver_status=driver_status,
                     head_direction=head_direction,
