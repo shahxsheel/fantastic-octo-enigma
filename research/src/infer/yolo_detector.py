@@ -179,8 +179,10 @@ class YoloDetector:
         ex.input("in0", mat_in)
         _ret, mat_out = ex.extract("out0")
 
-        # np.asarray avoids a copy if NCNN exposes the buffer protocol; falls back to copy otherwise.
-        out = np.asarray(mat_out)
+        # Copy away from NCNN-managed buffers before post-processing.
+        out = np.asarray(mat_out, dtype=np.float32).copy()
+        if not np.isfinite(out).all():
+            out = np.nan_to_num(out, nan=0.0, posinf=0.0, neginf=0.0)
 
         if out.size == 0:
             return []

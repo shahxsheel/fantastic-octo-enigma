@@ -134,8 +134,23 @@ echo "  → requirements.txt installed"
 
 # ── 3. YOLO Nano NCNN model ────────────────────────────────────────
 banner "Installing yolo26n_ncnn_model (Nano, YOLO26 — 2x faster than v8n)"
-if [[ -f yolo26n_ncnn_model/model.ncnn.param ]] && [[ -f yolo26n_ncnn_model/model.ncnn.bin ]]; then
-  echo "  → Already exists, skipping"
+MODEL_DIR="yolo26n_ncnn_model"
+MODEL_PARAM="$MODEL_DIR/model.ncnn.param"
+MODEL_BIN="$MODEL_DIR/model.ncnn.bin"
+MODEL_BUILD_INFO="$MODEL_DIR/build_info.txt"
+
+if [[ -f "$MODEL_PARAM" ]] && [[ -f "$MODEL_BIN" ]]; then
+  # Force-refresh older artifacts that were exported at 640 and are unstable.
+  if [[ -f "$MODEL_BUILD_INFO" ]] && grep -q '^imgsz=256$' "$MODEL_BUILD_INFO"; then
+    echo "  → Already exists (imgsz=256), skipping"
+  else
+    echo "  → Existing model is stale/incompatible (missing imgsz=256 marker), reinstalling"
+    rm -rf "$MODEL_DIR"
+  fi
+fi
+
+if [[ -f "$MODEL_PARAM" ]] && [[ -f "$MODEL_BIN" ]]; then
+  :
 else
   TARBALL="yolo26n_ncnn_model.tar.gz"
   USE_LOCAL=false
@@ -202,6 +217,11 @@ banner "Verifying installation"
 if [[ ! -f yolo26n_ncnn_model/model.ncnn.param ]] || [[ ! -f yolo26n_ncnn_model/model.ncnn.bin ]]; then
   echo "  ✗ yolo26n_ncnn_model missing (model.ncnn.param / model.ncnn.bin)."
   echo "    Set YOLO_NCNN_MODEL_URL to a valid tar.gz URL or add the release asset to the repo."
+  exit 1
+fi
+if [[ ! -f yolo26n_ncnn_model/build_info.txt ]] || ! grep -q '^imgsz=256$' yolo26n_ncnn_model/build_info.txt; then
+  echo "  ✗ yolo26n_ncnn_model is missing build_info imgsz=256 marker."
+  echo "    Rebuild with ./scripts/build_yolo26n_ncnn_archive.sh and re-run setup."
   exit 1
 fi
 echo "  → yolo26n_ncnn_model OK"

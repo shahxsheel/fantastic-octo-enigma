@@ -24,13 +24,22 @@ echo "Downloading yolo26n.pt and exporting to NCNN..."
 python -c "
 from ultralytics import YOLO
 m = YOLO('yolo26n.pt')
-m.export(format='ncnn')
+# Export with runtime-matching input size to avoid unstable 640-default artifacts
+# on constrained edge CPUs. Runtime default is YOLO_INPUT_SIZE=256.
+m.export(format='ncnn', imgsz=256)
 "
 
 if [[ ! -f yolo26n_ncnn_model/model.ncnn.param ]] || [[ ! -f yolo26n_ncnn_model/model.ncnn.bin ]]; then
   echo "Export failed — yolo26n_ncnn_model/ not found or incomplete."
   exit 1
 fi
+
+# Embed a tiny marker so setup.sh can detect stale artifacts and re-install.
+cat > yolo26n_ncnn_model/build_info.txt <<'EOF'
+model=yolo26n
+format=ncnn
+imgsz=256
+EOF
 
 # Keep archive deterministic and runtime-focused.
 find yolo26n_ncnn_model -type d -name "__pycache__" -prune -exec rm -r {} +

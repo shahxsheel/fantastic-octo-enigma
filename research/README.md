@@ -23,6 +23,8 @@ cd fantastic-octo-enigma
 This installs system libraries (OpenCV/GStreamer), creates a `.venv`, installs Python dependencies, and installs:
 - **yolo26n_ncnn_model** (YOLO Nano NCNN): if **yolo26n_ncnn_model.tar.gz** is present in the repo root, setup extracts it; otherwise it downloads from `YOLO_NCNN_MODEL_URL`. To bundle the tarball for offline setup, run `./scripts/build_yolo26n_ncnn_archive.sh` once (requires `ultralytics`), then commit `yolo26n_ncnn_model.tar.gz`.
 
+`setup.sh` validates the YOLO archive marker (`build_info.txt`) and automatically refreshes stale pre-256 exports.
+
 ## Run
 
 ```bash
@@ -101,6 +103,7 @@ If telemetry is not updating in `vehicle_realtime`, verify:
 | Colors look blue/wrong | Set `SWAP_RB=1` before `./run.sh` |
 | No display / SSH | Use `HEADLESS=1 ./run.sh` |
 | `yolo26n_ncnn_model` missing after setup | Put **yolo26n_ncnn_model.tar.gz** in the repo root (run `./scripts/build_yolo26n_ncnn_archive.sh` to create it), or set `YOLO_NCNN_MODEL_URL` to a valid tar.gz URL |
+| Runtime aborts with heap corruption after YOLO switch | Re-run `./setup.sh` so stale `yolo26n_ncnn_model/` is replaced by the `imgsz=256` build |
 | GStreamer errors | `./setup.sh` installs GStreamer deps; on non-Debian systems install equivalent libs for OpenCV |
 
 ## Repo Layout
