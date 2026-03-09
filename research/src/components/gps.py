@@ -9,6 +9,7 @@
 # sudo systemctl disable hciuart
 # sudo reboot
 
+import os
 import serial
 import pynmea2
 import threading
@@ -23,6 +24,10 @@ class GPSReader:
     APPLE_PARK_LAT = 37.3349
     APPLE_PARK_LON = -122.0090
 
+    # If real GPS is connected but yields no fix within this many seconds, fall
+    # back to fake data automatically (e.g. indoors without satellite visibility).
+    GPS_FIX_TIMEOUT_SEC = float(os.environ.get("GPS_FIX_TIMEOUT_SEC", "15"))
+
     def __init__(self, port='/dev/serial0', baudrate=9600, force_fake=False):
         self.port = port
         self.baudrate = baudrate
@@ -32,6 +37,7 @@ class GPSReader:
         self.force_fake = force_fake
         self.use_fake_data = False
         self._fake_t0 = time.time()
+        self._serial_start_time: float = 0.0  # set when real serial opens
 
         # GPS data
         self._data = {
@@ -60,6 +66,7 @@ class GPSReader:
             try:
                 self.serial = serial.Serial(self.port, baudrate=self.baudrate, timeout=1)
                 self.use_fake_data = False
+                self._serial_start_time = time.time()
                 print(f"GPS connected on {self.port}")
             except Exception as e:
                 print(f"GPS unavailable ({e}), using fake Apple Park coordinates")
@@ -114,6 +121,21 @@ class GPSReader:
             if self.use_fake_data:
                 self._update_fake_data()
                 time.sleep(0.5)
+                continue
+
+            # If real serial is open but no fix yet, check the timeout.
+            if (
+                not self._data['has_fix']
+                and self._serial_start_time > 0
+                and (time.time() - self._serial_start_time) > self.GPS_FIX_TIMEOUT_SEC
+            ):
+                print(
+                    f"[GPS] No satellite fix after {self.GPS_FIX_TIMEOUT_SEC:.0f}s "
+                    "(likely indoors); switching to fake Apple Park data"
+                )
+                self.use_fake_data = True
+                self._fake_t0 = time.time()
+                self._set_fake_data()
                 continue
 
             try:

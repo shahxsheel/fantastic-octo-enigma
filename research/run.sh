@@ -66,4 +66,11 @@ export USE_FAKE_GYRO="${USE_FAKE_GYRO:-0}"
 export ENABLE_HEAD_DIRECTION="${ENABLE_HEAD_DIRECTION:-1}"
 export HEAD_DIRECTION_EVERY_N="${HEAD_DIRECTION_EVERY_N:-4}"
 
+# Suppress noisy startup messages from TFLite / MediaPipe / abseil.
+# These are cosmetic: "All log messages before absl::InitializeLog", W0000 xnnpack
+# messages, and "prctl(PR_SVE_GET_VL) failed" from cpuinfo on non-SVE ARM cores.
+export TF_CPP_MIN_LOG_LEVEL="${TF_CPP_MIN_LOG_LEVEL:-3}"
+export GLOG_minloglevel="${GLOG_minloglevel:-3}"
+export ABSL_MIN_LOG_LEVEL="${ABSL_MIN_LOG_LEVEL:-4}"
+
 exec python src/run_single_usb.py "$@"

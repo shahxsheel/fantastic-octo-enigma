@@ -358,6 +358,7 @@ def _print_cli_stats(
     left_ear: float = 1.0,
     right_ear: float = 1.0,
     is_drowsy: bool = False,
+    gyro_snap: Optional[dict] = None,
 ) -> None:
     """Print single-line dashboard (overwrite with \r)."""
     parts = [
@@ -369,6 +370,13 @@ def _print_cli_stats(
         f"SPEED: {speed_mph}mph",
         f"HDG: {int(round(heading)) % 360}",
     ]
+
+    if gyro_snap is not None:
+        gx = gyro_snap.get("gyrox", 0.0)
+        gy = gyro_snap.get("gyroy", 0.0)
+        gz = gyro_snap.get("gyroz", 0.0)
+        am = gyro_snap.get("acc_mag", 0.0)
+        parts.append(f"GYR: {gx:+.1f}/{gy:+.1f}/{gz:+.1f}°/s {am:.2f}g")
 
     if is_drowsy:
         parts.append(_colorize("[DROWSY!]", ANSI_RED))
@@ -1066,6 +1074,7 @@ def main() -> None:
                     left_ear=left_ear,
                     right_ear=right_ear,
                     is_drowsy=is_drowsy,
+                    gyro_snap=gyro_snap,
                 )
                 last_cli_update = now
 
