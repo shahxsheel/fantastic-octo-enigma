@@ -506,6 +506,8 @@ class SupabaseService {
   private var lastLoggedPiConnectivityStateByVehicle: [String: PiConnectivityState] = [:]
   private var lastLoggedPiConnectivitySourceByVehicle: [String: String] = [:]
   private var lastLoggedPiConnectivityAtByVehicle: [String: Date] = [:]
+  private var lastCloudStaleRecoveryAttemptByVehicle: [String: Date] = [:]
+  private var cloudStaleRecoveryInFlightVehicleIds: Set<String> = []
 
   // BLE relay dedup state
   private var lastRelayedRealtimePacketAt: [String: Date] = [:]
@@ -517,6 +519,7 @@ class SupabaseService {
   private static let bleFallbackFreshnessWindow: TimeInterval = 5
   private static let piConnectivityFreshnessWindow: TimeInterval = 10
   private static let piConnectivityLogInterval: TimeInterval = 10
+  private static let cloudStaleRecoveryInterval: TimeInterval = 5
   private static let connectivityPolicyLabel = "Cloud-first (BLE fallback)"
 
   init() {
@@ -713,15 +716,16 @@ class SupabaseService {
       return (bleRealtime, .ble, cloudErrored ? "cloud error" : "cloud stale")
     }
 
-    if let supabaseRealtime {
-      return (supabaseRealtime, .supabase, cloudErrored ? "cloud error" : "cloud stale")
+    if cloudErrored {
+      return (nil, .unknown, "cloud error")
     }
 
-    if let bleRealtime {
-      return (bleRealtime, .ble, cloudErrored ? "cloud error" : nil)
+    if supabaseRealtime != nil {
+      // Cloud-first policy: do not keep stale cloud as active source.
+      return (nil, .unknown, "cloud stale")
     }
 
-    return (nil, .unknown, cloudErrored ? "cloud error" : nil)
+    return (nil, .unknown, nil)
   }
 
   private func recomputeRealtimeSelection(vehicleId: String) {
@@ -737,7 +741,7 @@ class SupabaseService {
       realtimeUpdatedAtByVehicle.removeValue(forKey: vehicleId)
     }
 
-    if selectedSource == .ble, let fallbackReason {
+    if selectedSource != .supabase, let fallbackReason {
       realtimeFallbackReasonByVehicle[vehicleId] = fallbackReason
     } else {
       realtimeFallbackReasonByVehicle.removeValue(forKey: vehicleId)
@@ -825,6 +829,8 @@ class SupabaseService {
           self.lastLoggedPiConnectivityStateByVehicle = [:]
           self.lastLoggedPiConnectivitySourceByVehicle = [:]
           self.lastLoggedPiConnectivityAtByVehicle = [:]
+          self.lastCloudStaleRecoveryAttemptByVehicle = [:]
+          self.cloudStaleRecoveryInFlightVehicleIds = []
           self.unsubscribeFromRealtime()
           self.deleteAllCachedData()
 
@@ -865,6 +871,8 @@ class SupabaseService {
       self.lastLoggedPiConnectivityStateByVehicle = [:]
       self.lastLoggedPiConnectivitySourceByVehicle = [:]
       self.lastLoggedPiConnectivityAtByVehicle = [:]
+      self.lastCloudStaleRecoveryAttemptByVehicle = [:]
+      self.cloudStaleRecoveryInFlightVehicleIds = []
       self.deleteAllCachedData()
     }
     markCloudHealthy()
@@ -1122,6 +1130,7 @@ class SupabaseService {
     let age = Date.now.timeIntervalSince(realtime.updatedAt)
     let state: PiConnectivityState = age <= Self.piConnectivityFreshnessWindow ? .online : .offline
     logPiConnectivityDecision(vehicleId: vehicleId, state: state, source: "cloud", age: age)
+    scheduleCloudStaleRecoveryIfNeeded(vehicleId: vehicleId, age: age)
     return state
   }
 
@@ -1148,6 +1157,31 @@ class SupabaseService {
     lastLoggedPiConnectivityStateByVehicle[vehicleId] = state
     lastLoggedPiConnectivitySourceByVehicle[vehicleId] = source
     lastLoggedPiConnectivityAtByVehicle[vehicleId] = now
+  }
+
+  private func scheduleCloudStaleRecoveryIfNeeded(vehicleId: String, age: TimeInterval) {
+    guard cloudRuntimeState.isOperational else { return }
+    guard age > Self.cloudFirstFreshnessWindow else { return }
+    let now = Date.now
+    if cloudStaleRecoveryInFlightVehicleIds.contains(vehicleId) {
+      return
+    }
+    if let lastAttempt = lastCloudStaleRecoveryAttemptByVehicle[vehicleId],
+      now.timeIntervalSince(lastAttempt) < Self.cloudStaleRecoveryInterval
+    {
+      return
+    }
+
+    lastCloudStaleRecoveryAttemptByVehicle[vehicleId] = now
+    cloudStaleRecoveryInFlightVehicleIds.insert(vehicleId)
+    print(
+      "[Supabase][stale_recovery] vehicle=\(vehicleId) source_age_s=\(String(format: "%.1f", max(0, age)))")
+
+    Task { @MainActor [weak self] in
+      guard let self else { return }
+      defer { self.cloudStaleRecoveryInFlightVehicleIds.remove(vehicleId) }
+      _ = await self.fetchVehicleRealtimeRow(vehicleId: vehicleId)
+    }
   }
 
   // MARK: - BLE Relay (upload Pi data to Supabase on its behalf)

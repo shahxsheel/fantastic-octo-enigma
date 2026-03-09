@@ -34,17 +34,23 @@ COCO_NAMES: Dict[int, str] = {
 }
 
 
-def _detect_pi4() -> bool:
+def _detect_pi() -> bool:
+    """Returns True for any Raspberry Pi (4, 5, or later)."""
     try:
         model_path = "/proc/device-tree/model"
         if os.path.exists(model_path):
             with open(model_path, "rb") as f:
                 model = f.read().decode("utf-8", errors="ignore").lower()
-            if "raspberry pi 4" in model:
+            if "raspberry pi" in model:
                 return True
     except Exception:
         pass
     return False
+
+
+def _detect_pi4() -> bool:
+    """Kept for backward compatibility; use _detect_pi() for new code."""
+    return _detect_pi()
 
 
 def _letterbox(
@@ -118,7 +124,8 @@ class YoloDetector:
 
         # Ultra-low resolution for maximum FPS (Nano model, close-up camera).
         # 256x256 is ~1.6x faster than 320x320, sufficient for detecting large objects (person, phone).
-        default_input_size = "256" if self._is_pi4 else "640"
+        # Use 256 on any Raspberry Pi (4 or 5); 640 is too heavy for real-time Pi inference.
+        default_input_size = "256" if self._is_pi4 else "256"
         self._input_size = int(os.environ.get("YOLO_INPUT_SIZE", default_input_size))
 
         # Pre-allocate letterbox buffers to avoid per-frame allocations.
@@ -141,13 +148,13 @@ class YoloDetector:
         nw, nh = int(round(w * scale)), int(round(h * scale))
         dw, dh = (new_size - nw) // 2, (new_size - nh) // 2
 
-        resized = cv2.resize(img_bgr, (nw, nh), interpolation=cv2.INTER_LINEAR)
         # Fill only pad strips, not entire canvas
         self._canvas[:dh, :] = 114
         self._canvas[dh + nh:, :] = 114
         self._canvas[dh:dh + nh, :dw] = 114
         self._canvas[dh:dh + nh, dw + nw:] = 114
-        self._canvas[dh:dh + nh, dw:dw + nw] = resized
+        # Resize directly into the canvas ROI — eliminates the intermediate `resized` allocation.
+        cv2.resize(img_bgr, (nw, nh), dst=self._canvas[dh:dh + nh, dw:dw + nw], interpolation=cv2.INTER_LINEAR)
         cv2.cvtColor(self._canvas, cv2.COLOR_BGR2RGB, dst=self._canvas_rgb)
         return self._canvas_rgb, scale, (dw, dh)
 
@@ -166,7 +173,8 @@ class YoloDetector:
         ex.input("in0", mat_in)
         _ret, mat_out = ex.extract("out0")
 
-        out = np.array(mat_out)
+        # np.asarray avoids a copy if NCNN exposes the buffer protocol; falls back to copy otherwise.
+        out = np.asarray(mat_out)
         if out.ndim == 1:
             out = out.reshape(84, -1)
         if out.shape[0] == 84:

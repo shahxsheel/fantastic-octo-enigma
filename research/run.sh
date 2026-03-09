@@ -51,8 +51,16 @@ fi
 export PYTHONPATH=.
 export CAMERA_USE_GSTREAMER="${CAMERA_USE_GSTREAMER:-1}"
 export YOLO_MODEL="${YOLO_MODEL:-yolov8n_ncnn_model}"
+# 256×256 is the real-time sweet spot for YOLOv8 Nano on any Raspberry Pi.
+export YOLO_INPUT_SIZE="${YOLO_INPUT_SIZE:-256}"
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-4}"
 export NCNN_THREADS="${NCNN_THREADS:-4}"
+
+# Set CPU governor to performance to prevent throttling during sustained inference.
+# Silently skipped if cpufreq-set is not available (non-Pi hosts, VMs).
+if command -v cpufreq-set &>/dev/null; then
+  cpufreq-set -g performance 2>/dev/null || true
+fi
 export USE_FAKE_GPS="${USE_FAKE_GPS:-0}"
 export USE_FAKE_GYRO="${USE_FAKE_GYRO:-0}"
 export ENABLE_HEAD_DIRECTION="${ENABLE_HEAD_DIRECTION:-1}"

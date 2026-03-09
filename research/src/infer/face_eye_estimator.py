@@ -14,6 +14,7 @@ import math
 import os
 from typing import Optional
 
+import cv2
 import numpy as np
 
 _mp_available = False
@@ -74,6 +75,8 @@ class FaceEyeEstimator:
         self._last_left_ear: float = 1.0
         self._last_right_ear: float = 1.0
         self._last_is_drowsy: bool = False
+        # Pre-allocated BGR→RGB conversion buffer (avoids per-frame allocation).
+        self._rgb_buf: Optional[np.ndarray] = None
 
         if not _mp_available:
             self.reason = "mediapipe not installed"
@@ -114,9 +117,11 @@ class FaceEyeEstimator:
         if frame_idx % self.every_n != 0:
             return self._last_direction, self._last_left_ear, self._last_right_ear, self._last_is_drowsy
 
-        # BGR → RGB for MediaPipe
-        frame_rgb = frame_bgr[:, :, ::-1].astype(np.uint8)
-        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame_rgb)
+        # BGR → RGB for MediaPipe — reuse pre-allocated buffer to avoid per-frame allocation.
+        if self._rgb_buf is None or self._rgb_buf.shape != frame_bgr.shape:
+            self._rgb_buf = np.empty_like(frame_bgr)
+        cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB, dst=self._rgb_buf)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=self._rgb_buf)
 
         try:
             result = self._detector.detect(mp_image)

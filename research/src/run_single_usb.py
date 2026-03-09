@@ -697,11 +697,11 @@ def main() -> None:
                 local_bundle = cam.read()
                 np.copyto(_infer_back, local_bundle.infer_bgr)
                 if night_mode and gamma_table is not None:
-                    np.copyto(_infer_back, cv2.LUT(_infer_back, gamma_table))
+                    cv2.LUT(_infer_back, gamma_table, dst=_infer_back)
                 if not headless:
                     np.copyto(_main_back, local_bundle.main_bgr)
                     if night_mode and gamma_table is not None:
-                        np.copyto(_main_back, cv2.LUT(_main_back, gamma_table))
+                        cv2.LUT(_main_back, gamma_table, dst=_main_back)
                 with _lock:
                     _infer_front, _infer_back = _infer_back, _infer_front
                     if not headless:
@@ -749,8 +749,11 @@ def main() -> None:
             else:
                 objects = last_objects
 
-            src_frame = main_prealloc if main_prealloc is not None else infer_prealloc
-            head_direction, left_ear, right_ear, is_drowsy = face_eye_estimator.estimate(src_frame, inf_frame_idx)
+            # Pass the lower-res inference frame (256×256) to MediaPipe — it internally resizes
+            # to ~192×192 anyway, so passing the 640×480 main frame just adds a wasted resize step.
+            # Offset by 2 so MediaPipe runs on frames 2,6,10... while YOLO runs on 0,3,6,9...
+            # This reduces (but cannot fully eliminate) same-frame serialization (LCM(3,4)=12).
+            head_direction, left_ear, right_ear, is_drowsy = face_eye_estimator.estimate(infer_prealloc, inf_frame_idx + 2)
 
             now_ts = time.time()
             sideways_warning_active = side_look_tracker.update(
