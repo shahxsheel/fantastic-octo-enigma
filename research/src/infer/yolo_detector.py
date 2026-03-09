@@ -70,6 +70,11 @@ def _letterbox(
     return canvas, scale, (dw, dh)
 
 
+_PHONE_NAMES: frozenset[str] = frozenset(
+    {"phone", "cellphone", "mobile", "mobile phone", "cell phone"}
+)
+
+
 class YoloDetector:
     def __init__(self):
         import ncnn as _ncnn
@@ -190,7 +195,7 @@ class YoloDetector:
         scores = out[:, 4:]
 
         class_ids = np.argmax(scores, axis=1)
-        max_scores = scores[np.arange(scores.shape[0]), class_ids]
+        max_scores = np.max(scores, axis=1)
 
         mask = max_scores > self.conf
         if not np.any(mask):
@@ -254,6 +259,6 @@ class YoloDetector:
     @staticmethod
     def _norm_name(name: str) -> str:
         n = name.strip().lower()
-        if n in ("phone", "cellphone", "mobile", "mobile phone", "cell phone"):
+        if n in _PHONE_NAMES:
             return "cell phone"
         return n

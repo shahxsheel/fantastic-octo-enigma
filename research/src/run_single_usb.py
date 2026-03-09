@@ -665,11 +665,11 @@ def main() -> None:
     try:
         first_infer_frame = bundle.infer_bgr.copy()
         if night_mode and gamma_table is not None:
-            first_infer_frame = cv2.LUT(first_infer_frame, gamma_table)
+            cv2.LUT(first_infer_frame, gamma_table, dst=first_infer_frame)
         if not headless:
             first_main_frame = bundle.main_bgr.copy()
             if night_mode and gamma_table is not None:
-                first_main_frame = cv2.LUT(first_main_frame, gamma_table)
+                cv2.LUT(first_main_frame, gamma_table, dst=first_main_frame)
     except Exception as e:
         print(f"[single-usb] Failed to prime buffers: {e}", flush=True)
         return
@@ -691,6 +691,7 @@ def main() -> None:
 
     def camera_thread_fn() -> None:
         nonlocal _infer_front, _infer_back, _main_front, _main_back
+        _cam_is_gstreamer = getattr(cam, 'using_gstreamer', False)
         while not _camera_stop.is_set():
             cam_loop_start = time.time()
             try:
@@ -711,7 +712,7 @@ def main() -> None:
                     break
                 time.sleep(0.001)
             else:
-                if not getattr(cam, 'using_gstreamer', False):
+                if not _cam_is_gstreamer:
                     elapsed = time.time() - cam_loop_start
                     sleep_time = (1.0 / CAMERA_TARGET_FPS) - elapsed
                     if sleep_time > 0:
