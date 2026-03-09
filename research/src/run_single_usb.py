@@ -549,6 +549,11 @@ def main() -> None:
         "infer_count": 0,
         "infer_t0": time.time(),
         "gyro": None,
+        # Gyro fields — updated by inference thread, sent to Supabase + BLE
+        "gyrox": 0.0,
+        "gyroy": 0.0,
+        "gyroz": 0.0,
+        "acc_mag": 0.0,
         # GPS fields — updated each main-loop tick for BLE peripheral
         "speed_mph": 0,
         "heading_degrees": 0,
@@ -734,6 +739,11 @@ def main() -> None:
                 _shared_results["is_drowsy"] = is_drowsy
                 _shared_results["latency_ms"] = latency_ms
                 _shared_results["gyro"] = gyro_reading
+                if gyro_reading:
+                    _shared_results["gyrox"] = gyro_reading["gyrox"]
+                    _shared_results["gyroy"] = gyro_reading["gyroy"]
+                    _shared_results["gyroz"] = gyro_reading["gyroz"]
+                    _shared_results["acc_mag"] = gyro_reading["acc_mag"]
 
                 _shared_results["infer_count"] += 1
                 now = time.time()
@@ -749,6 +759,7 @@ def main() -> None:
         write_failures = 0
         last_write_error_log = 0.0
         blocked_realtime_fields: set[str] = set()
+        consecutive_successes_since_block = 0
         while not _telemetry_stop.is_set():
             try:
                 payload = telemetry_queue.get(timeout=0.5)
@@ -792,6 +803,21 @@ def main() -> None:
                             raise write_error
                 _supabase_last_ok_ts = time.time()
                 write_failures = 0
+                if blocked_realtime_fields:
+                    consecutive_successes_since_block += 1
+                    if consecutive_successes_since_block >= 20:
+                        print(
+                            _colorize(
+                                f"[single-usb] Clearing blocked realtime fields after 20 "
+                                f"consecutive successes: {blocked_realtime_fields}",
+                                ANSI_GREEN,
+                            ),
+                            flush=True,
+                        )
+                        blocked_realtime_fields.clear()
+                        consecutive_successes_since_block = 0
+                else:
+                    consecutive_successes_since_block = 0
             except Exception as e:
                 # Keep loop alive through transient network failures.
                 # Log with backoff so connectivity/auth issues are visible.
@@ -951,16 +977,26 @@ def main() -> None:
             if supabase_client:
                 supabase_down_sec = now - _supabase_last_ok_ts
                 if supabase_down_sec > BLE_FALLBACK_THRESHOLD_SEC and not _ble_fallback_active:
-                    _ble_fallback_active = True
-                    ble.start()
-                    print(
-                        _colorize(
-                            f"[single-usb] SUPABASE unreachable {supabase_down_sec:.0f}s "
-                            "→ BLE FALLBACK ACTIVE",
-                            ANSI_YELLOW,
-                        ),
-                        flush=True,
-                    )
+                    if ble.enabled:
+                        _ble_fallback_active = True
+                        ble.start()
+                        print(
+                            _colorize(
+                                f"[single-usb] SUPABASE unreachable {supabase_down_sec:.0f}s "
+                                "→ BLE FALLBACK ACTIVE",
+                                ANSI_YELLOW,
+                            ),
+                            flush=True,
+                        )
+                    else:
+                        print(
+                            _colorize(
+                                f"[single-usb] SUPABASE unreachable {supabase_down_sec:.0f}s "
+                                f"but BLE unavailable ({ble.reason}); telemetry continuing",
+                                ANSI_YELLOW,
+                            ),
+                            flush=True,
+                        )
                 elif supabase_down_sec <= BLE_FALLBACK_THRESHOLD_SEC and _ble_fallback_active:
                     _ble_fallback_active = False
                     ble.stop()
@@ -993,10 +1029,11 @@ def main() -> None:
                     "is_phone_detected": phone_detected,
                     "is_drinking_detected": drinking_detected,
                     "is_drowsy": is_drowsy,
+                    "gyro_x": round(float(gyro_snap["gyrox"]), 2) if gyro_snap else 0.0,
+                    "gyro_y": round(float(gyro_snap["gyroy"]), 2) if gyro_snap else 0.0,
+                    "gyro_z": round(float(gyro_snap["gyroz"]), 2) if gyro_snap else 0.0,
+                    "acc_mag": round(float(gyro_snap["acc_mag"]), 3) if gyro_snap else 0.0,
                 }
-
-                # Keep gyro values in logs only unless matching DB columns are added.
-                _ = gyro_snap
 
                 try:
                     telemetry_queue.put_nowait(payload)

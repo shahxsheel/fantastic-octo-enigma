@@ -29,6 +29,11 @@ struct BLERealtimeData: Codable {
   let ix: Int
   let sp: Bool
   let sat: Int
+  // Gyro fields (present in Pi firmware ≥ current; optional for backward compat)
+  let gx: Double?  // gyro X deg/s
+  let gy: Double?  // gyro Y deg/s
+  let gz: Double?  // gyro Z deg/s
+  let am: Double?  // accelerometer magnitude (g)
 
   /// Convert compact BLE JSON to the app's existing VehicleRealtime model.
   func toVehicleRealtime(vehicleId: String) -> VehicleRealtime {
@@ -47,7 +52,11 @@ struct BLERealtimeData: Codable {
       intoxicationScore: ix,
       satellites: sat,
       isPhoneDetected: ph,
-      isDrinkingDetected: dr
+      isDrinkingDetected: dr,
+      gyroX: gx,
+      gyroY: gy,
+      gyroZ: gz,
+      accMag: am
     )
   }
 }

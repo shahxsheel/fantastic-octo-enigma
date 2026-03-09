@@ -100,6 +100,11 @@ struct VehicleRealtime: Codable, Identifiable {
   let buzzerActive: Bool?
   let buzzerType: String?
   let buzzerUpdatedAt: Date?
+  // Gyro / IMU
+  let gyroX: Double?
+  let gyroY: Double?
+  let gyroZ: Double?
+  let accMag: Double?
 
   enum CodingKeys: String, CodingKey {
     case vehicleId = "vehicle_id"
@@ -119,6 +124,10 @@ struct VehicleRealtime: Codable, Identifiable {
     case buzzerActive = "buzzer_active"
     case buzzerType = "buzzer_type"
     case buzzerUpdatedAt = "buzzer_updated_at"
+    case gyroX = "gyro_x"
+    case gyroY = "gyro_y"
+    case gyroZ = "gyro_z"
+    case accMag = "acc_mag"
   }
 
   init(
@@ -139,7 +148,11 @@ struct VehicleRealtime: Codable, Identifiable {
     isDrinkingDetected: Bool?,
     buzzerActive: Bool? = nil,
     buzzerType: String? = nil,
-    buzzerUpdatedAt: Date? = nil
+    buzzerUpdatedAt: Date? = nil,
+    gyroX: Double? = nil,
+    gyroY: Double? = nil,
+    gyroZ: Double? = nil,
+    accMag: Double? = nil
   ) {
     self.vehicleId = vehicleId
     self.updatedAt = updatedAt
@@ -159,6 +172,10 @@ struct VehicleRealtime: Codable, Identifiable {
     self.buzzerActive = buzzerActive
     self.buzzerType = buzzerType
     self.buzzerUpdatedAt = buzzerUpdatedAt
+    self.gyroX = gyroX
+    self.gyroY = gyroY
+    self.gyroZ = gyroZ
+    self.accMag = accMag
   }
 }
 
@@ -1097,12 +1114,13 @@ class SupabaseService {
   }
 
   /// Returns true when the app should suggest the user switch to BLE.
-  /// Triggered when Supabase data for the vehicle is stale (> cloudFirstFreshnessWindow)
+  /// Triggered when Supabase is unavailable or its data is stale,
   /// and a BLE connection is not already active.
   func needsBLEConnectionSuggestion(vehicleId: String) -> Bool {
     guard !bluetooth.isConnected else { return false }
-    let supabaseRealtime = latestSupabaseRealtimeByVehicle[vehicleId]
-    guard let supabaseRealtime else { return false }
+    // Cloud disabled entirely — user will never receive Supabase updates.
+    guard cloudRuntimeState.isOperational else { return true }
+    guard let supabaseRealtime = latestSupabaseRealtimeByVehicle[vehicleId] else { return false }
     let age = Date.now.timeIntervalSince(supabaseRealtime.updatedAt)
     return age > Self.cloudFirstFreshnessWindow
   }

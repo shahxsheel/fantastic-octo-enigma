@@ -115,6 +115,7 @@ class BluetoothPeripheral:
     # ── Thread entry ────────────────────────────────────────────────────────
 
     def _run(self) -> None:
+        self._log_startup_diagnostics()
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
         try:
@@ -130,7 +131,6 @@ class BluetoothPeripheral:
 
     async def _serve(self) -> None:
         self._stop_event = asyncio.Event()
-        self._log_startup_diagnostics()
 
         server = BlessServer(name=f"ADA-{self.vehicle_id}", loop=self._loop)
         server.read_request_func = self._read_request
@@ -210,6 +210,10 @@ class BluetoothPeripheral:
                 "ix":  int(self._shared.get("intoxication_score", 0)),
                 "sp":  bool(self._shared.get("is_speeding", False)),
                 "sat": int(self._shared.get("satellites", 0) or 0),
+                "gx":  round(float(self._shared.get("gyrox", 0.0)), 2),
+                "gy":  round(float(self._shared.get("gyroy", 0.0)), 2),
+                "gz":  round(float(self._shared.get("gyroz", 0.0)), 2),
+                "am":  round(float(self._shared.get("acc_mag", 0.0)), 3),
             }
 
     def _safe_notify(self, server: "BlessServer", uuid: str, payload: dict, label: str) -> None:

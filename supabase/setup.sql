@@ -134,7 +134,11 @@ create table if not exists public.vehicle_realtime (
   is_drinking_detected boolean default false,
   buzzer_active boolean default false,
   buzzer_type text default 'alert',
-  buzzer_updated_at timestamptz
+  buzzer_updated_at timestamptz,
+  gyro_x double precision,
+  gyro_y double precision,
+  gyro_z double precision,
+  acc_mag double precision
 );
 
 alter table if exists public.vehicle_realtime add column if not exists updated_at timestamptz not null default now();
@@ -155,6 +159,10 @@ alter table if exists public.vehicle_realtime add column if not exists is_drinki
 alter table if exists public.vehicle_realtime add column if not exists buzzer_active boolean default false;
 alter table if exists public.vehicle_realtime add column if not exists buzzer_type text default 'alert';
 alter table if exists public.vehicle_realtime add column if not exists buzzer_updated_at timestamptz;
+alter table if exists public.vehicle_realtime add column if not exists gyro_x double precision;
+alter table if exists public.vehicle_realtime add column if not exists gyro_y double precision;
+alter table if exists public.vehicle_realtime add column if not exists gyro_z double precision;
+alter table if exists public.vehicle_realtime add column if not exists acc_mag double precision;
 
 drop trigger if exists update_vehicle_realtime_updated_at on public.vehicle_realtime;
 create trigger update_vehicle_realtime_updated_at

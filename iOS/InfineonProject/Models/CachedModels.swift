@@ -88,6 +88,10 @@ final class CachedVehicleRealtime {
   var buzzerActive: Bool?
   var buzzerType: String?
   var buzzerUpdatedAt: Date?
+  var gyroX: Double?
+  var gyroY: Double?
+  var gyroZ: Double?
+  var accMag: Double?
 
   init() {}
 
@@ -110,6 +114,10 @@ final class CachedVehicleRealtime {
     self.buzzerActive = data.buzzerActive
     self.buzzerType = data.buzzerType
     self.buzzerUpdatedAt = data.buzzerUpdatedAt
+    self.gyroX = data.gyroX
+    self.gyroY = data.gyroY
+    self.gyroZ = data.gyroZ
+    self.accMag = data.accMag
   }
 
   func toVehicleRealtime() -> VehicleRealtime {
@@ -131,7 +139,11 @@ final class CachedVehicleRealtime {
       isDrinkingDetected: isDrinkingDetected,
       buzzerActive: buzzerActive,
       buzzerType: buzzerType,
-      buzzerUpdatedAt: buzzerUpdatedAt
+      buzzerUpdatedAt: buzzerUpdatedAt,
+      gyroX: gyroX,
+      gyroY: gyroY,
+      gyroZ: gyroZ,
+      accMag: accMag
     )
   }
 
@@ -153,6 +165,10 @@ final class CachedVehicleRealtime {
     self.buzzerActive = data.buzzerActive
     self.buzzerType = data.buzzerType
     self.buzzerUpdatedAt = data.buzzerUpdatedAt
+    self.gyroX = data.gyroX
+    self.gyroY = data.gyroY
+    self.gyroZ = data.gyroZ
+    self.accMag = data.accMag
   }
 }
 

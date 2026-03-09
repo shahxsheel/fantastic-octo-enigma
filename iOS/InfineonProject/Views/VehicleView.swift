@@ -9,7 +9,6 @@ import ActivityKit
 import Combine
 import CoreLocation
 import MapKit
-import PostgREST
 import Supabase
 import SwiftUI
 
@@ -94,7 +93,12 @@ struct VehicleView: View {
               )
 
               if supabase.needsBLEConnectionSuggestion(vehicleId: vehicle.vehicle.id) {
-                BLESuggestionBannerView(vehicleId: vehicle.vehicle.id)
+                PiBannerView(
+                  icon: "antenna.radiowaves.left.and.right",
+                  color: .orange,
+                  title: "Cloud data is stale",
+                  subtitle: "Connect via Bluetooth for live data"
+                )
               }
 
               // Driver alert
@@ -295,6 +299,11 @@ struct VehicleView: View {
                           .foregroundStyle(satellites > 0 ? .primary : .secondary)
                       }
                     }
+                  }
+
+                  // IMU / Gyroscope
+                  if data.gyroX != nil || data.gyroY != nil || data.gyroZ != nil {
+                    GyroReadoutView(data: data)
                   }
 
                   // Distraction indicators
@@ -694,23 +703,37 @@ struct VehicleView: View {
 
 // MARK: - Pi Status Banner
 
-struct BLESuggestionBannerView: View {
-  let vehicleId: String
+struct GyroReadoutView: View {
+  let data: VehicleRealtime
+
+  private func formatAxis(_ value: Double?) -> String {
+    guard let v = value else { return "—" }
+    return String(format: "%+.1f", v)
+  }
 
   var body: some View {
-    Label {
-      VStack(alignment: .leading) {
-        Text("Cloud data is stale")
-          .bold()
-        Text("Connect via Bluetooth for live data")
-          .font(.caption)
+    LabeledContent("Gyroscope (°/s)") {
+      HStack(spacing: 12) {
+        VStack(alignment: .trailing, spacing: 2) {
+          Text("X").font(.caption2).foregroundStyle(.secondary)
+          Text(formatAxis(data.gyroX)).font(.caption.monospaced())
+        }
+        VStack(alignment: .trailing, spacing: 2) {
+          Text("Y").font(.caption2).foregroundStyle(.secondary)
+          Text(formatAxis(data.gyroY)).font(.caption.monospaced())
+        }
+        VStack(alignment: .trailing, spacing: 2) {
+          Text("Z").font(.caption2).foregroundStyle(.secondary)
+          Text(formatAxis(data.gyroZ)).font(.caption.monospaced())
+        }
+        if let am = data.accMag {
+          VStack(alignment: .trailing, spacing: 2) {
+            Text("G").font(.caption2).foregroundStyle(.secondary)
+            Text(String(format: "%.2fg", am)).font(.caption.monospaced())
+          }
+        }
       }
-    } icon: {
-      SettingsBoxView(icon: "antenna.radiowaves.left.and.right", color: .orange)
     }
-    .padding()
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .background(Color.orange.opacity(0.15), in: .rect(cornerRadius: 10))
   }
 }
 
